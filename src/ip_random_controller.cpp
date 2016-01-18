@@ -43,7 +43,13 @@ int main(int argc, char ** argv)
     auto joints = listener.getStatus();
     try {
       JointListener::JointState state = joints.at(dof);
+      // Normalizing pos in -pi, pi
       state.pos = fmod(state.pos, 2 * M_PI);
+      if (state.pos > M_PI)
+      {
+        state.pos = state.pos - 2 * M_PI;
+      }
+      // Writing values
       std::cout << ros::Time::now().toSec() << ","
                 << state.pos << ","
                 << state.vel << ","
