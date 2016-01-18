@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rosban_control
+  rosban_csa_mdp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -114,13 +115,35 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(csa_mdp_experiments
-#   src/${PROJECT_NAME}/csa_mdp_experiments.cpp
-# )
+# Directories containing sources files
+set(DIRECTORIES
+  src/problems
+  )
+
+# Build ALL_SOURCES
+set (SOURCES)
+set (ALL_SOURCES)
+set (PREFIXED_SOURCES)
+foreach (DIRECTORY ${DIRECTORIES})
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}")
+    include (${DIRECTORY}/sources.cmake)
+
+    foreach (SOURCE ${SOURCES})
+        set (PREFIXED_SOURCES ${PREFIXED_SOURCES} ${DIRECTORY}/${SOURCE})
+    endforeach (SOURCE)
+
+    set (ALL_SOURCES ${ALL_SOURCES} ${PREFIXED_SOURCES})
+endforeach (DIRECTORY)
+
+# Declare a C++ library
+add_library(csa_mdp_experiments
+  ${ALL_SOURCES}
+  )
+target_link_libraries(csa_mdp_experiments ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -132,6 +155,12 @@ target_link_libraries(ip_random_controller ${catkin_LIBRARIES})
 
 add_executable(ip_listener src/ip_listener.cpp)
 target_link_libraries(ip_listener ${catkin_LIBRARIES})
+
+add_executable(learn_double_integrator src/learn_double_integrator.cpp)
+target_link_libraries(learn_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
+
+add_executable(evaluate_double_integrator src/evaluate_double_integrator.cpp)
+target_link_libraries(evaluate_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
 
 #############
 ## Install ##
