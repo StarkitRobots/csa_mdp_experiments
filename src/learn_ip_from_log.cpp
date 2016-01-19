@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 
   FPF solver;
   solver.conf = conf;
-  auto is_terminal = [](const Eigen::VectorXd &state){return false;};
+  auto is_terminal = [](const Eigen::VectorXd &state){(void)state; return false;};
   solver.solve(samples, is_terminal);
   solver.getValueForest().save("/tmp/test_ip_sim_values.data");
   solver.getPolicyForest(0).save("/tmp/test_ip_sim_policy.data");

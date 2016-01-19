@@ -25,6 +25,7 @@ double DoubleIntegrator::getReward(const Eigen::VectorXd & state,
                                    const Eigen::VectorXd & action,
                                    const Eigen::VectorXd & dst)
 {
+  (void)state;
   if (isTerminal(dst)) {
     return -50;
   }
