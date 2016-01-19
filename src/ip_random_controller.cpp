@@ -17,7 +17,7 @@ int main(int argc, char ** argv)
   
   // Random control properties
   int frequency = 10;//Hz
-  double maxTorque = 2;//N*m
+  double maxTorque = 2.5;//N*m
   std::string dof = "axis";
   
   // INITIALIZATION
@@ -44,10 +44,13 @@ int main(int argc, char ** argv)
     try {
       JointListener::JointState state = joints.at(dof);
       // Normalizing pos in -pi, pi
-      state.pos = fmod(state.pos, 2 * M_PI);
-      if (state.pos > M_PI)
+      while (state.pos > M_PI)
       {
-        state.pos = state.pos - 2 * M_PI;
+        state.pos -= 2 * M_PI;
+      }
+      while (state.pos < -M_PI)
+      {
+        state.pos += 2 * M_PI;
       }
       // Writing values
       std::cout << ros::Time::now().toSec() << ","

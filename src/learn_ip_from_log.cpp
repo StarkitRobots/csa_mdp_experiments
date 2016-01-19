@@ -22,7 +22,7 @@ int main(int argc, char ** argv)
   // Limits:
   double pos_max = M_PI;
   double vel_max = 4 * M_PI;// rad / s
-  double torque_max = 2.0;// N * m
+  double torque_max = 2.5;// N * m
   Eigen::MatrixXd state_limits(2,2), action_limits(1,2);
   state_limits << -pos_max, pos_max, -vel_max, vel_max;
   action_limits << -torque_max, torque_max;
@@ -32,7 +32,7 @@ int main(int argc, char ** argv)
   conf.setStateLimits(state_limits);
   conf.setActionLimits(action_limits);
   conf.horizon = 20;
-  conf.discount = 0.95;
+  conf.discount = 0.98;
   conf.max_action_tiles = 50;
   conf.q_value_conf.k = 3;
   conf.q_value_conf.n_min = 10;
@@ -57,13 +57,14 @@ int main(int argc, char ** argv)
     {
       (void)src;// Unused
       // Normalizing position if necessary
-      double position = fmod(result(0), 2 * M_PI);
-      if (position > M_PI)
+      double position = result(0);
+      if (position > M_PI || position < -M_PI)
       {
-        position = position - 2 * M_PI;
+        std::cerr << "Invalid position found, bounding for reward: " << position << std::endl;
+        position = M_PI;
       }
-      double pos_cost   = std::pow(result(0) / pos_max   , 2);
-      double speed_cost = std::pow(result(1)             , 2);
+      double pos_cost   = std::pow(position / pos_max   , 2);
+      double speed_cost = 0;//std::pow(result(1)             , 2); not fitted for the problem where pendulum has to be lifted
       double force_cost = std::pow(action(0) / torque_max, 2);
       return - (pos_cost + speed_cost + force_cost);
     };

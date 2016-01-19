@@ -37,6 +37,8 @@ int main(int argc, char ** argv)
 
   double cmd = 0;
 
+  std::cout << "pos,vel,cmd" << std::endl;
+
   while (ros::ok())
   {
     // Read value
@@ -54,6 +56,7 @@ int main(int argc, char ** argv)
       state(0) = joint_state.pos;
       state(1) = joint_state.vel;
       cmd = policy->getValue(state);
+      std::cout << state(0) << "," << state(1) << "," << cmd << std::endl;
     }
     catch (const std::out_of_range &exc) {
       std::cerr << "Failed to find " << dof << " in the published joints" << std::endl;
