@@ -165,6 +165,9 @@ target_link_libraries(learn_double_integrator ${catkin_LIBRARIES} csa_mdp_experi
 add_executable(evaluate_double_integrator src/evaluate_double_integrator.cpp)
 target_link_libraries(evaluate_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
 
+add_executable(ip_forest_controller src/ip_forest_controller.cpp)
+target_link_libraries(ip_forest_controller ${catkin_LIBRARIES} csa_mdp_experiments)
+
 #############
 ## Install ##
 #############

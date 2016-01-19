@@ -35,7 +35,7 @@ int main(int argc, char ** argv)
   conf.discount = 0.95;
   conf.max_action_tiles = 50;
   conf.q_value_conf.k = 3;
-  conf.q_value_conf.n_min = 1;
+  conf.q_value_conf.n_min = 10;
   conf.q_value_conf.nb_trees = 25;
   conf.q_value_conf.min_var = std::pow(10, -8);
   conf.q_value_conf.appr_type = regression_forests::ApproximationType::PWC;
