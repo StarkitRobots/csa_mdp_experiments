@@ -26,6 +26,7 @@ int main(int argc, char ** argv)
 
   // Control properties
   int frequency = 10;//Hz
+  double max_torque = 2.5;//N*m
   std::string dof = "axis";
   
   // INITIALIZATION
@@ -46,16 +47,15 @@ int main(int argc, char ** argv)
     try {
       JointListener::JointState joint_state = joints.at(dof);
       // Normalizing pos in -pi, pi
-      joint_state.pos = fmod(joint_state.pos, 2 * M_PI);
-      if (joint_state.pos > M_PI)
-      {
-        joint_state.pos = joint_state.pos - 2 * M_PI;
-      }
+      while (joint_state.pos > M_PI)  joint_state.pos -= 2 * M_PI;
+      while (joint_state.pos < -M_PI) joint_state.pos += 2 * M_PI;
       // Creating State
       Eigen::VectorXd state(2);
       state(0) = joint_state.pos;
       state(1) = joint_state.vel;
       cmd = policy->getValue(state);
+      if (cmd >  max_torque) cmd =  max_torque;
+      if (cmd < -max_torque) cmd = -max_torque;
       std::cout << state(0) << "," << state(1) << "," << cmd << std::endl;
     }
     catch (const std::out_of_range &exc) {
