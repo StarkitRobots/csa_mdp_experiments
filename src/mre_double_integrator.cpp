@@ -9,16 +9,16 @@ using csa_mdp::MRE;
 
 int main()
 {
-  DoubleIntegrator di(DoubleIntegrator::Version::Weinstein2012);
+  DoubleIntegrator di;
 
   // Exploration size
-  int nb_trajectories = 1000;
+  int nb_trajectories = 100;
   int trajectory_max_length = 200;
 
   // MRE properties
-  int max_points = 4;
+  int max_points = 2;
   double reward_max = 0;
-  int plan_period = 10;
+  int plan_period = 30;
 
   // FPF properties
   FPF::Config fpf_conf;
@@ -32,7 +32,7 @@ int main()
   fpf_conf.q_value_conf.nb_trees = 25;
   fpf_conf.q_value_conf.min_var = std::pow(10, -4);
   fpf_conf.q_value_conf.appr_type = regression_forests::ApproximationType::PWC;
-  fpf_conf.policy_samples = 100;
+  fpf_conf.policy_samples = 1000;
   fpf_conf.policy_conf.k = 2;
   fpf_conf.policy_conf.n_min = 25;
   fpf_conf.policy_conf.nb_trees = 25;
@@ -64,14 +64,13 @@ int main()
       Eigen::VectorXd action = mre.getAction(state);
       csa_mdp::Sample sample = di.getSample(state, action);
       // Updating MRE + traj_reward
-      mre.feed(state, action, sample.reward);
+      mre.feed(sample);
       trajectory_reward += sample.reward * gain;
       // Updating state and gain and steps
       gain = gain * fpf_conf.discount;
       state = sample.next_state;
       steps++;
     }
-    mre.endTrajectory();
     cumulative_reward += trajectory_reward;
     // Writing down values
     std::cout << trajectory_idx << ","

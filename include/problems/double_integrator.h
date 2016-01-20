@@ -9,8 +9,7 @@ public:
   {
     // Also used in Ernst2005, it is the original version
     SantaMaria1998,
-    // No terminal state, range of action is higher, noise in action
-    // In the implemented version, state_space is enlarged but still bounded
+    // Bugged, need to request specifical informations to the authors
     Weinstein2012
   };
 
