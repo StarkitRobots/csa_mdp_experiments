@@ -171,6 +171,9 @@ target_link_libraries(ip_forest_controller ${catkin_LIBRARIES} csa_mdp_experimen
 add_executable(mre_double_integrator src/mre_double_integrator.cpp)
 target_link_libraries(mre_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
 
+add_executable(ip_mre src/ip_mre.cpp)
+target_link_libraries(ip_mre ${catkin_LIBRARIES} csa_mdp_experiments)
+
 #############
 ## Install ##
 #############
