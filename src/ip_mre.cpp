@@ -57,10 +57,16 @@ int main(int argc, char ** argv)
 
   // Open trajectory.csv
   std::ofstream trajectories_output;
-  trajectories_output.open(log_path + "trajectory.csv");
+  trajectories_output.open(log_path + "trajectories.csv");
   if (!trajectories_output.is_open())
   {
-    std::cerr << "Failed to open file: '" << log_path << "trajectory.csv'" << std::endl;
+    std::cerr << "Failed to open file: '" << log_path << "trajectories.csv'" << std::endl;
+  }
+  std::ofstream samples_output;
+  samples_output.open(log_path + "samples.csv");
+  if (!samples_output.is_open())
+  {
+    std::cerr << "Failed to open file: '" << log_path << "samples.csv'" << std::endl;
   }
   
   // INITIALIZATION
@@ -78,12 +84,14 @@ int main(int argc, char ** argv)
   // EXPLORATION AND MRE PROPERTIES
   // Exploration size
   int nb_trajectories = 100;
-  int trajectory_max_length = 100;
+  int trajectory_max_length = 200;
 
   // MRE properties
-  int max_points = 4;
+  int max_points = 10;
   double reward_max = 0;
   int plan_period = -1;
+  int nb_knownness_trees = 25;
+  MRE::KnownnessTree::Type knownness_tree_type = MRE::KnownnessTree::Type::Random;
 
   // FPF properties
   FPF::Config fpf_conf;
@@ -97,9 +105,9 @@ int main(int argc, char ** argv)
   fpf_conf.q_value_conf.nb_trees = 25;
   fpf_conf.q_value_conf.min_var = std::pow(10, -4);
   fpf_conf.q_value_conf.appr_type = regression_forests::ApproximationType::PWC;
-  fpf_conf.policy_samples = 5000;
+  fpf_conf.policy_samples = 1000;
   fpf_conf.policy_conf.k = 2;
-  fpf_conf.policy_conf.n_min = 10;
+  fpf_conf.policy_conf.n_min = 20;
   fpf_conf.policy_conf.nb_trees = 25;
   fpf_conf.policy_conf.min_var = std::pow(10, -4);
   fpf_conf.policy_conf.appr_type = regression_forests::ApproximationType::PWL;
@@ -109,6 +117,8 @@ int main(int argc, char ** argv)
           max_points,
           reward_max,
           plan_period,
+          nb_knownness_trees,
+          knownness_tree_type,
           fpf_conf,
           [](const Eigen::VectorXd &state) {(void)state; return false;});
 
@@ -126,6 +136,7 @@ int main(int argc, char ** argv)
 
   // Printing csv header
   trajectories_output << "time,run,step,pos,vel,cmd" << std::endl;
+  samples_output << "src_pos,src_vel,torque,dst_pos,dest_vel,reward" << std::endl;
 
   // Until user stops process or total number of trajectories has been reached
   int trajectory_id = 1;
@@ -137,6 +148,7 @@ int main(int argc, char ** argv)
     // Until enough step have been taken
     bool failure = false;
     rate.reset();// Updating policies can be quite long
+    double trajectory_reward = 0;
     for (int step = 0; step <= trajectory_max_length; step++)
     {
       // let ros treat message
@@ -166,11 +178,19 @@ int main(int argc, char ** argv)
       // if there is a previous state, build and add sample
       if (step != 0)
       {
+        double reward = getReward(last_state, last_action, state);
         csa_mdp::Sample new_sample(last_state,
                                    last_action,
                                    state,
-                                   getReward(last_state, last_action, state));
+                                   reward);
         mre.feed(new_sample);
+        samples_output << last_state(0)  << ","
+                       << last_state(1)  << ","
+                       << last_action(0) << ","
+                       << state(0)       << ","
+                       << state(1)       << ","
+                       << reward         << std::endl;
+        trajectory_reward += reward;
       }
       // update memory
       last_state = state;
@@ -194,6 +214,7 @@ int main(int argc, char ** argv)
     // Apply a 0 torque during policy computation
     bridge.send({{dof, 0}});
     // Update and save policy
+    std::cout << "Reward for trajectory " << trajectory_id << ": " << trajectory_reward << std::endl;
     std::cout << "Updating policy " << trajectory_id << std::endl;
     mre.updatePolicy();
     std::string prefix = log_path + "T" + std::to_string(trajectory_id) + "_";
@@ -202,5 +223,6 @@ int main(int argc, char ** argv)
     trajectory_id++;
   }
   trajectories_output.close();
+  samples_output.close();
   return EXIT_SUCCESS;
 }

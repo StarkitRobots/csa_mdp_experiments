@@ -19,6 +19,8 @@ int main()
   int max_points = 2;
   double reward_max = 0;
   int plan_period = 30;
+  int nb_knownness_trees = 1;
+  MRE::KnownnessTree::Type knownness_tree_type = MRE::KnownnessTree::Type::Original;
 
   // FPF properties
   FPF::Config fpf_conf;
@@ -44,6 +46,8 @@ int main()
           max_points,
           reward_max,
           plan_period,
+          nb_knownness_trees,
+          knownness_tree_type,
           fpf_conf,
           [di](const Eigen::VectorXd &state) { return di.isTerminal(state); });
 
