@@ -83,8 +83,8 @@ int main(int argc, char ** argv)
 
   // EXPLORATION AND MRE PROPERTIES
   // Exploration size
-  int nb_trajectories = 100;
-  int trajectory_max_length = 200;
+  int nb_trajectories = 500;
+  int trajectory_max_length = 100;
 
   // MRE properties
   int max_points = 10;
@@ -103,13 +103,13 @@ int main(int argc, char ** argv)
   fpf_conf.q_value_conf.k = 3;
   fpf_conf.q_value_conf.n_min = 5;
   fpf_conf.q_value_conf.nb_trees = 25;
-  fpf_conf.q_value_conf.min_var = std::pow(10, -4);
+  fpf_conf.q_value_conf.min_var = std::pow(10, -6);
   fpf_conf.q_value_conf.appr_type = regression_forests::ApproximationType::PWC;
   fpf_conf.policy_samples = 1000;
   fpf_conf.policy_conf.k = 2;
-  fpf_conf.policy_conf.n_min = 20;
+  fpf_conf.policy_conf.n_min = 10;
   fpf_conf.policy_conf.nb_trees = 25;
-  fpf_conf.policy_conf.min_var = std::pow(10, -4);
+  fpf_conf.policy_conf.min_var = std::pow(10, -6);
   fpf_conf.policy_conf.appr_type = regression_forests::ApproximationType::PWL;
 
   MRE mre(state_limits,
