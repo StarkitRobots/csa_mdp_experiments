@@ -13,15 +13,26 @@ using csa_mdp::MRE;
 // Control properties
 int frequency = 10;//Hz
 double max_pos = M_PI;//rad
-double max_vel = 4 * M_PI;//rad /s
+double max_vel = 3 * M_PI;//rad /s
 double max_torque = 2.5;//N*m
 std::string dof = "axis";
+
+bool isTerminal(const Eigen::VectorXd & state)
+{
+  bool pos_bad = state(0) < -max_pos || state(0) > max_pos;
+  bool vel_bad = state(1) < -max_vel || state(1) > max_vel;
+  return pos_bad || vel_bad;
+}
 
 double getReward(const Eigen::VectorXd & state,
                  const Eigen::VectorXd & action,
                  const Eigen::VectorXd & next_state)
 {
   (void)state;// Unused
+  if (isTerminal(next_state))
+  {
+    return -50;
+  }
   // Normalizing position if necessary
   double position = next_state(0);
   if (position > max_pos || position < -max_pos)
@@ -97,7 +108,7 @@ int main(int argc, char ** argv)
   FPF::Config fpf_conf;
   fpf_conf.setStateLimits(state_limits);
   fpf_conf.setActionLimits(action_limits);
-  fpf_conf.horizon = 20;
+  fpf_conf.horizon = 40;
   fpf_conf.discount = 0.98;
   fpf_conf.max_action_tiles = 50;
   fpf_conf.q_value_conf.k = 3;
@@ -120,7 +131,7 @@ int main(int argc, char ** argv)
           nb_knownness_trees,
           knownness_tree_type,
           fpf_conf,
-          [](const Eigen::VectorXd &state) {(void)state; return false;});
+          [](const Eigen::VectorXd &state) {return isTerminal(state);});
 
   // Wait until connection has been established properly
   while(ros::ok())
@@ -135,7 +146,7 @@ int main(int argc, char ** argv)
   }
 
   // Printing csv header
-  trajectories_output << "time,run,step,pos,vel,cmd" << std::endl;
+  trajectories_output << "time,run,step,pos,vel,cmd,raw_pos" << std::endl;
   samples_output << "src_pos,src_vel,torque,dst_pos,dest_vel,reward" << std::endl;
 
   // Until user stops process or total number of trajectories has been reached
@@ -156,9 +167,11 @@ int main(int argc, char ** argv)
       // Start by reading values
       auto joints = listener.getStatus();
       JointListener::JointState joint_state;
+      double raw_pos;// For plotting purpose
       try
       {
         joint_state = joints.at(dof);
+        raw_pos = joint_state.pos;
         while (joint_state.pos > M_PI)  joint_state.pos -= 2 * M_PI;
         while (joint_state.pos < -M_PI) joint_state.pos += 2 * M_PI;
       }
@@ -183,7 +196,20 @@ int main(int argc, char ** argv)
                                    last_action,
                                    state,
                                    reward);
-        mre.feed(new_sample);
+        try{
+          mre.feed(new_sample);
+        }
+        catch(const std::runtime_error &exc)
+        {
+          bool pos_bad = last_state(0) < -max_pos || last_state(0) > max_pos;
+          bool vel_bad = last_state(1) < -max_vel || last_state(1) > max_vel;
+          std::cerr << "failed to add sample to MRE:" << std::endl
+                    << "\tlast_state: " << last_state.transpose() << std::endl
+                    << "\tpos_bad: " << pos_bad << std::endl
+                    << "\tvel_bad: " << vel_bad << std::endl
+                    << "\tisTerminal(last_state): " << isTerminal(last_state) << std::endl;
+          throw exc;
+        }
         samples_output << last_state(0)  << ","
                        << last_state(1)  << ","
                        << last_action(0) << ","
@@ -201,7 +227,10 @@ int main(int argc, char ** argv)
                           << step << ","
                           << joint_state.pos << ","
                           << joint_state.vel << ","
-                          << action(0) << std::endl;
+                          << action(0) << ","
+                          << raw_pos << std::endl;
+      // If state is terminal, end trajectory
+      if (isTerminal(state)) break;
       // sleep for a given time
       rate.sleep();
     }

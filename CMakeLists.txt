@@ -159,6 +159,9 @@ target_link_libraries(ip_listener ${catkin_LIBRARIES})
 add_executable(learn_ip_from_log src/learn_ip_from_log.cpp)
 target_link_libraries(learn_ip_from_log ${catkin_LIBRARIES} csa_mdp_experiments)
 
+add_executable(learn_ip_from_samples src/learn_ip_from_samples.cpp)
+target_link_libraries(learn_ip_from_samples ${catkin_LIBRARIES} csa_mdp_experiments)
+
 add_executable(learn_double_integrator src/learn_double_integrator.cpp)
 target_link_libraries(learn_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
 
