@@ -40,7 +40,7 @@ double getReward(const Eigen::VectorXd & state,
     throw std::runtime_error("Invalid position found, expecting value in [-pi,pi]");
   }
   double pos_cost   = std::pow(position  / max_pos   , 2);
-  double force_cost = std::pow(action(0) / max_torque, 2);
+  double force_cost = std::pow(action(0) / max_torque, 2) / 5;
   return - (pos_cost + force_cost);
   
 }
@@ -94,8 +94,8 @@ int main(int argc, char ** argv)
 
   // EXPLORATION AND MRE PROPERTIES
   // Exploration size
-  int nb_trajectories = 500;
-  int trajectory_max_length = 100;
+  int nb_trajectories = 200;
+  int trajectory_max_length = 200;
 
   // MRE properties
   int max_points = 10;
@@ -112,15 +112,15 @@ int main(int argc, char ** argv)
   fpf_conf.discount = 0.98;
   fpf_conf.max_action_tiles = 50;
   fpf_conf.q_value_conf.k = 3;
-  fpf_conf.q_value_conf.n_min = 5;
+  fpf_conf.q_value_conf.n_min = 1;
   fpf_conf.q_value_conf.nb_trees = 25;
-  fpf_conf.q_value_conf.min_var = std::pow(10, -6);
+  fpf_conf.q_value_conf.min_var = std::pow(10, -8);
   fpf_conf.q_value_conf.appr_type = regression_forests::ApproximationType::PWC;
-  fpf_conf.policy_samples = 1000;
+  fpf_conf.policy_samples = 10000;
   fpf_conf.policy_conf.k = 2;
-  fpf_conf.policy_conf.n_min = 10;
+  fpf_conf.policy_conf.n_min = 20;
   fpf_conf.policy_conf.nb_trees = 25;
-  fpf_conf.policy_conf.min_var = std::pow(10, -6);
+  fpf_conf.policy_conf.min_var = std::pow(10, -2);
   fpf_conf.policy_conf.appr_type = regression_forests::ApproximationType::PWL;
 
   MRE mre(state_limits,
