@@ -246,6 +246,8 @@ int main(int argc, char ** argv)
     std::cout << "Reward for trajectory " << trajectory_id << ": " << trajectory_reward << std::endl;
     std::cout << "Updating policy " << trajectory_id << std::endl;
     mre.updatePolicy();
+    std::cout << "\tTime spent to compute q_value   : " << mre.getQValueTime() << "[s]" << std::endl;
+    std::cout << "\tTime spent to compute the policy: " << mre.getPolicyTime() << "[s]" << std::endl;
     std::string prefix = log_path + "T" + std::to_string(trajectory_id) + "_";
     std::cout << "Saving all with prefix " << prefix << std::endl;
     mre.saveStatus(prefix);
