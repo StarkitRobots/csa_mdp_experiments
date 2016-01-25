@@ -108,7 +108,7 @@ int main(int argc, char ** argv)
   FPF::Config fpf_conf;
   fpf_conf.setStateLimits(state_limits);
   fpf_conf.setActionLimits(action_limits);
-  fpf_conf.horizon = 40;
+  fpf_conf.horizon = 30;
   fpf_conf.discount = 0.98;
   fpf_conf.max_action_tiles = 50;
   fpf_conf.q_value_conf.k = 3;
@@ -116,9 +116,9 @@ int main(int argc, char ** argv)
   fpf_conf.q_value_conf.nb_trees = 25;
   fpf_conf.q_value_conf.min_var = std::pow(10, -8);
   fpf_conf.q_value_conf.appr_type = regression_forests::ApproximationType::PWC;
-  fpf_conf.policy_samples = 10000;
+  fpf_conf.policy_samples = 1;// This parameter just needs to be higher than 0
   fpf_conf.policy_conf.k = 2;
-  fpf_conf.policy_conf.n_min = 20;
+  fpf_conf.policy_conf.n_min = 5;
   fpf_conf.policy_conf.nb_trees = 25;
   fpf_conf.policy_conf.min_var = std::pow(10, -2);
   fpf_conf.policy_conf.appr_type = regression_forests::ApproximationType::PWL;
