@@ -21,7 +21,6 @@ int main(int argc, char ** argv)
   int dof_count = std::stoi(dof_count_string);
 
   // Load policy
-  // TODO: use vector of policy, think of how it is saved (..._dof.data)
   std::vector<std::unique_ptr<Forest>> policies;
   for (int i = 1; i <= dof_count; i++)
   {
@@ -109,11 +108,15 @@ int main(int argc, char ** argv)
         ip_state(2 * (dof_id - 1) + 1) = joint_state.vel;
       }
       // If we received all required information, update targets and write targets
-      for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+      for (int i = 0; i <= dof_count; i++)
       {
-        cmd(dof_id - 1) = policies[dof_id - 1]->getValue(ip_state);
-        line << cmd(dof_id - 1);
-        if (dof_id < dof_count)
+        // Getting command
+        cmd(i) = policies[i]->getValue(ip_state);
+        // Normalizing command
+        if (cmd(i) < -max_torque) cmd(i) = -max_torque;
+        if (cmd(i) >  max_torque) cmd(i) =  max_torque;
+        line << cmd(i);
+        if (i < dof_count - 1)
         {
           line << ",";
         }
