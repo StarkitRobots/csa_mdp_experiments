@@ -15,13 +15,21 @@ int frequency = 10;//Hz
 double max_pos = M_PI;//rad
 double max_vel = 3 * M_PI;//rad /s
 double max_torque = 2.5;//N*m
-std::string dof = "axis";
+
+// State and action spaces
+Eigen::MatrixXd state_limits;
+Eigen::MatrixXd action_limits;
 
 bool isTerminal(const Eigen::VectorXd & state)
 {
-  bool pos_bad = state(0) < -max_pos || state(0) > max_pos;
-  bool vel_bad = state(1) < -max_vel || state(1) > max_vel;
-  return pos_bad || vel_bad;
+  for (int i = 0; i < state.rows(); i++)
+  {
+    if (state(i) < state_limits(i,0) || state(i) > state_limits(i,1))
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 double getReward(const Eigen::VectorXd & state,
@@ -33,28 +41,42 @@ double getReward(const Eigen::VectorXd & state,
   {
     return -50;
   }
-  // Normalizing position if necessary
-  double position = next_state(0);
-  if (position > max_pos || position < -max_pos)
+  double pos_cost = 0;
+  double speed_cost = 0;
+  double torque_cost = 0;
+  // state costs
+  for (int i = 0; i < state.rows(); i++)
   {
-    throw std::runtime_error("Invalid position found, expecting value in [-pi,pi]");
+    if (i % 2 == 0)
+    {
+      //pos_cost += std::pow(state(i) / max_pos, 2);// Not used yet
+      pos_cost += std::fabs(state(i) / max_pos);//Helps to reduce the static error
+    }
+    else
+    {
+      speed_cost += 0;// nothing for now
+    }
   }
-  double pos_cost   = std::fabs(position / max_pos);//std::pow(position  / max_pos   , 2);
-  double force_cost = std::pow(action(0) / max_torque, 2);
-  return - (pos_cost + force_cost);
-  
+  for (int i = 0; i < action.rows(); i++)
+  {
+    torque_cost += std::pow(action(0) / max_torque, 2);
+  }
+  return - (pos_cost + speed_cost + torque_cost);
 }
 
 int main(int argc, char ** argv)
 {
   std::string robot = ros::getROSArg(argc, argv, "robot");
   std::string log_path = ros::getROSArg(argc, argv, "log_path");
+  std::string dof_count_string = ros::getROSArg(argc, argv, "_dof_count");
 
-  if (robot == "" || log_path == "")
+  if (robot == "" || log_path == "" || dof_count_string == "")
   {
-    std::cerr << "Usage: rosrun .... robot:=<file> log_path:=<path>" << std::endl;
+    std::cerr << "Usage: rosrun .... robot:=<file> log_path:=<path> _dof_count:=<nb_dofs>" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  int dof_count = std::stoi(dof_count_string);
 
   // Init ros access
   ros::init(argc, argv, "ip_mre");
@@ -64,6 +86,15 @@ int main(int argc, char ** argv)
   if (log_path[log_path.size() -1] != '/')
   {
     log_path = log_path + "/";
+  }
+
+  // Create a directory for details
+  std::string details_path = log_path + "details";
+  std::string mkdir_cmd = "mkdir " + details_path;
+  if (system(mkdir_cmd.c_str()))
+  {
+    std::cerr << "Failed to create '" << details_path << "' folder" << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   // Open trajectory.csv
@@ -79,18 +110,33 @@ int main(int argc, char ** argv)
   {
     std::cerr << "Failed to open file: '" << log_path << "samples.csv'" << std::endl;
   }
-  
+ 
+
+  // Listing axis
+  std::vector<std::string> dofs;
+  for (int i = 1; i <= dof_count; i++)
+  {
+    dofs.push_back("axis" + std::to_string(i));
+  }
+ 
   // INITIALIZATION
   ros::Rate rate(frequency);
   // Communications with controllers
-  ControlBridge bridge(nh, {dof}, "/" + robot + "/");        // Write command
+  ControlBridge bridge(nh, dofs, "/" + robot + "/");         // Write command
   JointListener listener(nh, "/" + robot + "/joint_states"); // Read status
 
   // build limits
-  Eigen::MatrixXd state_limits(2,2), action_limits(1,2);
-  state_limits << -max_pos, max_pos, -max_vel, max_vel;
-  action_limits << -max_torque, max_torque;
-  
+  state_limits  = Eigen::MatrixXd(2 * dof_count, 2);
+  action_limits = Eigen::MatrixXd(    dof_count, 2);
+  for (int i = 0; i < dof_count; i++)
+  {
+    state_limits(2*i  ,1) = max_pos;
+    state_limits(2*i+1,1) = max_vel;
+    action_limits(i,1) = max_torque;
+  }
+  // symetrical limits
+  state_limits.block(0,0,2*dof_count,1) = -state_limits.block(0,1,2*dof_count,1);
+  action_limits.block(0,0,dof_count,1) = -action_limits.block(0,1,dof_count,1);
 
   // EXPLORATION AND MRE PROPERTIES
   // Exploration size
@@ -137,57 +183,116 @@ int main(int argc, char ** argv)
   while(ros::ok())
   {
     auto joints = listener.getStatus();
-    // Once dof is found, keep on
-    if (joints.count(dof) != 0) break;
-    std::cerr << "'" << dof << "' not found in joints, check robot name" << std::endl;
-    std::cerr << "nb joints: " << joints.size() << std::endl;
+    // Check if all joints are available
+    std::vector<std::string> missing_joints;
+    for (const std::string & dof : dofs)
+    {
+      if (joints.count(dof) == 0)
+      {
+        missing_joints.push_back(dof);
+      }
+    }
+    // If there was no missing joints, break the loop
+    if (missing_joints.size() == 0) break;
+    // Otherwise print missing joints
+    std::cerr << missing_joints.size() << " joints missing, check robot name" << std::endl;
+    for (const std::string & dof : missing_joints)
+    {
+      std::cerr << "\t" << dof << " is missing" << std::endl;
+    }
     ros::spinOnce();
     rate.sleep();
   }
 
   // Printing csv header
-  trajectories_output << "time,run,step,pos,vel,cmd,raw_pos" << std::endl;
-  samples_output << "src_pos,src_vel,torque,dst_pos,dest_vel,reward" << std::endl;
+  trajectories_output << "time,run,step,";
+  // Source state
+  for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+  {
+    trajectories_output << "theta" << dof_id << ","
+                        << "omega" << dof_id << ",";
+    samples_output << "src_theta" << dof_id << ","
+                   << "src_omega" << dof_id << ",";
+  }
+  // Action
+  for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+  {
+    trajectories_output << "command" << dof_id << ",";
+    samples_output << "command" << dof_id << ",";
+  }
+  // Next state / raw_value
+  for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+  {
+    trajectories_output << "raw_theta" << dof_id;
+    if (dof_id != dof_count) trajectories_output << ",";
+    samples_output << "dst_theta" << dof_id << ","
+                   << "dst_omega" << dof_id << ",";
+  }
+  samples_output << "reward" << std::endl;
 
   // Until user stops process or total number of trajectories has been reached
   int trajectory_id = 1;
   while (ros::ok() && trajectory_id <= nb_trajectories)
   {
     // Start a new trajectory
-    Eigen::VectorXd last_state(2);
-    Eigen::VectorXd last_action(1);
+    Eigen::VectorXd last_state(2 * dof_count);
+    Eigen::VectorXd last_action(dof_count);
+    // Updating policies can be quite long, we need to reset rate to have a 'real sleep'
+    rate.reset();
     // Until enough step have been taken
     bool failure = false;
-    rate.reset();// Updating policies can be quite long
     double trajectory_reward = 0;
+    // Until enough step have been taken
     for (int step = 0; step <= trajectory_max_length; step++)
     {
       // let ros treat message
       ros::spinOnce();
-      // Start by reading values
+      // Start by reading current state:
+      Eigen::VectorXd state(2 * dof_count);
+      Eigen::VectorXd raw_pos(dof_count);
       auto joints = listener.getStatus();
-      JointListener::JointState joint_state;
-      double raw_pos;// For plotting purpose
-      try
-      {
-        joint_state = joints.at(dof);
-        raw_pos = joint_state.pos;
-        while (joint_state.pos > M_PI)  joint_state.pos -= 2 * M_PI;
-        while (joint_state.pos < -M_PI) joint_state.pos += 2 * M_PI;
+      std::string dof_name;
+      try {
+        for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+        {
+          dof_name = "axis" + std::to_string(dof_id);
+          JointListener::JointState joint_state = joints.at(dof_name);
+          // Keeping raw_pos (for plotting purpose)
+          raw_pos(dof_id - 1) = joint_state.pos;
+          // Normalizing pos in -pi, pi
+          while (joint_state.pos > M_PI)
+          {
+            joint_state.pos -= 2 * M_PI;
+          }
+          while (joint_state.pos < -M_PI)
+          {
+            joint_state.pos += 2 * M_PI;
+          }
+          // Writing values to state:
+          state(2 * (dof_id - 1)     ) = joint_state.pos;
+          state(2 * (dof_id - 1) + 1 ) = joint_state.vel;
+        }
       }
-      catch (const std::out_of_range &exc)
-      {
+      catch (const std::out_of_range &exc) {
+        std::cerr << "Failed to find " << dof_name << " in the published joints" << std::endl;
         failure = true;
-        break;
       }
-      Eigen::VectorXd state(2);
-      state(0) = joint_state.pos;
-      state(1) = joint_state.vel;
-      // compute, bound and send command
+      if (failure) break;
+      // Compute, bound and send command
       Eigen::VectorXd action = mre.getAction(state);
-      if (action(0) >  max_torque) action(0) =  max_torque;
-      if (action(0) < -max_torque) action(0) = -max_torque;
-      bridge.send({{dof, action(0)}});
+      for (int i = 0; i < action.rows(); i++)
+      {
+        if (action(i) >  max_torque) action(i) =  max_torque;
+        if (action(i) < -max_torque) action(i) = -max_torque;
+      }
+      // Prepare command
+      std::map<std::string, double> targets;
+      for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+      {
+        std::string dof_name = "axis" + std::to_string(dof_id);
+        targets[dof_name] = action(dof_id - 1);
+      }
+      bridge.send(targets);
       // if there is a previous state, build and add sample
       if (step != 0)
       {
@@ -201,34 +306,38 @@ int main(int argc, char ** argv)
         }
         catch(const std::runtime_error &exc)
         {
-          bool pos_bad = last_state(0) < -max_pos || last_state(0) > max_pos;
-          bool vel_bad = last_state(1) < -max_vel || last_state(1) > max_vel;
           std::cerr << "failed to add sample to MRE:" << std::endl
                     << "\tlast_state: " << last_state.transpose() << std::endl
-                    << "\tpos_bad: " << pos_bad << std::endl
-                    << "\tvel_bad: " << vel_bad << std::endl
                     << "\tisTerminal(last_state): " << isTerminal(last_state) << std::endl;
           throw exc;
         }
-        samples_output << last_state(0)  << ","
-                       << last_state(1)  << ","
-                       << last_action(0) << ","
-                       << state(0)       << ","
-                       << state(1)       << ","
-                       << reward         << std::endl;
+        // Writing samples line
+        for (int i = 0; i < last_state.rows(); i++)
+          samples_output << last_state(i) << ",";
+        for (int i = 0; i < action.rows(); i++)
+          samples_output << action(i) << ",";
+        for (int i = 0; i < state.rows(); i++)
+          samples_output << state(i) << ",";
+        samples_output << reward << std::endl;
         trajectory_reward += reward;
       }
       // update memory
       last_state = state;
       last_action = action;
-      // write entry
+      // write trajectory entry
       trajectories_output << ros::Time::now().toSec() << ","
                           << trajectory_id << ","
-                          << step << ","
-                          << joint_state.pos << ","
-                          << joint_state.vel << ","
-                          << action(0) << ","
-                          << raw_pos << std::endl;
+                          << step << ",";
+      for (int i = 0; i < state.rows(); i++)
+        samples_output << state(i) << ",";
+      for (int i = 0; i < action.rows(); i++)
+        samples_output << action(i) << ",";
+      for (int i = 0; i < state.rows(); i++)
+      {
+        samples_output << raw_pos(i);
+        if (i < state.rows() - 1) samples_output << ",";
+      }
+      samples_output << std::endl;
       // If state is terminal, end trajectory
       if (isTerminal(state)) break;
       // sleep for a given time
@@ -241,7 +350,13 @@ int main(int argc, char ** argv)
       break;
     }
     // Apply a 0 torque during policy computation
-    bridge.send({{dof, 0}});
+    std::map<std::string, double> targets;
+    for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+    {
+      std::string dof_name = "axis" + std::to_string(dof_id);
+      targets[dof_name] = 0;
+    }
+    bridge.send(targets);
     // Update and save policy
     std::cout << "Reward for trajectory " << trajectory_id << ": " << trajectory_reward << std::endl;
     std::cout << "Updating policy " << trajectory_id << std::endl;
