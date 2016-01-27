@@ -39,8 +39,8 @@ double getReward(const Eigen::VectorXd & state,
   {
     throw std::runtime_error("Invalid position found, expecting value in [-pi,pi]");
   }
-  double pos_cost   = std::pow(position  / max_pos   , 2);
-  double force_cost = std::pow(action(0) / max_torque, 2) / 5;
+  double pos_cost   = std::fabs(position / max_pos);//std::pow(position  / max_pos   , 2);
+  double force_cost = std::pow(action(0) / max_torque, 2);
   return - (pos_cost + force_cost);
   
 }
