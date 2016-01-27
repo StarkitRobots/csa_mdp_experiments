@@ -9,60 +9,122 @@ using regression_forests::Forest;
 
 int main(int argc, char ** argv)
 {
-  std::string policy_path = ros::getROSArg(argc, argv, "policy_path");
-  if (policy_path == "")
+  std::string policies_prefix = ros::getROSArg(argc, argv, "policies_prefix");
+  std::string robot = ros::getROSArg(argc, argv, "robot");
+  std::string dof_count_string = ros::getROSArg(argc, argv, "_dof_count");
+  if (policies_prefix == "" || robot == "" || dof_count_string == "")
   {
-    std::cerr << "Usage: rosrun .... policy_path:=<file>" << std::endl;
+    std::cerr << "Usage: rosrun .... policies_prefix:=<file> robot:=<robot> _dof_count:=<nb_dofs>" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  int dof_count = std::stoi(dof_count_string);
+
   // Load policy
-  std::unique_ptr<Forest> policy = Forest::loadFile(policy_path + ".data");
-  std::cerr << "Nb Trees: " << policy->nbTrees() << std::endl;
+  // TODO: use vector of policy, think of how it is saved (..._dof.data)
+  std::vector<std::unique_ptr<Forest>> policies;
+  for (int i = 1; i <= dof_count; i++)
+  {
+    std::string policy_path = policies_prefix + "_" + std::to_string(i);
+    policies.push_back(Forest::loadFile(policy_path));
+    std::cerr << "Nb Trees for dof " << i << ": " << policies[i-1]->nbTrees() << std::endl;
+  }
 
   ros::init(argc, argv, "ip_forest_controller");
   ros::NodeHandle nh;
 
-  std::cerr << "Namespace: " << ros::this_node::getNamespace() << std::endl;
-
   // Control properties
   int frequency = 10;//Hz
   double max_torque = 2.5;//N*m
-  std::string dof = "axis";
+
+  Eigen::MatrixXd cmd_limits(2,2);
+  cmd_limits << -max_torque, max_torque, -max_torque, max_torque;
+
+  // Listing axis
+  std::vector<std::string> dofs;
+  for (int i = 1; i <= dof_count; i++)
+  {
+    dofs.push_back("axis" + std::to_string(i));
+  }
   
   // INITIALIZATION
   ros::Rate r(frequency);
   // Communications with controllers
   std::string ns = ros::this_node::getNamespace();
-  ControlBridge bridge(nh, {dof}, ns + "/");        // Write command
-  JointListener listener(nh, ns + "/joint_states"); // Read status
+  ControlBridge bridge(nh, dofs, "/" + robot + "/");        // Write command
+  JointListener listener(nh, "/" + robot + "/joint_states"); // Read status
 
-  double cmd = 0;
+  // csv header
+  std::cout << "time,";
+  // state and action variables + measured effort
+  for (int i = 1; i <= dof_count; i++)
+  {
+    std::cout << "theta" << i << ","
+              << "omega" << i << ",";
+  }
+  for (int i = 1; i <= dof_count; i++)
+  {
+    std::cout << "command" << i;
+    if (i < dof_count)
+      std::cout << ",";
+  }
+  std::cout << std::endl;
 
-  std::cout << "pos,vel,cmd" << std::endl;
+  // Default command: 0 on all axis
+  Eigen::VectorXd cmd = Eigen::VectorXd::Zero(dof_count);
+  Eigen::VectorXd ip_state = Eigen::VectorXd::Zero(2 * dof_count);
 
   while (ros::ok())
   {
+    // Setting default targets
+    std::map<std::string, double> targets;
+    for (const std::string & dof : dofs)
+    {
+      targets[dof] = 0;
+    }
     // Read value
     auto joints = listener.getStatus();
+    std::string dof_name;
     try {
-      JointListener::JointState joint_state = joints.at(dof);
-      // Normalizing pos in -pi, pi
-      while (joint_state.pos > M_PI)  joint_state.pos -= 2 * M_PI;
-      while (joint_state.pos < -M_PI) joint_state.pos += 2 * M_PI;
-      // Creating State
-      Eigen::VectorXd state(2);
-      state(0) = joint_state.pos;
-      state(1) = joint_state.vel;
-      cmd = policy->getValue(state);
-      if (cmd >  max_torque) cmd =  max_torque;
-      if (cmd < -max_torque) cmd = -max_torque;
-      std::cout << state(0) << "," << state(1) << "," << cmd << std::endl;
+      std::ostringstream line;
+      line << ros::Time::now().toSec() << ",";
+      for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+      {
+        dof_name = "axis" + std::to_string(dof_id);
+        JointListener::JointState joint_state = joints.at(dof_name);
+        // Normalizing pos in -pi, pi
+        while (joint_state.pos > M_PI)
+        {
+          joint_state.pos -= 2 * M_PI;
+        }
+        while (joint_state.pos < -M_PI)
+        {
+          joint_state.pos += 2 * M_PI;
+        }
+        // Writing values to line
+        line << joint_state.pos << ","
+             << joint_state.vel << ",";
+        // Writing values to ip_state
+        ip_state(2 * (dof_id - 1)    ) = joint_state.pos;
+        ip_state(2 * (dof_id - 1) + 1) = joint_state.vel;
+      }
+      // If we received all required information, update targets and write targets
+      for (int dof_id = 1; dof_id <= dof_count; dof_id++)
+      {
+        cmd(dof_id - 1) = policies[dof_id - 1]->getValue(ip_state);
+        line << cmd(dof_id - 1);
+        if (dof_id < dof_count)
+        {
+          line << ",";
+        }
+      }
+      // Write line
+      std::cout << line.str() << std::endl;
     }
     catch (const std::out_of_range &exc) {
-      std::cerr << "Failed to find " << dof << " in the published joints" << std::endl;
+      std::cerr << "Failed to find " << dof_name << " in the published joints" << std::endl;
     }
-
-    bridge.send({{dof,cmd}});
+    bridge.send(targets);//0 if we did no
     ros::spinOnce();
     r.sleep();
   }

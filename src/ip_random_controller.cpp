@@ -60,7 +60,7 @@ int main(int argc, char ** argv)
   }
   std::cout << std::endl;
 
-  Eigen::VectorXd cmd = Eigen::VectorXd::Zero(2);
+  Eigen::VectorXd cmd = Eigen::VectorXd::Zero(dof_count);
 
   while (ros::ok())
   {
