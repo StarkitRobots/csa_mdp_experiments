@@ -127,7 +127,7 @@ int main(int argc, char ** argv)
     catch (const std::out_of_range &exc) {
       std::cerr << "Failed to find " << dof_name << " in the published joints" << std::endl;
     }
-    bridge.send(targets);//0 if we did no
+    bridge.send(targets);//0 if we have not read anything yet
     ros::spinOnce();
     r.sleep();
   }

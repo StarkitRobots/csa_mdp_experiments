@@ -7,14 +7,20 @@
 
 #include <fstream>
 
+#include <sys/stat.h>
+
 using csa_mdp::FPF;
 using csa_mdp::MRE;
 
 // Control properties
 int frequency = 10;//Hz
 double max_pos = M_PI;//rad
-double max_vel = 3 * M_PI;//rad /s
-double max_torque = 2.5;//N*m
+//// Simple pendulum values
+//double max_vel = 3 * M_PI;//rad /s
+//double max_torque = 2.5;//N*m
+// Double pendulum values
+std::vector<double> max_vel = { 3 * M_PI, 5 * M_PI};
+std::vector<double> max_torque = { 2.5, 2.5};
 
 // State and action spaces
 Eigen::MatrixXd state_limits;
@@ -39,7 +45,7 @@ double getReward(const Eigen::VectorXd & state,
   (void)state;// Unused
   if (isTerminal(next_state))
   {
-    return -50;
+    return -100;
   }
   double pos_cost = 0;
   double speed_cost = 0;
@@ -49,8 +55,9 @@ double getReward(const Eigen::VectorXd & state,
   {
     if (i % 2 == 0)
     {
-      //pos_cost += std::pow(state(i) / max_pos, 2);// Not used yet
-      pos_cost += std::fabs(state(i) / max_pos);//Helps to reduce the static error
+      // Error on the first dof has much more impact to make convergence easier
+      double cost = std::fabs(state(i) / max_pos) / (2 * i + 1);
+      pos_cost += cost;
     }
     else
     {
@@ -59,7 +66,7 @@ double getReward(const Eigen::VectorXd & state,
   }
   for (int i = 0; i < action.rows(); i++)
   {
-    torque_cost += std::pow(action(0) / max_torque, 2);
+    //torque_cost += std::pow(action(i) / max_torque[i], 2);
   }
   return - (pos_cost + speed_cost + torque_cost);
 }
@@ -90,11 +97,19 @@ int main(int argc, char ** argv)
 
   // Create a directory for details
   std::string details_path = log_path + "details";
-  std::string mkdir_cmd = "mkdir " + details_path;
-  if (system(mkdir_cmd.c_str()))
+
+  
+  struct stat folder_stat;
+  // If there is no 'details' folder, create it
+  if (stat(details_path.c_str(), &folder_stat) != 0 || !S_ISDIR(folder_stat.st_mode))
   {
-    std::cerr << "Failed to create '" << details_path << "' folder" << std::endl;
-    exit(EXIT_FAILURE);
+    std::string mkdir_cmd = "mkdir " + details_path;
+    // If it fails, exit
+    if (system(mkdir_cmd.c_str()))
+    {
+      std::cerr << "Failed to create '" << details_path << "' folder" << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
 
   // Open trajectory.csv
@@ -131,8 +146,8 @@ int main(int argc, char ** argv)
   for (int i = 0; i < dof_count; i++)
   {
     state_limits(2*i  ,1) = max_pos;
-    state_limits(2*i+1,1) = max_vel;
-    action_limits(i,1) = max_torque;
+    state_limits(2*i+1,1) = max_vel[i];
+    action_limits(i,1) = max_torque[i];
   }
   // symetrical limits
   state_limits.block(0,0,2*dof_count,1) = -state_limits.block(0,1,2*dof_count,1);
@@ -157,14 +172,14 @@ int main(int argc, char ** argv)
   fpf_conf.horizon = 30;
   fpf_conf.discount = 0.98;
   fpf_conf.max_action_tiles = 50;
-  fpf_conf.q_value_conf.k = 3;
-  fpf_conf.q_value_conf.n_min = 1;
+  fpf_conf.q_value_conf.k = 6;
+  fpf_conf.q_value_conf.n_min = 2;
   fpf_conf.q_value_conf.nb_trees = 25;
   fpf_conf.q_value_conf.min_var = std::pow(10, -8);
   fpf_conf.q_value_conf.appr_type = regression_forests::ApproximationType::PWC;
   fpf_conf.policy_samples = 1;// This parameter just needs to be higher than 0
-  fpf_conf.policy_conf.k = 2;
-  fpf_conf.policy_conf.n_min = 5;
+  fpf_conf.policy_conf.k = 4;
+  fpf_conf.policy_conf.n_min = 10;
   fpf_conf.policy_conf.nb_trees = 25;
   fpf_conf.policy_conf.min_var = std::pow(10, -2);
   fpf_conf.policy_conf.appr_type = regression_forests::ApproximationType::PWL;
@@ -229,6 +244,7 @@ int main(int argc, char ** argv)
                    << "dst_omega" << dof_id << ",";
   }
   samples_output << "reward" << std::endl;
+  trajectories_output << std::endl;
 
   // Until user stops process or total number of trajectories has been reached
   int trajectory_id = 1;
@@ -282,8 +298,8 @@ int main(int argc, char ** argv)
       Eigen::VectorXd action = mre.getAction(state);
       for (int i = 0; i < action.rows(); i++)
       {
-        if (action(i) >  max_torque) action(i) =  max_torque;
-        if (action(i) < -max_torque) action(i) = -max_torque;
+        if (action(i) >  max_torque[i]) action(i) =  max_torque[i];
+        if (action(i) < -max_torque[i]) action(i) = -max_torque[i];
       }
       // Prepare command
       std::map<std::string, double> targets;
@@ -329,15 +345,15 @@ int main(int argc, char ** argv)
                           << trajectory_id << ","
                           << step << ",";
       for (int i = 0; i < state.rows(); i++)
-        samples_output << state(i) << ",";
+        trajectories_output << state(i) << ",";
       for (int i = 0; i < action.rows(); i++)
-        samples_output << action(i) << ",";
-      for (int i = 0; i < state.rows(); i++)
+        trajectories_output << action(i) << ",";
+      for (int i = 0; i < raw_pos.rows(); i++)
       {
-        samples_output << raw_pos(i);
-        if (i < state.rows() - 1) samples_output << ",";
+        trajectories_output << raw_pos(i);
+        if (i < raw_pos.rows() - 1) trajectories_output << ",";
       }
-      samples_output << std::endl;
+      trajectories_output << std::endl;
       // If state is terminal, end trajectory
       if (isTerminal(state)) break;
       // sleep for a given time
@@ -363,7 +379,7 @@ int main(int argc, char ** argv)
     mre.updatePolicy();
     std::cout << "\tTime spent to compute q_value   : " << mre.getQValueTime() << "[s]" << std::endl;
     std::cout << "\tTime spent to compute the policy: " << mre.getPolicyTime() << "[s]" << std::endl;
-    std::string prefix = log_path + "T" + std::to_string(trajectory_id) + "_";
+    std::string prefix = details_path + "/T" + std::to_string(trajectory_id) + "_";
     std::cout << "Saving all with prefix " << prefix << std::endl;
     mre.saveStatus(prefix);
     trajectory_id++;
