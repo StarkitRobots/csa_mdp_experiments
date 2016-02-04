@@ -19,8 +19,8 @@ double max_pos = M_PI;//rad
 //double max_vel = 3 * M_PI;//rad /s
 //double max_torque = 2.5;//N*m
 // Double pendulum values
-std::vector<double> max_vel = { 3 * M_PI, 5 * M_PI};
-std::vector<double> max_torque = { 2.5, 2.5};
+std::vector<double> max_vel = { 3 * M_PI, 6 * M_PI};
+std::vector<double> max_torque = { 3.0, 2.5};
 
 // State and action spaces
 Eigen::MatrixXd state_limits;
@@ -56,7 +56,8 @@ double getReward(const Eigen::VectorXd & state,
     if (i % 2 == 0)
     {
       // Error on the first dof has much more impact to make convergence easier
-      double cost = std::fabs(state(i) / max_pos) / (2 * i + 1);
+      double cost = std::fabs(state(i) / max_pos);
+      if (i > 0) cost /= 10;
       pos_cost += cost;
     }
     else
@@ -181,7 +182,7 @@ int main(int argc, char ** argv)
   fpf_conf.policy_conf.k = 4;
   fpf_conf.policy_conf.n_min = 10;
   fpf_conf.policy_conf.nb_trees = 25;
-  fpf_conf.policy_conf.min_var = std::pow(10, -2);
+  fpf_conf.policy_conf.min_var = std::pow(10, -4);
   fpf_conf.policy_conf.appr_type = regression_forests::ApproximationType::PWL;
 
   MRE mre(state_limits,

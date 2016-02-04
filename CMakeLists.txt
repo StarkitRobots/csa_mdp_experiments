@@ -156,6 +156,9 @@ target_link_libraries(ip_random_controller ${catkin_LIBRARIES})
 add_executable(ip_listener src/ip_listener.cpp)
 target_link_libraries(ip_listener ${catkin_LIBRARIES})
 
+add_executable(learn_from_log src/learn_from_log.cpp)
+target_link_libraries(learn_from_log ${catkin_LIBRARIES} csa_mdp_experiments)
+
 add_executable(learn_ip_from_log src/learn_ip_from_log.cpp)
 target_link_libraries(learn_ip_from_log ${catkin_LIBRARIES} csa_mdp_experiments)
 
@@ -176,6 +179,9 @@ target_link_libraries(mre_double_integrator ${catkin_LIBRARIES} csa_mdp_experime
 
 add_executable(ip_mre src/ip_mre.cpp)
 target_link_libraries(ip_mre ${catkin_LIBRARIES} csa_mdp_experiments)
+
+add_executable(cp_random_controller src/cp_random_controller.cpp)
+target_link_libraries(cp_random_controller ${catkin_LIBRARIES} csa_mdp_experiments)
 
 #############
 ## Install ##
