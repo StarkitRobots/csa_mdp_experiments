@@ -1,9 +1,18 @@
 #include "problems/cart_pole.h"
 
 double CartPole::max_pos = 0.4;
+double CartPole::max_vel = 10;
+double CartPole::max_torque = 50;
+double CartPole::start_pos_tol = 0.05;
+double CartPole::start_vel_tol = 0.01;
 
 CartPole::CartPole()
 {
+  Eigen::MatrixXd state_limits(2,2), action_limits(1,2);
+  state_limits << -max_pos, max_pos, -max_vel, max_vel;
+  action_limits << -max_torque, max_torque;
+  setStateLimits(state_limits);
+  setActionLimits(action_limits);
 }
 
 bool CartPole::isTerminal(const Eigen::VectorXd & state) const
@@ -37,4 +46,20 @@ Eigen::VectorXd CartPole::getSuccessor(const Eigen::VectorXd & state,
   (void) state;
   (void) action;
   throw std::runtime_error("Not implemented");
+}
+
+bool CartPole::isValidStart(const Eigen::VectorXd &state) const
+{
+  bool pos_ok = std::fabs(state(0)) < start_pos_tol; 
+  bool vel_ok = std::fabs(state(1)) < start_vel_tol;
+  return pos_ok && vel_ok;
+}
+
+Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const
+{
+  static double kp = 10;
+  static double kd = 5;
+  Eigen::VectorXd cmd(1);
+  cmd(0) = - (kp * state(0) + kd * state(1));
+  return cmd;
 }

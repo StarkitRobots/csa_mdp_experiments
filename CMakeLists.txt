@@ -122,6 +122,7 @@ include_directories(
 # Directories containing sources files
 set(DIRECTORIES
   src/problems
+  src/interface
   )
 
 # Build ALL_SOURCES
@@ -180,8 +181,8 @@ target_link_libraries(mre_double_integrator ${catkin_LIBRARIES} csa_mdp_experime
 add_executable(ip_mre src/ip_mre.cpp)
 target_link_libraries(ip_mre ${catkin_LIBRARIES} csa_mdp_experiments)
 
-add_executable(cp_random_controller src/cp_random_controller.cpp)
-target_link_libraries(cp_random_controller ${catkin_LIBRARIES} csa_mdp_experiments)
+add_executable(random_controller src/random_controller.cpp)
+target_link_libraries(random_controller ${catkin_LIBRARIES} csa_mdp_experiments)
 
 #############
 ## Install ##

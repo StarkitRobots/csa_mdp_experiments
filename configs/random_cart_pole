@@ -1,0 +1,17 @@
+<Config>
+  <nb_runs>1000</nb_runs>
+  <problem>CartPole</problem>
+  <control>
+    <robot>cart_pole</robot>
+    <frequency>10</frequency>
+    <linear_sensors>
+      <v>cart_joint</v>
+    </linear_sensors>
+    <angular_sensors>
+      <v>axis1</v>
+    </angular_sensors>
+    <effectors>
+      <v>cart</v>
+    </effectors>
+  </control>
+</Config>
