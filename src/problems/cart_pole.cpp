@@ -2,14 +2,19 @@
 
 double CartPole::max_pos = 0.4;
 double CartPole::max_vel = 10;
-double CartPole::max_torque = 50;
+double CartPole::max_torque = 100;
+double CartPole::max_axis_vel = 25;
 double CartPole::start_pos_tol = 0.05;
 double CartPole::start_vel_tol = 0.01;
 
 CartPole::CartPole()
 {
-  Eigen::MatrixXd state_limits(2,2), action_limits(1,2);
-  state_limits << -max_pos, max_pos, -max_vel, max_vel;
+  Eigen::MatrixXd state_limits(4,2), action_limits(1,2);
+  state_limits <<
+    -max_pos, max_pos,
+    -max_vel, max_vel,
+    -M_PI, M_PI,
+    -max_axis_vel, max_axis_vel;
   action_limits << -max_torque, max_torque;
   setStateLimits(state_limits);
   setActionLimits(action_limits);

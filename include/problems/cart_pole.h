@@ -31,6 +31,8 @@ public:
   static double max_vel;
   // maximal torque applied by the cart [N]
   static double max_torque;
+  // maximal velocity of the axis [rad/s]
+  static double max_axis_vel;
   // maximal distance from center to start trajectory [m]
   static double start_pos_tol;
   // maximal velocity at start trajectory [m/s]
