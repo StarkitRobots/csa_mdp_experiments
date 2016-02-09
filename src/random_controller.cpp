@@ -127,7 +127,8 @@ int main(int argc, char ** argv)
 
     while (ros::ok())
     {
-      Eigen::VectorXd new_state = last_state;
+      //Treat messages
+      ros::spinOnce();
       // Reading state
       auto joints = listener.getStatus();
       try
@@ -191,8 +192,7 @@ int main(int argc, char ** argv)
         motors_orders[motor_name] = cmd(i );
       }
       bridge.send(motors_orders);
-      // Treat messages and sleep
-      ros::spinOnce();
+      // Sleep if necessary
       r.sleep();
     }//End of while OK
   }
