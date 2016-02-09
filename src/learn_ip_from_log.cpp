@@ -47,8 +47,8 @@ int main(int argc, char ** argv)
   conf.policy_conf.appr_type = regression_forests::ApproximationType::PWL;
 
   // file format: time, pos, vel, eff, cmd
-  std::vector<size_t> state_index = {1,2};// {pos,vel}
-  std::vector<size_t> action_index = {4};// {cmd}
+  std::vector<int> state_index = {1,2};// {pos,vel}
+  std::vector<int> action_index = {4};// {cmd}
 
   // Specifying reward function
   Problem::RewardFunction reward_func = [pos_max, torque_max](const Eigen::VectorXd &src,

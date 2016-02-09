@@ -157,8 +157,8 @@ target_link_libraries(ip_random_controller ${catkin_LIBRARIES})
 add_executable(ip_listener src/ip_listener.cpp)
 target_link_libraries(ip_listener ${catkin_LIBRARIES})
 
-add_executable(learn_from_log src/learn_from_log.cpp)
-target_link_libraries(learn_from_log ${catkin_LIBRARIES} csa_mdp_experiments)
+add_executable(learn_from_logs src/learn_from_logs.cpp)
+target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 
 add_executable(learn_ip_from_log src/learn_ip_from_log.cpp)
 target_link_libraries(learn_ip_from_log ${catkin_LIBRARIES} csa_mdp_experiments)

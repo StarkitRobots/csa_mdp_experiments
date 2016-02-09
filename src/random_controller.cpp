@@ -70,10 +70,8 @@ int main(int argc, char ** argv)
   Config config;
   config.load_file(config_path);
 
-  // Problem properties
-  ControlProblem * problem = NULL;
-
   // Choosing problem
+  ControlProblem * problem = NULL;
   if (config.problem == "CartPole")
   {
     problem = new CartPole();
