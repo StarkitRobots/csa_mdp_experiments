@@ -221,6 +221,8 @@ int main(int argc, char ** argv)
       r.sleep();
     }//End of while OK
     std::cout << "Reward for run " << run << ": " << trajectory_reward << std::endl;
+    // If ros is not ok, do not loop anymore
+    if (!ros::ok()) break;
   }
 
   logs.close();

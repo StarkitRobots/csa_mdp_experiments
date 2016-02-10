@@ -10,6 +10,7 @@
 #include <ros/ros.h>
 
 #include <chrono>
+#include <fstream>
 
 class Config : public rosban_utils::Serializable
 {
@@ -93,26 +94,30 @@ int main(int argc, char ** argv)
   // Random
   std::default_random_engine generator = regression_forests::get_random_engine();
 
+  // Opening logs file
+  std::ofstream logs;
+  logs.open("logs.csv");
+
   // csv header
-  std::cout << "time,run,step,";
+  logs << "time,run,step,";
   // measured position and speed
   for (const std::string & sensor : linear_sensors)
   {
-    std::cout << "pos_" << sensor << ","
-              << "vel_" << sensor << ",";
+    logs << "pos_" << sensor << ","
+         << "vel_" << sensor << ",";
   }
   for (const std::string & sensor : angular_sensors)
   {
-    std::cout << "pos_" << sensor << ","
-              << "vel_" << sensor << ",";
+    logs << "pos_" << sensor << ","
+         << "vel_" << sensor << ",";
   }
   // Commands
   for (size_t i = 0; i < effectors.size(); i++)
   {
-    std::cout << "cmd_" << effectors[i];
-    if (i < effectors.size() - 1) std::cout << ",";
+    logs << "cmd_" << effectors[i];
+    if (i < effectors.size() - 1) logs << ",";
   }
-  std::cout << std::endl;
+  logs << std::endl;
 
   State state = State::Waiting;
 
@@ -143,20 +148,20 @@ int main(int argc, char ** argv)
         if (state == State::Random)
         {
           cmd = regression_forests::getUniformSamples(problem->getActionLimits(), 1, &generator)[0];
-          std::cout << ros::Time::now().toSec() << ","
-                    << run << "," << step << ",";
+          logs << ros::Time::now().toSec() << ","
+               << run << "," << step << ",";
           // Write state
           for (int i = 0; i < new_state.rows(); i++)
           {
-            std::cout << new_state(i) << ",";
+            logs << new_state(i) << ",";
           }
           // Write command
           for (int i = 0; i < cmd.rows(); i++)
           {
-            std::cout << cmd(i);
-            if (i < cmd.rows() - 1) std::cout << ",";
+            logs << cmd(i);
+            if (i < cmd.rows() - 1) logs << ",";
           }
-          std::cout << std::endl;
+          logs << std::endl;
           // If a terminal state is reached, break the run
           if (problem->isTerminal(new_state))
           {
@@ -193,5 +198,8 @@ int main(int argc, char ** argv)
       // Sleep if necessary
       r.sleep();
     }//End of while OK
+    // If ros is not ok, do not loop anymore
+    if (!ros::ok()) break;
   }
+  logs.close();
 }

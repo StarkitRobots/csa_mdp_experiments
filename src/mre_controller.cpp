@@ -126,19 +126,19 @@ int main(int argc, char ** argv)
 
   // Logging trajectories
   std::ofstream logs;
-  logs.open("trajectories.csv");
+  logs.open("logs.csv");
   // csv header
   logs << "time,run,step,";
   // measured position and speed
   for (const std::string & sensor : linear_sensors)
   {
     logs << "pos_" << sensor << ","
-              << "vel_" << sensor << ",";
+         << "vel_" << sensor << ",";
   }
   for (const std::string & sensor : angular_sensors)
   {
     logs << "pos_" << sensor << ","
-              << "vel_" << sensor << ",";
+         << "vel_" << sensor << ",";
   }
   // Commands
   for (size_t i = 0; i < effectors.size(); i++)
@@ -187,7 +187,7 @@ int main(int argc, char ** argv)
             if (cmd(i) > cmd_limits(i,1)) cmd(i) = cmd_limits(i,1);
           }
           logs << ros::Time::now().toSec() << ","
-                    << run << "," << step << ",";
+               << run << "," << step << ",";
           // Write state
           for (int i = 0; i < new_state.rows(); i++)
           {
@@ -268,6 +268,8 @@ int main(int argc, char ** argv)
     std::string prefix = details_path + "/T" + std::to_string(run) + "_";
     std::cout << "Saving all with prefix " << prefix << std::endl;
     mre.saveStatus(prefix);
+    // If ros is not ok, do not loop anymore
+    if (!ros::ok()) break;
   }
   logs.close();
 }
