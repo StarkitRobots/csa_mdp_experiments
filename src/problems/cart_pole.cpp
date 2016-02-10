@@ -22,9 +22,16 @@ CartPole::CartPole()
 
 bool CartPole::isTerminal(const Eigen::VectorXd & state) const
 {
-  // Cart is not allowed to go too close to the borders
-  if (std::fabs(state(0)) > max_pos)
-    return true;
+  const Eigen::MatrixXd & state_limits = getStateLimits();
+  // Getting out of range
+  for (int dim = 0; dim < state.rows(); dim++)
+  {
+    if (state(dim) > state_limits(dim,1) ||
+        state(dim) < state_limits(dim,0))
+    {
+      return true;
+    }
+  }
   return false;
 }
 
