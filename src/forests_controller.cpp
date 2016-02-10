@@ -5,11 +5,12 @@
 #include <control_bridge.hpp>
 #include <joint_listener.hpp>
 
-#include <rosban_regression_forests/tools/random.h>
+#include <rosban_regression_forests/core/forest.h>
 
 #include <ros/ros.h>
 
 #include <chrono>
+#include <fstream>
 
 class Config : public rosban_utils::Serializable
 {
@@ -26,29 +27,35 @@ public:
   void to_xml(std::ostream &out) const override
     {
       rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
+      rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
+      rosban_utils::xml_tools::write_vector<std::string>("policies", policies, out);
       rosban_utils::xml_tools::write<std::string>("problem", problem, out);
       control_config.write("control", out);
     }
 
   void from_xml(TiXmlNode *node) override
     {
-      nb_runs = rosban_utils::xml_tools::read<int>(node, "nb_runs");
-      problem = rosban_utils::xml_tools::read<std::string>(node, "problem");
+      nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
+      nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
+      policies = rosban_utils::xml_tools::read_vector<std::string>(node, "policies");
+      problem  = rosban_utils::xml_tools::read<std::string>(node, "problem");
       control_config.read(node, "control");
     }
 
   int nb_runs;
+  int nb_steps;
+  std::vector<std::string> policies;
   std::string problem;
   rosban_control::ControlConfig control_config;
 };
 
 /// 3 different states exists
 /// Waiting: The main loop wait for the contact to be established
-/// Random:  Random actions are applied:
+/// Running:  Controlled actions are applied:
 /// Reset:   A special policy is used to bring back the robot to initial conditions
 enum State
 {
-  Waiting, Random, Reset
+  Waiting, Running, Reset
 };
 
 
@@ -84,46 +91,55 @@ int main(int argc, char ** argv)
   std::vector<std::string> linear_sensors  = config.control_config.linear_sensors;
   std::vector<std::string> angular_sensors = config.control_config.angular_sensors;
 
+  std::vector<std::unique_ptr<regression_forests::Forest>> policies;
+  for (const std::string &path : config.policies)
+  {
+    policies.push_back(regression_forests::Forest::loadFile(path));
+  }
+
   // INITIALIZATION
   ros::Rate r(config.control_config.frequency);
   // Communications with controllers
   ControlBridge bridge(nh, effectors, "/" + config.control_config.robot + "/"   );// Write command
   JointListener listener(nh, "/" + config.control_config.robot + "/joint_states");// Read status
 
-  // Random
-  std::default_random_engine generator = regression_forests::get_random_engine();
+  // Opening log file
+  std::ofstream logs;
+  logs.open("logs.csv");
 
   // csv header
-  std::cout << "time,run,step,";
+  logs << "time,run,step,";
   // measured position and speed
   for (const std::string & sensor : linear_sensors)
   {
-    std::cout << "pos_" << sensor << ","
-              << "vel_" << sensor << ",";
+    logs << "pos_" << sensor << ","
+         << "vel_" << sensor << ",";
   }
   for (const std::string & sensor : angular_sensors)
   {
-    std::cout << "pos_" << sensor << ","
-              << "vel_" << sensor << ",";
+    logs << "pos_" << sensor << ","
+         << "vel_" << sensor << ",";
   }
   // Commands
   for (size_t i = 0; i < effectors.size(); i++)
   {
-    std::cout << "cmd_" << effectors[i];
-    if (i < effectors.size() - 1) std::cout << ",";
+    logs << "cmd_" << effectors[i];
+    if (i < effectors.size() - 1) logs << ",";
   }
-  std::cout << std::endl;
+  logs << std::endl;
 
   State state = State::Waiting;
 
   for (int run = 1; run <= config.nb_runs; run++)
   {
     Eigen::VectorXd cmd = Eigen::VectorXd::Zero(effectors.size());
-    Eigen::VectorXd last_state;
+    Eigen::VectorXd last_state, last_cmd;
 
     int step = 0;
+    bool finish_run = false;
+    double trajectory_reward = 0;
 
-    while (ros::ok())
+    while (ros::ok() && !finish_run)
     {
       //Treat messages
       ros::spinOnce();
@@ -138,33 +154,44 @@ int main(int argc, char ** argv)
           state = State::Reset;
         // If state was reset and new_state is a valid start, update state
         if (state == State::Reset && problem->isValidStart(new_state))
-          state = State::Random;
-        // If random state, update command and write status
-        if (state == State::Random)
+          state = State::Running;
+        // If running state, update command and write status
+        if (state == State::Running)
         {
-          cmd = regression_forests::getUniformSamples(problem->getActionLimits(), 1, &generator)[0];
-          std::cout << ros::Time::now().toSec() << ","
+          for (int dim = 0; dim < cmd.rows(); dim++)
+          {
+            cmd(dim) = policies[dim]->getValue(new_state);
+          }
+          logs << ros::Time::now().toSec() << ","
                     << run << "," << step << ",";
           // Write state
           for (int i = 0; i < new_state.rows(); i++)
           {
-            std::cout << new_state(i) << ",";
+            logs << new_state(i) << ",";
           }
           // Write command
           for (int i = 0; i < cmd.rows(); i++)
           {
-            std::cout << cmd(i);
-            if (i < cmd.rows() - 1) std::cout << ",";
+            logs << cmd(i);
+            if (i < cmd.rows() - 1) logs << ",";
           }
-          std::cout << std::endl;
+          logs << std::endl;
+          // If we're not at the first step, add sample to mre
+          if (step != 0)
+          {
+            double reward = problem->getReward(last_state, last_cmd, new_state);
+            trajectory_reward += reward;
+          }
           // If a terminal state is reached, break the run
-          if (problem->isTerminal(new_state))
+          if (problem->isTerminal(new_state) || step > config.nb_steps)
           {
             state = State::Waiting;
+            cmd = cmd * 0;//No more active command
             break;
           }
           step++;
           last_state = new_state;
+          last_cmd = cmd;
         }
         // Return to a valid initial state
         else
@@ -193,5 +220,8 @@ int main(int argc, char ** argv)
       // Sleep if necessary
       r.sleep();
     }//End of while OK
+    std::cout << "Reward for run " << run << ": " << trajectory_reward << std::endl;
   }
+
+  logs.close();
 }

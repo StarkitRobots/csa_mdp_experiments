@@ -1,4 +1,4 @@
-#include "problems/cart_pole.h"
+#include "problems/problem_factory.h"
 
 #include "interface/interface.h"
 
@@ -104,17 +104,8 @@ int main(int argc, char ** argv)
   Config config;
   config.load_file();
 
-  // Choosing problem
-  ControlProblem * problem = NULL;
-  if (config.problem == "CartPole")
-  {
-    problem = new CartPole();
-  }
-  else
-  {
-    std::cerr << "Unknown problem: '" << config.problem << "'" << std::endl;
-    exit(EXIT_FAILURE);
-  }
+  // Building problem
+  ControlProblem * problem = ProblemFactory::build(config.problem);
 
   std::vector<std::string> effectors       = config.control_config.effectors;
   std::vector<std::string> linear_sensors  = config.control_config.linear_sensors;
@@ -270,11 +261,13 @@ int main(int argc, char ** argv)
     std::cout << "Reward for run " << run << ": " << trajectory_reward << std::endl;
     std::cout << "Updating policy " << run << std::endl;
     mre.updatePolicy();
-    std::cout << "\tTime spent to compute q_value   : " << mre.getQValueTime() << "[s]" << std::endl;
-    std::cout << "\tTime spent to compute the policy: " << mre.getPolicyTime() << "[s]" << std::endl;
+    std::cout << "\tTime spent to compute q_value   : " << mre.getQValueTime() << "[s]"
+              << std::endl;
+    std::cout << "\tTime spent to compute the policy: " << mre.getPolicyTime() << "[s]"
+              << std::endl;
     std::string prefix = details_path + "/T" + std::to_string(run) + "_";
     std::cout << "Saving all with prefix " << prefix << std::endl;
-    
+    mre.saveStatus(prefix);
   }
   logs.close();
 }

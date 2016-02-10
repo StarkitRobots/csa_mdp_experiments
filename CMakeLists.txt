@@ -183,11 +183,14 @@ target_link_libraries(ip_mre ${catkin_LIBRARIES} csa_mdp_experiments)
 add_executable(random_controller src/random_controller.cpp)
 target_link_libraries(random_controller ${catkin_LIBRARIES} csa_mdp_experiments)
 
-add_executable(learn_from_logs src/learn_from_logs.cpp)
-target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
+add_executable(forests_controller src/forests_controller.cpp)
+target_link_libraries(forests_controller ${catkin_LIBRARIES} csa_mdp_experiments)
 
 add_executable(mre_controller src/mre_controller.cpp)
 target_link_libraries(mre_controller ${catkin_LIBRARIES} csa_mdp_experiments)
+
+add_executable(learn_from_logs src/learn_from_logs.cpp)
+target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 
 
 #############

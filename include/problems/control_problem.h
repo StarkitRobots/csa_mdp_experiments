@@ -1,3 +1,4 @@
+#pragma once
 #include "rosban_csa_mdp/core/problem.h"
 
 class ControlProblem : public csa_mdp::Problem

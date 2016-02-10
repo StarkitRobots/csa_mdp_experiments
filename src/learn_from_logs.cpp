@@ -1,9 +1,11 @@
-#include "problems/cart_pole.h"
+#include "problems/problem_factory.h"
 
 #include "rosban_csa_mdp/core/history.h"
 #include "rosban_csa_mdp/solvers/fpf.h"
 
 #include <ros/ros.h>
+
+#include <fstream>
 
 #include <unistd.h>
 
@@ -75,18 +77,8 @@ int main(int argc, char ** argv)
   Config config;
   config.load_file();// Loading file Config.xml
 
-  // Choosing problem
-  ControlProblem * problem = NULL;
-  if (config.problem == "CartPole")
-  {
-    problem = new CartPole();
-  }
-  else
-  {
-    std::cerr << "Unknown problem: '" << config.problem << "'" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
+  // Building problem
+  ControlProblem * problem = ProblemFactory::build(config.problem);
 
   // Specifying reward function
   Problem::RewardFunction reward_func = [problem](const Eigen::VectorXd &src,
@@ -129,5 +121,8 @@ int main(int argc, char ** argv)
     solver.getPolicyForest(dim).save("policy_" + std::to_string(dim) + ".data");
   }
 
-
+  std::ofstream time_file;
+  time_file.open("time_consumption");
+  time_file << "Q-Value: " << solver.conf.q_value_time << " [s]" << std::endl;
+  time_file << "Policy : " << solver.conf.policy_time  << " [s]" <<std::endl;
 }
