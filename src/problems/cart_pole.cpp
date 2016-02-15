@@ -43,7 +43,7 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -50;
   }
-  double cart_cost = std::fabs(dst(0) / max_pos);
+  double cart_cost = std::pow(dst(0) / max_pos, 2);
   double poles_cost = 0;
   for (int i = 2; i < dst.rows(); i += 2)
   {

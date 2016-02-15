@@ -100,6 +100,8 @@ int main(int argc, char ** argv)
   // Producing Samples
   std::vector<csa_mdp::Sample> samples = History::getBatch(histories);
 
+  std::cout << "Computing policies from " << samples.size() << " samples" << std::endl;
+
   FPF solver;
   solver.conf = config.fpf_conf;
   auto is_terminal = [config](const Eigen::VectorXd &state)
