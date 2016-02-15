@@ -151,32 +151,15 @@ target_link_libraries(csa_mdp_experiments ${catkin_LIBRARIES})
 ## either from message generation or dynamic reconfigure
 # add_dependencies(csa_mdp_experiments ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(ip_random_controller src/ip_random_controller.cpp)
-target_link_libraries(ip_random_controller ${catkin_LIBRARIES})
-
-add_executable(ip_listener src/ip_listener.cpp)
-target_link_libraries(ip_listener ${catkin_LIBRARIES})
-
-add_executable(learn_ip_from_log src/learn_ip_from_log.cpp)
-target_link_libraries(learn_ip_from_log ${catkin_LIBRARIES} csa_mdp_experiments)
-
-add_executable(learn_ip_from_samples src/learn_ip_from_samples.cpp)
-target_link_libraries(learn_ip_from_samples ${catkin_LIBRARIES} csa_mdp_experiments)
-
+# Double Integrator stuff (TODO Do a new generic program for MDP without gazebo)
 add_executable(learn_double_integrator src/learn_double_integrator.cpp)
 target_link_libraries(learn_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
 
 add_executable(evaluate_double_integrator src/evaluate_double_integrator.cpp)
 target_link_libraries(evaluate_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
 
-add_executable(ip_forest_controller src/ip_forest_controller.cpp)
-target_link_libraries(ip_forest_controller ${catkin_LIBRARIES} csa_mdp_experiments)
-
 add_executable(mre_double_integrator src/mre_double_integrator.cpp)
 target_link_libraries(mre_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
-
-add_executable(ip_mre src/ip_mre.cpp)
-target_link_libraries(ip_mre ${catkin_LIBRARIES} csa_mdp_experiments)
 
 ## New generic programs
 
