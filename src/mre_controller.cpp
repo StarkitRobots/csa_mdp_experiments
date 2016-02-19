@@ -148,6 +148,11 @@ int main(int argc, char ** argv)
   }
   logs << std::endl;
 
+  // Logging time consumption
+  std::ofstream time_logs;
+  time_logs.open("time_logs.csv");
+  time_logs << "run,type,time" << std::endl;
+
   State state = State::Waiting;
 
   for (int run = 1; run <= config.nb_runs; run++)
@@ -221,7 +226,7 @@ int main(int argc, char ** argv)
             }
           }
           // If a terminal state is reached, break the run
-          if (problem->isTerminal(new_state) || step > config.nb_steps)
+          if (problem->isTerminal(new_state) || step >= config.nb_steps)
           {
             state = State::Waiting;
             cmd = cmd * 0;//No more active command
@@ -268,6 +273,9 @@ int main(int argc, char ** argv)
     std::string prefix = details_path + "/T" + std::to_string(run) + "_";
     std::cout << "Saving all with prefix " << prefix << std::endl;
     mre.saveStatus(prefix);
+    // Log time
+    time_logs << run << ",qValue," << mre.getQValueTime() << std::endl;
+    time_logs << run << ",policy," << mre.getPolicyTime() << std::endl;
     // If ros is not ok, do not loop anymore
     if (!ros::ok()) break;
   }
