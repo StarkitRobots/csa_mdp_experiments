@@ -2,8 +2,8 @@
 
 double CartPole::max_pos = 0.4;
 double CartPole::max_vel = 2.5;
-double CartPole::max_torque = 10;
-double CartPole::max_axis_vel = 10;
+double CartPole::max_torque = 15;
+double CartPole::max_axis_vel = 15;
 double CartPole::start_pos_tol = 0.05;
 double CartPole::start_vel_tol = 0.01;
 
@@ -41,7 +41,7 @@ double CartPole::getReward(const Eigen::VectorXd &state,
 {
   (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
-    return -50;
+    return -200;
   }
   double cart_cost = std::pow(dst(0) / max_pos, 2);
   double poles_cost = 0;
