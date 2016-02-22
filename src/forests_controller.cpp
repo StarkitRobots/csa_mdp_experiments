@@ -103,6 +103,12 @@ int main(int argc, char ** argv)
   ControlBridge bridge(nh, effectors, "/" + config.control_config.robot + "/"   );// Write command
   JointListener listener(nh, "/" + config.control_config.robot + "/joint_states");// Read status
 
+
+  // Opening reward files
+  std::ofstream reward_logs;
+  reward_logs.open("rewards.csv");
+  reward_logs << "run,totalReward" << std::endl;
+
   // Opening log file
   std::ofstream logs;
   logs.open("logs.csv");
@@ -161,6 +167,10 @@ int main(int argc, char ** argv)
           for (int dim = 0; dim < cmd.rows(); dim++)
           {
             cmd(dim) = policies[dim]->getValue(new_state);
+            double min_cmd = problem->getActionLimits()(dim,0);
+            double max_cmd = problem->getActionLimits()(dim,1);
+            if (cmd(dim) < min_cmd) cmd(dim) = min_cmd;
+            if (cmd(dim) > max_cmd) cmd(dim) = max_cmd;
           }
           logs << ros::Time::now().toSec() << ","
                     << run << "," << step << ",";
@@ -220,10 +230,11 @@ int main(int argc, char ** argv)
       // Sleep if necessary
       r.sleep();
     }//End of while OK
-    std::cout << "Reward for run " << run << ": " << trajectory_reward << std::endl;
+    reward_logs << run << "," << trajectory_reward << std::endl;
     // If ros is not ok, do not loop anymore
     if (!ros::ok()) break;
   }
 
+  reward_logs.close();
   logs.close();
 }
