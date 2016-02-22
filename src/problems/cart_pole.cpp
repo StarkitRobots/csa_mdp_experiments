@@ -1,11 +1,13 @@
 #include "problems/cart_pole.h"
 
-double CartPole::max_pos = 0.4;
+double CartPole::max_pos = 25;
 double CartPole::max_vel = 2.5;
 double CartPole::max_torque = 15;
 double CartPole::max_axis_vel = 15;
-double CartPole::start_pos_tol = 0.05;
-double CartPole::start_vel_tol = 0.01;
+double CartPole::start_axis_pos_tol = M_PI / 180;
+double CartPole::start_axis_vel_tol = 0.01;
+double CartPole::start_cart_pos_tol = 0.05;
+double CartPole::start_cart_vel_tol = 0.01;
 
 CartPole::CartPole()
 {
@@ -43,11 +45,12 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -200;
   }
-  double cart_cost = std::pow(dst(0) / max_pos, 2);
+  double cart_cost = std::pow(dst(0) / max_pos, 4);
   double poles_cost = 0;
   for (int i = 2; i < dst.rows(); i += 2)
   {
-    poles_cost += std::fabs(dst(i) / M_PI);
+    poles_cost += std::pow(dst(i) / M_PI, 2);
+    //poles_cost += std::fabs(dst(i) / M_PI);
   }
   return -(cart_cost + poles_cost);
 }
@@ -62,9 +65,12 @@ Eigen::VectorXd CartPole::getSuccessor(const Eigen::VectorXd & state,
 
 bool CartPole::isValidStart(const Eigen::VectorXd &state) const
 {
-  bool pos_ok = std::fabs(state(0)) < start_pos_tol; 
-  bool vel_ok = std::fabs(state(1)) < start_vel_tol;
-  return pos_ok && vel_ok;
+  bool cart_pos_ok = std::fabs(state(0)) < start_cart_pos_tol; 
+  bool cart_vel_ok = std::fabs(state(1)) < start_cart_vel_tol;
+  double axis_error = M_PI - std::fabs(state(2));
+  bool axis_pos_ok = axis_error < start_axis_pos_tol; 
+  bool axis_vel_ok = std::fabs(state(3)) < start_axis_vel_tol;
+  return axis_pos_ok && axis_vel_ok && cart_pos_ok && cart_vel_ok;
 }
 
 Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const

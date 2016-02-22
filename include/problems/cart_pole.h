@@ -33,8 +33,12 @@ public:
   static double max_torque;
   // maximal velocity of the axis [rad/s]
   static double max_axis_vel;
-  // maximal distance from center to start trajectory [m]
-  static double start_pos_tol;
-  // maximal velocity at start trajectory [m/s]
-  static double start_vel_tol;
+  // maximal cart distance from center to start trajectory [m]
+  static double start_cart_pos_tol;
+  // maximal cart velocity at start trajectory [m/s]
+  static double start_cart_vel_tol;
+  // maximal pendulum angle to bottom to start trajectory [rad]
+  static double start_axis_pos_tol;
+  // maximal angular velocity at start trajectory [rad/s]
+  static double start_axis_vel_tol;
 };
