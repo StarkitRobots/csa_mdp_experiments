@@ -160,9 +160,11 @@ int main(int argc, char ** argv)
     Eigen::VectorXd cmd = Eigen::VectorXd::Zero(effectors.size());
     Eigen::VectorXd last_state, last_cmd;
 
+    // Initiate everything needed for the run
     int step = 0;
     bool finish_run = false;
     double trajectory_reward = 0;
+    r.reset();//Updating value might have used some time, need to update
 
     while (ros::ok() && !finish_run)
     {

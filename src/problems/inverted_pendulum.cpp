@@ -1,7 +1,7 @@
 #include "problems/inverted_pendulum.h"
 
 double InvertedPendulum::max_torque = 15;
-double InvertedPendulum::max_axis_vel = 2 * M_PI;
+double InvertedPendulum::max_axis_vel = 10;
 double InvertedPendulum::start_pos_tol = M_PI / 180;// 1 deg of tol
 double InvertedPendulum::start_vel_tol = M_PI / 180;// 1 deg/s of tol
 
