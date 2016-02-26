@@ -1,7 +1,7 @@
 #include "problems/inverted_pendulum.h"
 
-double InvertedPendulum::max_torque = 2.25;
-double InvertedPendulum::max_axis_vel = 6;
+double InvertedPendulum::max_torque = 15;
+double InvertedPendulum::max_axis_vel = 2 * M_PI;
 double InvertedPendulum::start_pos_tol = M_PI / 180;// 1 deg of tol
 double InvertedPendulum::start_vel_tol = M_PI / 180;// 1 deg/s of tol
 
@@ -30,6 +30,11 @@ double InvertedPendulum::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -50;
   }
+  bool binary_reward = true;
+  if (binary_reward)
+  {
+    return std::fabs(dst(0)) <= M_PI / 12 ? 0 : -1;
+  }
   double pos_cost = std::fabs(dst(0) / M_PI);
   double torque_cost = std::pow(action(0) / max_torque, 2);
   return -(pos_cost + torque_cost);
@@ -52,8 +57,13 @@ bool InvertedPendulum::isValidStart(const Eigen::VectorXd &state) const
 
 Eigen::VectorXd InvertedPendulum::getResetCmd(const Eigen::VectorXd &state) const
 {
-  (void)state;
   Eigen::VectorXd cmd(1);
+  // Just wait for the damping to slow the pendulum
   cmd(0) = 0;
+  // Ensure that the pendulum will not stick in top position
+  if (std::fabs(state(0)) < M_PI / 10)
+  {
+    cmd(0) = 0.1;
+  }
   return cmd;
 }
