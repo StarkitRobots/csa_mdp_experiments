@@ -1,7 +1,7 @@
 #include "problems/cart_pole.h"
 
-double CartPole::max_pos = 25;
-double CartPole::max_vel = 2.5;
+double CartPole::max_pos = 50;
+double CartPole::max_vel = 5;
 double CartPole::max_torque = 15;
 double CartPole::max_axis_vel = 15;
 double CartPole::start_axis_pos_tol = M_PI / 180;
@@ -44,6 +44,15 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
     return -200;
+  }
+  bool binary_reward = true;
+  if (binary_reward)
+  {
+    if (std::fabs(dst(2)) < M_PI / 12)
+    {
+      return 0;
+    }
+    return -1;
   }
   double cart_cost = std::pow(dst(0) / max_pos, 4);
   double poles_cost = 0;
