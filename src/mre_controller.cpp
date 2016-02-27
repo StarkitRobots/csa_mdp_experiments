@@ -186,13 +186,6 @@ int main(int argc, char ** argv)
         if (state == State::Running)
         {
           cmd = mre.getAction(new_state);
-          // Bounding action
-          const Eigen::MatrixXd cmd_limits = config.mre_config.fpf_conf.getActionLimits();
-          for (int i = 0; i < cmd.rows(); i++)
-          {
-            if (cmd(i) < cmd_limits(i,0)) cmd(i) = cmd_limits(i,0);
-            if (cmd(i) > cmd_limits(i,1)) cmd(i) = cmd_limits(i,1);
-          }
           logs << ros::Time::now().toSec() << ","
                << run << "," << step << ",";
           // Write state

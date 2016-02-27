@@ -152,14 +152,14 @@ target_link_libraries(csa_mdp_experiments ${catkin_LIBRARIES})
 # add_dependencies(csa_mdp_experiments ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # Double Integrator stuff (TODO Do a new generic program for MDP without gazebo)
-add_executable(learn_double_integrator src/learn_double_integrator.cpp)
-target_link_libraries(learn_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
-
-add_executable(evaluate_double_integrator src/evaluate_double_integrator.cpp)
-target_link_libraries(evaluate_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
-
-add_executable(mre_double_integrator src/mre_double_integrator.cpp)
-target_link_libraries(mre_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
+#add_executable(learn_double_integrator src/learn_double_integrator.cpp)
+#target_link_libraries(learn_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
+#
+#add_executable(evaluate_double_integrator src/evaluate_double_integrator.cpp)
+#target_link_libraries(evaluate_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
+#
+#add_executable(mre_double_integrator src/mre_double_integrator.cpp)
+#target_link_libraries(mre_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
 
 ## New generic programs
 

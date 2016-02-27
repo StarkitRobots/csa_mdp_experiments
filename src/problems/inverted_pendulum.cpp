@@ -30,7 +30,7 @@ double InvertedPendulum::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -50;
   }
-  bool binary_reward = true;
+  bool binary_reward = false;
   if (binary_reward)
   {
     return std::fabs(dst(0)) <= M_PI / 12 ? 0 : -1;
@@ -58,8 +58,9 @@ bool InvertedPendulum::isValidStart(const Eigen::VectorXd &state) const
 Eigen::VectorXd InvertedPendulum::getResetCmd(const Eigen::VectorXd &state) const
 {
   Eigen::VectorXd cmd(1);
-  // Just wait for the damping to slow the pendulum
-  cmd(0) = 0;
+  // Force on the opposite of speed down the pendulum
+  double gain = -5;
+  cmd(0) = state(1) * gain;
   // Ensure that the pendulum will not stick in top position
   if (std::fabs(state(0)) < M_PI / 10)
   {

@@ -1,11 +1,13 @@
 #include "problems/double_integrator.h"
 
 #include "rosban_csa_mdp/solvers/mre.h"
+#include "rosban_csa_mdp/knownness/knownness_tree.h"
 
 #include <iostream>
 
 using csa_mdp::FPF;
 using csa_mdp::MRE;
+using csa_mdp::KnownnessTree;
 
 int main()
 {
@@ -20,7 +22,7 @@ int main()
   double reward_max = 0;
   int plan_period = 30;
   int nb_knownness_trees = 1;
-  MRE::KnownnessTree::Type knownness_tree_type = MRE::KnownnessTree::Type::Original;
+  KnownnessTree::Type knownness_tree_type = KnownnessTree::Type::MRE;
 
   // FPF properties
   FPF::Config fpf_conf;
