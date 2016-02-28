@@ -85,7 +85,7 @@ int main(int argc, char ** argv)
   config.load_file();
 
   // Building problem
-  ControlProblem * problem = ProblemFactory::build(config.problem);
+  ControlProblem * problem = ProblemFactory::buildControl(config.problem);
 
   std::vector<std::string> effectors       = config.control_config.effectors;
   std::vector<std::string> linear_sensors  = config.control_config.linear_sensors;

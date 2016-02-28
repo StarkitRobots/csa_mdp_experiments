@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
   config.load_file();
 
   // Building problem
-  ControlProblem * problem = ProblemFactory::build(config.problem);
+  ControlProblem * problem = ProblemFactory::buildControl(config.problem);
 
   std::vector<std::string> effectors       = config.control_config.effectors;
   std::vector<std::string> linear_sensors  = config.control_config.linear_sensors;
@@ -252,7 +252,7 @@ int main(int argc, char ** argv)
       for (int i = 0; i < cmd.rows(); i++)
       {
         std::string motor_name = effectors[i];
-        motors_orders[motor_name] = cmd(i );
+        motors_orders[motor_name] = cmd(i);
       }
       bridge.send(motors_orders);
       // Sleep if necessary
@@ -275,4 +275,5 @@ int main(int argc, char ** argv)
     if (!ros::ok()) break;
   }
   logs.close();
+  time_logs.close();
 }

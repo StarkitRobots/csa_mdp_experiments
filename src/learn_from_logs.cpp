@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
   config.load_file();// Loading file Config.xml
 
   // Building problem
-  ControlProblem * problem = ProblemFactory::build(config.problem);
+  Problem * problem = ProblemFactory::build(config.problem);
 
   // Specifying reward function
   Problem::RewardFunction reward_func = [problem](const Eigen::VectorXd &src,

@@ -175,6 +175,11 @@ target_link_libraries(mre_controller ${catkin_LIBRARIES} csa_mdp_experiments)
 add_executable(learn_from_logs src/learn_from_logs.cpp)
 target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 
+## Generic programs for blackbox problems
+add_executable(mre_blackbox src/mre_blackbox.cpp)
+target_link_libraries(mre_blackbox ${catkin_LIBRARIES} csa_mdp_experiments)
+
+
 
 #############
 ## Install ##

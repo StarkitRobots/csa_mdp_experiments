@@ -1,8 +1,8 @@
-#include "rosban_csa_mdp/core/problem.h"
+#include "problems/blackbox_problem.h"
 
 #include <random>
 
-class DoubleIntegrator : public csa_mdp::Problem
+class DoubleIntegrator : public BlackBoxProblem
 {
 public:
   enum Version
@@ -27,4 +27,6 @@ public:
 
   Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
                                const Eigen::VectorXd & action) override;
+
+  Eigen::VectorXd getStartingState() override;
 };

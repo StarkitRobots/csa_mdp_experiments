@@ -74,3 +74,10 @@ Eigen::VectorXd DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
   }
   return currentState;
 }
+
+Eigen::VectorXd DoubleIntegrator::getStartingState()
+{
+  Eigen::VectorXd state(2);
+  state << 1, 0;
+  return state;
+}
