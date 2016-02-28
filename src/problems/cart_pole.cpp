@@ -1,8 +1,8 @@
 #include "problems/cart_pole.h"
 
-double CartPole::max_pos = 50;
-double CartPole::max_vel = 5;
-double CartPole::max_torque = 15;
+double CartPole::max_pos = 1;
+double CartPole::max_vel = 2.5;
+double CartPole::max_torque = 10;
 double CartPole::max_axis_vel = 15;
 double CartPole::start_axis_pos_tol = M_PI / 180;
 double CartPole::start_axis_vel_tol = 0.01;

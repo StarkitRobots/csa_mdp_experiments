@@ -103,7 +103,6 @@ int main(int argc, char ** argv)
   std::cout << "Computing policies from " << samples.size() << " samples" << std::endl;
 
   FPF solver;
-  solver.conf = config.fpf_conf;
   auto is_terminal = [config](const Eigen::VectorXd &state)
     {
       const Eigen::MatrixXd &state_limits = config.fpf_conf.getStateLimits();
@@ -116,7 +115,7 @@ int main(int argc, char ** argv)
       }
       return false;
     };
-  solver.solve(samples, is_terminal);
+  solver.solve(samples, is_terminal, config.fpf_conf);
   solver.getValueForest().save("q_values.data");
   for (int dim = 0; dim < config.fpf_conf.getActionLimits().rows(); dim++)
   {
@@ -125,6 +124,6 @@ int main(int argc, char ** argv)
 
   std::ofstream time_file;
   time_file.open("time_consumption");
-  time_file << "Q-Value: " << solver.conf.q_value_time << " [s]" << std::endl;
-  time_file << "Policy : " << solver.conf.policy_time  << " [s]" <<std::endl;
+  time_file << "Q-Value: " << config.fpf_conf.q_value_time << " [s]" << std::endl;
+  time_file << "Policy : " << config.fpf_conf.policy_time  << " [s]" <<std::endl;
 }
