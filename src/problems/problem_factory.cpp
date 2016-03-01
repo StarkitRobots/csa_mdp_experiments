@@ -1,6 +1,7 @@
 #include "problems/problem_factory.h"
 
 #include "problems/cart_pole.h"
+#include "problems/cart_pole_stabilization.h"
 #include "problems/double_integrator.h"
 #include "problems/inverted_pendulum.h"
 
@@ -10,6 +11,8 @@ Problem * ProblemFactory::build(const std::string &name)
 {
   if (name == "CartPole")
     return new CartPole();
+  if (name == "CartPoleStabilization")
+    return new CartPoleStabilization();
   if (name == "InvertedPendulum")
     return new InvertedPendulum();
   if (name == "DoubleIntegrator")

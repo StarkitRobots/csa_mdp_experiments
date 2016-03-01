@@ -1,18 +1,13 @@
 #include "problems/problem_factory.h"
 
-#include "interface/interface.h"
+#include <rosban_regression_forests/core/forest.h>
 
-#include <rosban_regression_forests/tools/random.h>
-#include <rosban_csa_mdp/solvers/mre.h>
+#include <rosban_utils/serializable.h>
 
 #include <ros/ros.h>
 
 #include <chrono>
 #include <fstream>
-
-#include <sys/stat.h>
-
-using csa_mdp::MRE;
 
 void write_log(std::ostream &out,
                int run, int step,
@@ -48,24 +43,23 @@ public:
     {
       rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
       rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
+      rosban_utils::xml_tools::write_vector<std::string>("policies", policies, out);
       rosban_utils::xml_tools::write<std::string>("problem", problem, out);
-      mre_config.write("mre", out);
     }
 
   void from_xml(TiXmlNode *node) override
     {
       nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
       nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
+      policies = rosban_utils::xml_tools::read_vector<std::string>(node, "policies");
       problem  = rosban_utils::xml_tools::read<std::string>(node, "problem");
-      mre_config.read(node, "mre");
     }
 
   int nb_runs;
   int nb_steps;
+  std::vector<std::string> policies;
   std::string problem;
-  csa_mdp::MRE::Config mre_config;
 };
-
 
 int main(int argc, char ** argv)
 {
@@ -74,30 +68,18 @@ int main(int argc, char ** argv)
 
   if (config_path == "")
   {
-    std::cerr << "Usage: rosrun .... config_path:=<path>" << std::endl;
-    std::cerr << "\tNote: <path> folder should contain a file named Config.xml" << std::endl;
+    std::cerr << "Usage: rosrun .... config_path:=<file>" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  ros::init(argc, argv, "forests_bb_evaluator");
+  ros::NodeHandle nh;
 
   // Going to the specified path
   if (chdir(config_path.c_str()))
   {
     std::cerr << "Failed to set '" << config_path << "' as working directory." << std::endl;
     exit(EXIT_FAILURE);
-  }
-
-  // Create a directory for details if required
-  std::string details_path("details");  
-  struct stat folder_stat;
-  if (stat(details_path.c_str(), &folder_stat) != 0 || !S_ISDIR(folder_stat.st_mode))
-  {
-    std::string mkdir_cmd = "mkdir " + details_path;
-    // If it fails, exit
-    if (system(mkdir_cmd.c_str()))
-    {
-      std::cerr << "Failed to create '" << details_path << "' folder" << std::endl;
-      exit(EXIT_FAILURE);
-    }
   }
 
   // Loading config
@@ -107,37 +89,37 @@ int main(int argc, char ** argv)
   // Building problem
   BlackBoxProblem * problem = ProblemFactory::buildBlackBox(config.problem);
 
-  // Creating mre instance
-  MRE mre(config.mre_config,
-          [problem](const Eigen::VectorXd &state)
-          {
-            return problem->isTerminal(state);
-          });
+  std::vector<std::unique_ptr<regression_forests::Forest>> policies;
+  for (const std::string &path : config.policies)
+  {
+    policies.push_back(regression_forests::Forest::loadFile(path));
+  }
 
-  // Logging trajectories
+  // Opening reward files
+  std::ofstream reward_logs;
+  reward_logs.open("rewards.csv");
+  reward_logs << "run,totalReward" << std::endl;
+
+  // Opening log file
   std::ofstream logs;
   logs.open("logs.csv");
+
   // csv header
   logs << "run,step,";
   // State information
-  int x_dim = config.mre_config.mrefpf_conf.getStateLimits().rows();
+  int x_dim = problem->getStateLimits().rows();
   for (int i = 0; i < x_dim; i++)
   {
     logs << "state_" << i << ",";
   }
   // Commands
-  int u_dim = config.mre_config.mrefpf_conf.getActionLimits().rows();
+  int u_dim = problem->getActionLimits().rows();
   for (int i = 0; i < u_dim; i++)
   {
     logs << "action_" << i;
     if (i < u_dim - 1) logs << ",";
   }
   logs << std::endl;
-
-  // Logging time consumption
-  std::ofstream time_logs;
-  time_logs.open("time_logs.csv");
-  time_logs << "run,type,time" << std::endl;
 
   for (int run = 1; run <= config.nb_runs; run++)
   {
@@ -151,11 +133,19 @@ int main(int argc, char ** argv)
 
     while (ros::ok() && !finish_run)
     {
-      cmd = mre.getAction(current_state);
+      // Computing action
+      for (int dim = 0; dim < cmd.rows(); dim++)
+      {
+        cmd(dim) = policies[dim]->getValue(current_state);
+        // Bounding action
+        double min_cmd = problem->getActionLimits()(dim,0);
+        double max_cmd = problem->getActionLimits()(dim,1);
+        if (cmd(dim) < min_cmd) cmd(dim) = min_cmd;
+        if (cmd(dim) > max_cmd) cmd(dim) = max_cmd;
+      }
+      // Get and apply new sample
       csa_mdp::Sample new_sample = problem->getSample(current_state, cmd);
       write_log(logs, run, step, current_state, cmd);
-      // Feed mre
-      mre.feed(new_sample);
       trajectory_reward += new_sample.reward;
       current_state = new_sample.next_state;
       // If a terminal state is reached, break the run
@@ -168,21 +158,12 @@ int main(int argc, char ** argv)
     }//End of while OK
     write_log(logs, run, step, current_state, cmd);
     std::cout << "Reward for run " << run << ": " << trajectory_reward << std::endl;
-    std::cout << "Updating policy " << run << std::endl;
-    mre.updatePolicy();
-    std::cout << "\tTime spent to compute q_value   : " << mre.getQValueTime() << "[s]"
-              << std::endl;
-    std::cout << "\tTime spent to compute the policy: " << mre.getPolicyTime() << "[s]"
-              << std::endl;
-    std::string prefix = details_path + "/T" + std::to_string(run) + "_";
-    std::cout << "Saving all with prefix " << prefix << std::endl;
-    mre.saveStatus(prefix);
-    // Log time
-    time_logs << run << ",qValue," << mre.getQValueTime() << std::endl;
-    time_logs << run << ",policy," << mre.getPolicyTime() << std::endl;
+    reward_logs << run << "," << trajectory_reward << std::endl;
+
     // If ros is not ok, do not loop anymore
     if (!ros::ok()) break;
   }
+
+  reward_logs.close();
   logs.close();
-  time_logs.close();
 }

@@ -179,6 +179,13 @@ target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 add_executable(mre_blackbox src/mre_blackbox.cpp)
 target_link_libraries(mre_blackbox ${catkin_LIBRARIES} csa_mdp_experiments)
 
+add_executable(forests_bb_evaluator src/forests_bb_evaluator.cpp)
+target_link_libraries(forests_bb_evaluator ${catkin_LIBRARIES} csa_mdp_experiments)
+
+add_executable(random_bb src/random_bb.cpp)
+target_link_libraries(random_bb ${catkin_LIBRARIES} csa_mdp_experiments)
+
+
 
 
 #############

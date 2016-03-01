@@ -1,3 +1,5 @@
+#pragma once
+
 #include "problems/blackbox_problem.h"
 
 #include <random>
