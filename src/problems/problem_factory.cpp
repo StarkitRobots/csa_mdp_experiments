@@ -4,6 +4,7 @@
 #include "problems/cart_pole_stabilization.h"
 #include "problems/double_integrator.h"
 #include "problems/inverted_pendulum.h"
+#include "problems/double_inverted_pendulum.h"
 
 using csa_mdp::Problem;
 
@@ -15,6 +16,8 @@ Problem * ProblemFactory::build(const std::string &name)
     return new CartPoleStabilization();
   if (name == "InvertedPendulum")
     return new InvertedPendulum();
+  if (name == "DoubleInvertedPendulum")
+    return new DoubleInvertedPendulum();
   if (name == "DoubleIntegrator")
     return new DoubleIntegrator();
   throw std::runtime_error("Problem '" + name + "' is not known by the ProblemFactory");

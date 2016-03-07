@@ -72,9 +72,6 @@ int main(int argc, char ** argv)
     exit(EXIT_FAILURE);
   }
 
-  ros::init(argc, argv, "forests_bb_evaluator");
-  ros::NodeHandle nh;
-
   // Going to the specified path
   if (chdir(config_path.c_str()))
   {
@@ -131,7 +128,7 @@ int main(int argc, char ** argv)
     bool finish_run = false;
     double trajectory_reward = 0;
 
-    while (ros::ok() && !finish_run)
+    while (!finish_run)
     {
       // Computing action
       for (int dim = 0; dim < cmd.rows(); dim++)
@@ -159,9 +156,6 @@ int main(int argc, char ** argv)
     write_log(logs, run, step, current_state, cmd);
     std::cout << "Reward for run " << run << ": " << trajectory_reward << std::endl;
     reward_logs << run << "," << trajectory_reward << std::endl;
-
-    // If ros is not ok, do not loop anymore
-    if (!ros::ok()) break;
   }
 
   reward_logs.close();

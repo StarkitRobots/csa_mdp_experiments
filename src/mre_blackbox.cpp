@@ -149,7 +149,7 @@ int main(int argc, char ** argv)
     bool finish_run = false;
     double trajectory_reward = 0;
 
-    while (ros::ok() && !finish_run)
+    while (!finish_run)
     {
       cmd = mre.getAction(current_state);
       csa_mdp::Sample new_sample = problem->getSample(current_state, cmd);
@@ -180,8 +180,6 @@ int main(int argc, char ** argv)
     // Log time
     time_logs << run << ",qValue," << mre.getQValueTime() << std::endl;
     time_logs << run << ",policy," << mre.getPolicyTime() << std::endl;
-    // If ros is not ok, do not loop anymore
-    if (!ros::ok()) break;
   }
   logs.close();
   time_logs.close();
