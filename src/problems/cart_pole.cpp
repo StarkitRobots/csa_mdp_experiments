@@ -45,7 +45,7 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -200;
   }
-  bool binary_reward = true;
+  bool binary_reward = false;
   if (binary_reward)
   {
     if (std::fabs(dst(2)) < M_PI / 12)
@@ -88,5 +88,10 @@ Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const
   static double kd = 5;
   Eigen::VectorXd cmd(1);
   cmd(0) = - (kp * state(0) + kd * state(1));
+  // Avoid to stay stable with pendulum vertical
+  if (std::fabs(state(2)) < M_PI / 10)
+  {
+    cmd(0) = max_torque;
+  }
   return cmd;
 }
