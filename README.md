@@ -76,12 +76,106 @@ experiment_name
 
 ## Launching a blackbox experiment
 
+In order to run a *blackbox* experiment, a folder containing an appropriate
+`Config.xml` file should first be created, then we can use the following
+command: `rosrun csa_mdp_experiments mre_blackbox config_path:=...`
+
 ## Launching a controller experiment
+
+In order to run a *controller* experiment, a folder containing an appropriate
+`Config.xml` file should first be created. Then the gazebo simulation need to
+be started:
+
+```
+roslaunch rosban_simu launch_robot.launch robot:=...
+roslaunch rosban_simu ..._control.launch
+```
+
+If graphical display is not necessary, it is also possible to run both using
+the script `rosban_simu/bg_simu.sh`.
+
+Once the simulator is started, the exploration process can be started using the
+following command: `rosrun csa_mdp_experiments mre_controller config_path:=...`
 
 ## Learning a policy
 
-## Evaluating policies
+In order to learn a policy, one should first acquire data and then prepare a
+folder containing an appropriate `Config.xml` file. Then, the learning can be
+performed as following:
+`rosrun csa_mdp_experiments learn_from_logs config_path:=...`
+
+## Evaluating a policy for a blackbox problem
+
+In order to evaluate a policy, one should first generate it and then prepare a
+folder containing an appropriate `Config.xml` file. Then, the evaluation can be
+performed as following:
+`rosrun csa_mdp_experiments forests_bb_evaluator config_path:=...`
+
+## Evaluating a policy for a control problem
+In order to evaluate a policy, one should first generate it and then prepare a
+folder containing an appropriate `Config.xml`. It is also required to start the
+gazebo simulation (cf. Launching a controller experiment)
+
+Then, the evaluation can be performed as following:
+`rosrun csa_mdp_experiments forests_controller config_path:=...`
+
+## Generating multiple policies
+
+The script `learn_policies.sh` allows to create multiple policies from a single
+set of samples. It requires the presency of a config file named
+`PolicyConfig.xml` and create all the necessary folders.
+
+## Evaluating multiple policies
+
+The scripts `evaluate_policies_bb.sh` and `evaluate_policies_controller.sh`
+allow to evaluate multiple policies in a row. It requires the presency of a
+config file named `TestConfig.xml` and the presency of generated policies.
+
+# Examples
+
+## Complete run on a blackbox problem
+
+This example uses the Cart-Pole Stabilization problem.
+
+First, create a folder and move to it:
+```
+mkdir /tmp/test_csa_mdp
+cd /tmp/test_csa_mdp
+```
+
+Then, import the default config
+```
+cp ~/catkin_ws/csa_mdp_experiments/configs/cart_pole_stabilization/*Config.xml .
+```
+
+Run the experiments, learn policies and evaluate them
+```
+rosrun csa_mdp_experiments mre_blackbox config_path:=`pwd`
+~/catkin_ws/csa_mdp_experiments/learn_policies.sh
+~/catkin_ws/csa_mdp_experiments/evaluate_policies_bb.sh
+
+## Complete run on a controller problem
+
+This example uses the Cart-Pole problem (Swing-Up).
+
+First of all, launch the robot simulation and its controller
+```
+roslaunch rosban_simu robot_launch.launch robot:=cart_pole &
+roslaunch rosban_simu cart_pole_control.launch &
+```
+
+Then, create a folder, move to it and import the config files:
+```
+mkdir /tmp/test_csa_mdp
+cd /tmp/test_csa_mdp
+cp ~/catkin_ws/csa_mdp_experiments/configs/cart_pole/*Config.xml .
+```
+
+Run the experiments, learn policies and evaluate them
+```
+rosrun csa_mdp_experiments mre_controller config_path:=`pwd`
+~/catkin_ws/csa_mdp_experiments/learn_policies.sh
+~/catkin_ws/csa_mdp_experiments/evaluate_policies_controller.sh
+```
 
 # Creating a new problem
-
-...
