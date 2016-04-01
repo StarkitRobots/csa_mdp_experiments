@@ -153,6 +153,7 @@ Run the experiments, learn policies and evaluate them
 rosrun csa_mdp_experiments mre_blackbox config_path:=`pwd`
 ~/catkin_ws/csa_mdp_experiments/learn_policies.sh
 ~/catkin_ws/csa_mdp_experiments/evaluate_policies_bb.sh
+```
 
 ## Complete run on a controller problem
 
