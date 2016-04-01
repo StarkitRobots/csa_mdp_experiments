@@ -7,89 +7,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rosban_control
   rosban_csa_mdp
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(rosban_control)
 
+# If rosban control is found, then compile files related to simulation
+if (rosban_control_FOUND)
+  message("rosban_control found, adding support for regression_forests control")
+  list(APPEND catkin_LIBRARIES     ${rosban_control_LIBRARIES})
+  list(APPEND catkin_INCLUDE_DIRS  ${rosban_control_INCLUDE_DIRS})
+else()
+  message("rosban_control was not found, no support for regression_forests control")
+endif(rosban_control_FOUND)
 
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
-
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-## To declare and build messages, services or actions from within this
-## package, follow these steps:
-## * Let MSG_DEP_SET be the set of packages whose message types you use in
-##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
-## * In the file package.xml:
-##   * add a build_depend tag for "message_generation"
-##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
-##     but can be declared for certainty nonetheless:
-##     * add a run_depend tag for "message_runtime"
-## * In this file (CMakeLists.txt):
-##   * add "message_generation" and every package in MSG_DEP_SET to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
-##   * uncomment the add_*_files sections below as needed
-##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
-##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
 
 ###################################
 ## catkin specific configuration ##
@@ -146,34 +77,22 @@ add_library(csa_mdp_experiments
   )
 target_link_libraries(csa_mdp_experiments ${catkin_LIBRARIES})
 
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(csa_mdp_experiments ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-# Double Integrator stuff (TODO Do a new generic program for MDP without gazebo)
-#add_executable(learn_double_integrator src/learn_double_integrator.cpp)
-#target_link_libraries(learn_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
-#
-#add_executable(evaluate_double_integrator src/evaluate_double_integrator.cpp)
-#target_link_libraries(evaluate_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
-#
-#add_executable(mre_double_integrator src/mre_double_integrator.cpp)
-#target_link_libraries(mre_double_integrator ${catkin_LIBRARIES} csa_mdp_experiments)
-
-## New generic programs
-
-add_executable(random_controller src/random_controller.cpp)
-target_link_libraries(random_controller ${catkin_LIBRARIES} csa_mdp_experiments)
-
-add_executable(forests_controller src/forests_controller.cpp)
-target_link_libraries(forests_controller ${catkin_LIBRARIES} csa_mdp_experiments)
-
-add_executable(mre_controller src/mre_controller.cpp)
-target_link_libraries(mre_controller ${catkin_LIBRARIES} csa_mdp_experiments)
+## Common generic program
 
 add_executable(learn_from_logs src/learn_from_logs.cpp)
 target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
+
+## Generic programs for control problems
+if(rosban_control_FOUND)
+  add_executable(random_controller src/random_controller.cpp)
+  target_link_libraries(random_controller ${catkin_LIBRARIES} csa_mdp_experiments)
+
+  add_executable(forests_controller src/forests_controller.cpp)
+  target_link_libraries(forests_controller ${catkin_LIBRARIES} csa_mdp_experiments)
+
+  add_executable(mre_controller src/mre_controller.cpp)
+  target_link_libraries(mre_controller ${catkin_LIBRARIES} csa_mdp_experiments)
+endif(rosban_control_FOUND)
 
 ## Generic programs for blackbox problems
 add_executable(mre_blackbox src/mre_blackbox.cpp)
@@ -184,8 +103,6 @@ target_link_libraries(forests_bb_evaluator ${catkin_LIBRARIES} csa_mdp_experimen
 
 add_executable(random_bb src/random_bb.cpp)
 target_link_libraries(random_bb ${catkin_LIBRARIES} csa_mdp_experiments)
-
-
 
 
 #############
