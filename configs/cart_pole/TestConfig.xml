@@ -1,0 +1,21 @@
+<Config>
+  <nb_runs>10</nb_runs>
+  <nb_steps>100</nb_steps>
+  <policies>
+    <v>../policy_0.data</v>
+  </policies>
+  <problem>CartPole</problem>
+  <control>
+    <robot>cart_pole</robot>
+    <frequency>10</frequency>
+    <linear_sensors>
+      <v>cart_joint</v>
+    </linear_sensors>
+    <angular_sensors>
+      <v>axis1</v>
+    </angular_sensors>
+    <effectors>
+      <v>cart</v>
+    </effectors>
+  </control>
+</Config>
