@@ -179,3 +179,13 @@ rosrun csa_mdp_experiments mre_controller config_path:=`pwd`
 ```
 
 # Creating a new problem
+
+First of all, it is required to identify if the problem is a *blackbox* problem
+or a *controller* problem. Then, a new class extending `BlackBoxProblem` or
+`ControlProblem` should be written. Please refer to existing examples to see
+which methods need to be implemented.
+
+The method `ProblemFactory::build` in `src/problems/problem_factory.cpp` should
+be updated to include the new problem.
+
+Finally, a new configuraton file should be built (based on existing files).
