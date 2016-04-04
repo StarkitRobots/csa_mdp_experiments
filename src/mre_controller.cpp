@@ -148,6 +148,30 @@ int main(int argc, char ** argv)
   }
   logs << std::endl;
 
+  // Logging trajectories
+  std::ofstream reset_logs;
+  reset_logs.open("reset_logs.csv");
+  // csv header
+  reset_logs << "time,run,step,";
+  // measured position and speed
+  for (const std::string & sensor : linear_sensors)
+  {
+    reset_logs << "pos_" << sensor << ","
+               << "vel_" << sensor << ",";
+  }
+  for (const std::string & sensor : angular_sensors)
+  {
+    reset_logs << "pos_" << sensor << ","
+               << "vel_" << sensor << ",";
+  }
+  // Commands
+  for (size_t i = 0; i < effectors.size(); i++)
+  {
+    reset_logs << "cmd_" << effectors[i];
+    if (i < effectors.size() - 1) reset_logs << ",";
+  }
+  reset_logs << std::endl;
+
   // Logging time consumption
   std::ofstream time_logs;
   time_logs.open("time_logs.csv");
@@ -162,6 +186,7 @@ int main(int argc, char ** argv)
 
     // Initiate everything needed for the run
     int step = 0;
+    int reset_step = 0;
     bool finish_run = false;
     double trajectory_reward = 0;
     r.reset();//Updating value might have used some time, need to update
@@ -234,7 +259,23 @@ int main(int argc, char ** argv)
         // Return to a valid initial state
         else
         {
+          reset_step++;
           cmd = problem->getResetCmd(new_state);
+          // Write reset_logs
+          reset_logs << ros::Time::now().toSec() << ","
+                     << run << "," << reset_step << ",";
+          // Write state
+          for (int i = 0; i < new_state.rows(); i++)
+          {
+            reset_logs << new_state(i) << ",";
+          }
+          // Write command
+          for (int i = 0; i < cmd.rows(); i++)
+          {
+            reset_logs << cmd(i);
+            if (i < cmd.rows() - 1) reset_logs << ",";
+          }
+          reset_logs << std::endl;
         }
       }
       // sensors were missing
@@ -267,7 +308,7 @@ int main(int argc, char ** argv)
               << std::endl;
     std::string prefix = details_path + "/T" + std::to_string(run) + "_";
     std::cout << "Saving all with prefix " << prefix << std::endl;
-    mre.saveStatus(prefix);
+    //mre.saveStatus(prefix);
     // Log time
     time_logs << run << ",qValue," << mre.getQValueTime() << std::endl;
     time_logs << run << ",policy," << mre.getPolicyTime() << std::endl;
@@ -276,4 +317,5 @@ int main(int argc, char ** argv)
   }
   logs.close();
   time_logs.close();
+  reset_logs.close();
 }

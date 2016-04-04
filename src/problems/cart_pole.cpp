@@ -89,7 +89,8 @@ Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const
   Eigen::VectorXd cmd(1);
   cmd(0) = - (kp * state(0) + kd * state(1));
   // Avoid to stay stable with pendulum vertical
-  if (std::fabs(state(2)) < M_PI / 10)
+  if (std::fabs(state(2)) < M_PI / 10 &&
+      std::fabs(state(3)) < 0.001)
   {
     cmd(0) = max_torque;
   }
