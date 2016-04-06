@@ -107,6 +107,13 @@ int main(int argc, char ** argv)
   // Building problem
   ControlProblem * problem = ProblemFactory().buildControl(config.problem);
 
+  // Applying problem limits
+  config.mre_config.mrefpf_conf.setStateLimits(problem->getStateLimits());
+  config.mre_config.mrefpf_conf.setActionLimits(problem->getActionLimits());
+
+  // Save an exhaustive version of the configuration used
+  config.save_file("UsedConfig.xml");
+
   std::vector<std::string> effectors       = config.control_config.effectors;
   std::vector<std::string> linear_sensors  = config.control_config.linear_sensors;
   std::vector<std::string> angular_sensors = config.control_config.angular_sensors;
