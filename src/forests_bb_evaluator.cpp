@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
   config.load_file();
 
   // Building problem
-  BlackBoxProblem * problem = ProblemFactory::buildBlackBox(config.problem);
+  BlackBoxProblem * problem = ProblemFactory().buildBlackBox(config.problem);
 
   std::vector<std::unique_ptr<regression_forests::Forest>> policies;
   for (const std::string &path : config.policies)

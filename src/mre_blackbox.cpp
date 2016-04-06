@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
   config.load_file();
 
   // Building problem
-  BlackBoxProblem * problem = ProblemFactory::buildBlackBox(config.problem);
+  BlackBoxProblem * problem = ProblemFactory().buildBlackBox(config.problem);
 
   // Creating mre instance
   MRE mre(config.mre_config,

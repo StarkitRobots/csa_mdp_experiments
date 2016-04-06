@@ -8,19 +8,18 @@
 
 using csa_mdp::Problem;
 
-Problem * ProblemFactory::build(const std::string &name)
+ProblemFactory::ProblemFactory()
 {
-  if (name == "CartPole")
-    return new CartPole();
-  if (name == "CartPoleStabilization")
-    return new CartPoleStabilization();
-  if (name == "InvertedPendulum")
-    return new InvertedPendulum();
-  if (name == "DoubleInvertedPendulum")
-    return new DoubleInvertedPendulum();
-  if (name == "DoubleIntegrator")
-    return new DoubleIntegrator();
-  throw std::runtime_error("Problem '" + name + "' is not known by the ProblemFactory");
+  registerBuilder("CartPole",
+                  [](TiXmlNode *node) {return new CartPole();});
+  registerBuilder("CartPoleStabilization",
+                  [](TiXmlNode *node) {return new CartPoleStabilization();});
+  registerBuilder("InvertedPendulum",
+                  [](TiXmlNode *node) {return new InvertedPendulum();});
+  registerBuilder("DoubleInvertedPendulum",
+                  [](TiXmlNode *node) {return new DoubleInvertedPendulum();});
+  registerBuilder("DoubleIntegrator",
+                  [](TiXmlNode *node) {return new DoubleIntegrator();});
 }
 
 ControlProblem * ProblemFactory::buildControl(const std::string &name)
