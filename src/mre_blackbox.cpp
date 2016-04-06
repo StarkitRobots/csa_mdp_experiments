@@ -175,14 +175,14 @@ int main(int argc, char ** argv)
     }//End of while OK
     write_log(logs, run, step, current_state, cmd);
     std::cout << "Reward for run " << run << ": " << trajectory_reward << std::endl;
-    std::cout << "Updating policy " << run << std::endl;
+    //std::cout << "Updating policy " << run << std::endl;
     mre.updatePolicy();
-    std::cout << "\tTime spent to compute q_value   : " << mre.getQValueTime() << "[s]"
-              << std::endl;
-    std::cout << "\tTime spent to compute the policy: " << mre.getPolicyTime() << "[s]"
-              << std::endl;
-    std::string prefix = details_path + "/T" + std::to_string(run) + "_";
-    std::cout << "Saving all with prefix " << prefix << std::endl;
+    //std::cout << "\tTime spent to compute q_value   : " << mre.getQValueTime() << "[s]"
+    //          << std::endl;
+    //std::cout << "\tTime spent to compute the policy: " << mre.getPolicyTime() << "[s]"
+    //          << std::endl;
+    //std::string prefix = details_path + "/T" + std::to_string(run) + "_";
+    //std::cout << "Saving all with prefix " << prefix << std::endl;
     //mre.saveStatus(prefix);
     // Log time
     time_logs << run << ",qValue," << mre.getQValueTime() << std::endl;
