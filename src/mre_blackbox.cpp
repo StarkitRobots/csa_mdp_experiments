@@ -107,6 +107,13 @@ int main(int argc, char ** argv)
   // Building problem
   BlackBoxProblem * problem = ProblemFactory().buildBlackBox(config.problem);
 
+  // Applying problem limits
+  config.mre_config.mrefpf_conf.setStateLimits(problem->getStateLimits());
+  config.mre_config.mrefpf_conf.setActionLimits(problem->getActionLimits());
+
+  // Save an exhaustive version of the configuration used
+  config.save_file("UsedConfig.xml");
+
   // Creating mre instance
   MRE mre(config.mre_config,
           [problem](const Eigen::VectorXd &state)
@@ -176,7 +183,7 @@ int main(int argc, char ** argv)
               << std::endl;
     std::string prefix = details_path + "/T" + std::to_string(run) + "_";
     std::cout << "Saving all with prefix " << prefix << std::endl;
-    mre.saveStatus(prefix);
+    //mre.saveStatus(prefix);
     // Log time
     time_logs << run << ",qValue," << mre.getQValueTime() << std::endl;
     time_logs << run << ",policy," << mre.getPolicyTime() << std::endl;
