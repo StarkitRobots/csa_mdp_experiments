@@ -11,15 +11,15 @@ using csa_mdp::Problem;
 ProblemFactory::ProblemFactory()
 {
   registerBuilder("CartPole",
-                  [](TiXmlNode *node) {return new CartPole();});
+                  [](TiXmlNode *node) {(void)node;return new CartPole();});
   registerBuilder("CartPoleStabilization",
-                  [](TiXmlNode *node) {return new CartPoleStabilization();});
+                  [](TiXmlNode *node) {(void)node;return new CartPoleStabilization();});
   registerBuilder("InvertedPendulum",
-                  [](TiXmlNode *node) {return new InvertedPendulum();});
+                  [](TiXmlNode *node) {(void)node;return new InvertedPendulum();});
   registerBuilder("DoubleInvertedPendulum",
-                  [](TiXmlNode *node) {return new DoubleInvertedPendulum();});
+                  [](TiXmlNode *node) {(void)node;return new DoubleInvertedPendulum();});
   registerBuilder("DoubleIntegrator",
-                  [](TiXmlNode *node) {return new DoubleIntegrator();});
+                  [](TiXmlNode *node) {(void)node;return new DoubleIntegrator();});
 }
 
 ControlProblem * ProblemFactory::buildControl(const std::string &name)
