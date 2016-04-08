@@ -9,8 +9,9 @@ MREMachineBlackBox::MREMachineBlackBox(std::shared_ptr<Config> config)
 
 void MREMachineBlackBox::prepareRun()
 {
+  MREMachine::prepareRun();
   BlackBoxProblem * bb_problem = dynamic_cast<BlackBoxProblem *>(problem.get());
-  Eigen::VectorXd current_state = bb_problem->getStartingState();
+  current_state = bb_problem->getStartingState();
 }
 
 void MREMachineBlackBox::applyAction(const Eigen::VectorXd &action)

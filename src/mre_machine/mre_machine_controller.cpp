@@ -4,6 +4,10 @@
 
 #include "problems/control_problem.h"
 
+MREMachineController::Config::Config()
+{
+}
+
 std::string MREMachineController::Config::class_name() const
 {
   return "Config";
@@ -71,6 +75,7 @@ void MREMachineController::init()
     {
       std::cerr << exc.what() << std::endl;
     }
+    rate.sleep();
   }
 }
 
@@ -98,7 +103,6 @@ void MREMachineController::endRun()
 
 void MREMachineController::applyAction(const Eigen::VectorXd &action)
 {
-  ControlProblem * bb_problem = dynamic_cast<ControlProblem *>(problem.get());
   // Send command to motors
   std::map<std::string, double> motors_orders;
   for (int i = 0; i < action.rows(); i++)

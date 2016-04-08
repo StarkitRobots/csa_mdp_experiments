@@ -1,3 +1,5 @@
+#pragma once
+
 #include "rosban_csa_mdp/solvers/mre.h"
 
 #include "rosban_csa_mdp/core/problem.h"

@@ -1,8 +1,10 @@
-#include "solvers/mre_machine_factory.h"
+#include "mre_machine/mre_machine_factory.h"
+
+#include <ros/ros.h>
 
 #include <iostream>
 
-void usage(int argc, char ** argv)
+void usage()
 {
   std::cerr << "Usage: ... <config_path" << std::endl;
   exit(EXIT_FAILURE);
@@ -16,6 +18,7 @@ int main(int argc, char ** argv)
   }
 
   ros::init(argc, argv, "mre_controller");
+  ros::NodeHandle nh;
 
   std::string config_path(argv[1]);
 
@@ -27,8 +30,8 @@ int main(int argc, char ** argv)
   }
 
   MREMachineFactory f;
-  MREMachine * mre_machine = f.build_from_xml_file(config_path);
+  MREMachine * mre_machine = f.buildFromXmlFile("mre_experiment.xml", "mre_experiment");
 
-  mre_machine->init();
+  mre_machine->execute();
 
 }

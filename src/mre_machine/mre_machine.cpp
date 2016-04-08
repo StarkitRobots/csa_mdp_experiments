@@ -110,6 +110,7 @@ void MREMachine::prepareRun()
 {
   step = 0;
   trajectory_reward = 0;
+  current_reward = 0;
 }
 
 void MREMachine::endRun()

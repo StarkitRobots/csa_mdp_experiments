@@ -105,6 +105,9 @@ target_link_libraries(forests_bb_evaluator ${catkin_LIBRARIES} csa_mdp_experimen
 add_executable(random_bb src/random_bb.cpp)
 target_link_libraries(random_bb ${catkin_LIBRARIES} csa_mdp_experiments)
 
+# And even more generical...
+add_executable(mre_experiment src/mre_experiment.cpp)
+target_link_libraries(mre_experiment ${catkin_LIBRARIES} csa_mdp_experiments)
 
 #############
 ## Install ##
