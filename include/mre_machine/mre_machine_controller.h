@@ -38,7 +38,7 @@ private:
 
   std::unique_ptr<ControlBridge> bridge;
   std::unique_ptr<JointListener> listener;
-  ros::Rate rate;
+  std::unique_ptr<ros::Rate> rate;
 
   std::ofstream prepare_logs;
 

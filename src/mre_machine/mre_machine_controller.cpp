@@ -26,14 +26,12 @@ void MREMachineController::Config::from_xml(TiXmlNode *node)
 }
 
 MREMachineController::MREMachineController(std::shared_ptr<MREMachine::Config> config)
-  : MREMachine(config), rate(1.0), broken_connection(false)
+  : MREMachine(config), broken_connection(false)
 {
   Config * conf = dynamic_cast<Config *>(config.get());
   effectors       = conf->control_config.effectors;
   linear_sensors  = conf->control_config.linear_sensors;
   angular_sensors = conf->control_config.angular_sensors;
-
-  rate = ros::Rate(conf->control_config.frequency);
 
   prepare_logs.open("prepare_logs.csv");
 }
@@ -51,8 +49,12 @@ bool MREMachineController::alive()
 void MREMachineController::init()
 {
   MREMachine::init();
-  writeRunLogHeader(prepare_logs);
+
   Config * conf = dynamic_cast<Config *>(config.get());
+  rate = std::unique_ptr<ros::Rate>(new ros::Rate(conf->control_config.frequency));
+
+  writeRunLogHeader(prepare_logs);
+
   ros::NodeHandle nh;
   bridge = std::unique_ptr<ControlBridge>(new ControlBridge(nh,
                                                             effectors,
@@ -75,15 +77,16 @@ void MREMachineController::init()
     {
       std::cerr << exc.what() << std::endl;
     }
-    rate.sleep();
+    rate->sleep();
   }
 }
 
 void MREMachineController::prepareRun()
 {
+  MREMachine::prepareRun();
   ControlProblem * control_problem = dynamic_cast<ControlProblem *>(problem.get());
   int prepare_step = 0;
-  rate.reset();//Updating value might have used some time, need to update
+  rate->reset();//Updating value might have used some time, need to update
   while (alive() && (prepare_step == 0 || !control_problem->isValidStart(current_state)))
   {
     Eigen::VectorXd last_state = current_state;
@@ -112,7 +115,7 @@ void MREMachineController::applyAction(const Eigen::VectorXd &action)
   }
   bridge->send(motors_orders);
   // Sleep if necessary
-  rate.sleep();
+  rate->sleep();
   // Treating messages
   ros::spinOnce();
   // Reading state

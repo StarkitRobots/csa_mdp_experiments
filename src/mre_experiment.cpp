@@ -1,3 +1,4 @@
+#include "mre_machine/mre_machine_controller.h"
 #include "mre_machine/mre_machine_factory.h"
 
 #include <ros/ros.h>
@@ -6,7 +7,7 @@
 
 void usage()
 {
-  std::cerr << "Usage: ... <config_path" << std::endl;
+  std::cerr << "Usage: ... <config_path>" << std::endl;
   exit(EXIT_FAILURE);
 }
 
@@ -16,9 +17,6 @@ int main(int argc, char ** argv)
   {
     usage();
   }
-
-  ros::init(argc, argv, "mre_controller");
-  ros::NodeHandle nh;
 
   std::string config_path(argv[1]);
 
@@ -32,6 +30,13 @@ int main(int argc, char ** argv)
   MREMachineFactory f;
   MREMachine * mre_machine = f.buildFromXmlFile("mre_experiment.xml", "mre_experiment");
 
+  if (dynamic_cast<MREMachineController *>(mre_machine) != NULL)
+  {
+    ros::init(argc, argv, "mre_controller");
+    ros::NodeHandle nh;
+  }
+
   mre_machine->execute();
 
+  delete(mre_machine);
 }
