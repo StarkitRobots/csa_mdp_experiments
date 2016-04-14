@@ -1,7 +1,7 @@
 #include "problems/double_inverted_pendulum.h"
 
-std::vector<double> DoubleInvertedPendulum::max_torque = {5,1};
-std::vector<double> DoubleInvertedPendulum::max_axis_vel = {10,30};
+std::vector<double> DoubleInvertedPendulum::max_torque = {2,1};
+std::vector<double> DoubleInvertedPendulum::max_axis_vel = {20,40};
 double DoubleInvertedPendulum::start_pos_tol = M_PI / 180;// 1 deg of tol
 double DoubleInvertedPendulum::start_vel_tol = M_PI / 180;// 1 deg/s of tol
 
@@ -35,7 +35,7 @@ double DoubleInvertedPendulum::getReward(const Eigen::VectorXd &state,
 {
   (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
-    return -50;
+    return -200;
   }
   double pos_cost(0), torque_cost(0);
   for (int axis = 0; axis < 2; axis ++)
