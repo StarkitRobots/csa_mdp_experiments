@@ -1,28 +1,17 @@
 <mre_experiment>
   <class_name>blackbox</class_name>
   <mre_machine>
-    <nb_runs>10</nb_runs>
+    <nb_runs>100</nb_runs>
     <nb_steps>100</nb_steps>
     <problem>CartPoleStabilization</problem>
     <mre>
-      <plan_period>-1</plan_period>
       <mrefpf_conf>
         <nb_threads>3</nb_threads>
         <horizon>20</horizon>
         <discount>0.98</discount>
         <max_action_tiles>200</max_action_tiles>
-        <auto_parameters>true</auto_parameters>
         <reward_max>0</reward_max>
-        <update_type>Alternative</update_type>
-        <filter_samples>false</filter_samples>
       </mrefpf_conf>
-      <knownness_conf>
-        <nb_trees>25</nb_trees>
-        <tree_conf>
-          <max_points>10</max_points>
-          <type>Random</type>
-        </tree_conf>
-      </knownness_conf>
     </mre>
   </mre_machine>
 </mre_experiment>
