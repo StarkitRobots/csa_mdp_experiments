@@ -2,8 +2,12 @@
 
 #include "problems/problem_factory.h"
 
+#include "rosban_utils/benchmark.h"
+
 using csa_mdp::Problem;
 using csa_mdp::MRE;
+
+using rosban_utils::Benchmark;
 
 MREMachine::Config::Config()
 {
@@ -70,12 +74,16 @@ void MREMachine::execute()
 
 void MREMachine::doRun()
 {
+  Benchmark::open("preparation");
   prepareRun();
+  writeTimeLog("preparation", Benchmark::close());
+  Benchmark::open("simulation");
   while (alive() && step <= config->nb_steps && !problem->isTerminal(current_state))
   {
     doStep();
     step++;
   }
+  writeTimeLog("simulation", Benchmark::close());
   endRun();
 }
 
@@ -123,8 +131,8 @@ void MREMachine::endRun()
   }
   reward_logs << run << "," << trajectory_reward << std::endl;
   mre->updatePolicy();
-  time_logs << run << ",qValue," << mre->getQValueTime() << std::endl;
-  time_logs << run << ",policy," << mre->getPolicyTime() << std::endl;
+  writeTimeLog("qValue", mre->getQValueTime());
+  writeTimeLog("policy", mre->getPolicyTime());
 }
 
 void MREMachine::writeRunLogHeader(std::ostream &out)
@@ -143,6 +151,11 @@ void MREMachine::writeRunLogHeader(std::ostream &out)
     out << "action_" << i << ",";
   }
   out << "reward" << std::endl;
+}
+
+void MREMachine::writeTimeLog(const std::string &type, double time)
+{
+  time_logs << run << "," << type << "," << time << std::endl;
 }
 
 void MREMachine::writeRunLog(std::ostream &out, int run, int step,

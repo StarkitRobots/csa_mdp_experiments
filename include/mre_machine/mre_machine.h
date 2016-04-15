@@ -57,6 +57,8 @@ public:
   
   void writeRunLogHeader(std::ostream &out);
 
+  void writeTimeLog(const std::string &type, double time);
+
   static void writeRunLog(std::ostream &out,
                           int run, int step,
                           const Eigen::VectorXd &state,
