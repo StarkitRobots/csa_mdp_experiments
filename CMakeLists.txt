@@ -90,15 +90,9 @@ if(rosban_control_FOUND)
 
   add_executable(forests_controller src/forests_controller.cpp)
   target_link_libraries(forests_controller ${catkin_LIBRARIES} csa_mdp_experiments)
-
-  add_executable(mre_controller src/mre_controller.cpp)
-  target_link_libraries(mre_controller ${catkin_LIBRARIES} csa_mdp_experiments)
 endif(rosban_control_FOUND)
 
 ## Generic programs for blackbox problems
-add_executable(mre_blackbox src/mre_blackbox.cpp)
-target_link_libraries(mre_blackbox ${catkin_LIBRARIES} csa_mdp_experiments)
-
 add_executable(forests_bb_evaluator src/forests_bb_evaluator.cpp)
 target_link_libraries(forests_bb_evaluator ${catkin_LIBRARIES} csa_mdp_experiments)
 

@@ -35,7 +35,7 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
 }
 
 MREMachine::MREMachine(std::shared_ptr<Config> config_)
-  : config(config_), run(1), step(0)
+  : config(config_), run(1), step(0), nb_updates(0), next_update(1)
 {
   // Generating problem
   problem = std::shared_ptr<Problem>(ProblemFactory().build(config->problem));
@@ -130,9 +130,14 @@ void MREMachine::endRun()
     writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), current_reward);
   }
   reward_logs << run << "," << trajectory_reward << std::endl;
-  mre->updatePolicy();
-  writeTimeLog("qValue", mre->getQValueTime());
-  writeTimeLog("policy", mre->getPolicyTime());
+  if (run < config->nb_runs && run == next_update)
+  {
+    mre->updatePolicy();
+    nb_updates++;
+    writeTimeLog("qValue", mre->getQValueTime());
+    writeTimeLog("policy", mre->getPolicyTime());
+    next_update = pow(nb_updates + 1, 2);
+  }
 }
 
 void MREMachine::writeRunLogHeader(std::ostream &out)

@@ -83,4 +83,8 @@ protected:
   double trajectory_reward;
   Eigen::VectorXd current_state;
   double current_reward;
+
+  // Spacing updates
+  int nb_updates;
+  int next_update;
 };
