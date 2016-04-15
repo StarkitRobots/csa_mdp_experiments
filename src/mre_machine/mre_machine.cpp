@@ -134,8 +134,10 @@ void MREMachine::endRun()
   {
     mre->updatePolicy();
     nb_updates++;
-    writeTimeLog("qValue", mre->getQValueTime());
-    writeTimeLog("policy", mre->getPolicyTime());
+    writeTimeLog("qValueTS", mre->getQValueTrainingSetTime());
+    writeTimeLog("qValueET", mre->getQValueExtraTreesTime());
+    writeTimeLog("policyTS", mre->getPolicyTrainingSetTime());
+    writeTimeLog("policyET", mre->getPolicyExtraTreesTime());
     next_update = pow(nb_updates + 1, 2);
   }
 }

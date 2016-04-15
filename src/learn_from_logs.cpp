@@ -124,6 +124,8 @@ int main(int argc, char ** argv)
 
   std::ofstream time_file;
   time_file.open("time_consumption");
-  time_file << "Q-Value: " << config.fpf_conf.q_value_time << " [s]" << std::endl;
-  time_file << "Policy : " << config.fpf_conf.policy_time  << " [s]" <<std::endl;
+  time_file << "QValue TS: " << config.fpf_conf.q_training_set_time << " [s]" << std::endl;
+  time_file << "QValue ET: " << config.fpf_conf.q_extra_trees_time  << " [s]" << std::endl;
+  time_file << "Policy TS: " << config.fpf_conf.p_training_set_time << " [s]" << std::endl;
+  time_file << "Policy ET: " << config.fpf_conf.p_extra_trees_time  << " [s]" << std::endl;
 }
