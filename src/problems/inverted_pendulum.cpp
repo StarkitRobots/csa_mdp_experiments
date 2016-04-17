@@ -64,7 +64,7 @@ Eigen::VectorXd InvertedPendulum::getResetCmd(const Eigen::VectorXd &state) cons
   // Ensure that the pendulum will not stick in top position
   if (std::fabs(state(0)) < M_PI / 10)
   {
-    cmd(0) = 1;
+    cmd(0) = 5;
   }
   return cmd;
 }
