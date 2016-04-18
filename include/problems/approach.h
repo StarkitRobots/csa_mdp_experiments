@@ -15,6 +15,14 @@
 ///
 /// The robot needs to apply actions changing 'smoothly' in order to keep balance,
 /// therefore, we define the action space as the difference toward previous action
+///
+/// The state space is the following:
+/// - ball_x
+/// - ball_y
+/// - target_angle
+/// - last_step_x
+/// - last_step_y
+/// - last_step_theta
 class Approach : public BlackBoxProblem {
 public:
   Approach();
@@ -30,8 +38,16 @@ public:
 
   Eigen::VectorXd getStartingState() override;
 
+  /// Is the ball kickable
+  bool isKickable(const Eigen::VectorXd & state) const;
+  /// Is the robot colliding with the ball
+  bool isColliding(const Eigen::VectorXd & state) const;
+  /// Is the ball outside of the given limits
+  bool isOutOfSpace(const Eigen::VectorXd & state) const;
+  /// Can the robot see the ball?
+  bool seeBall(const Eigen::VectorXd & state) const;
+
 private:
-  std::default_random_engine generator;
 
   // STATE LIMITS
   /// The maximal distance to the ball along one of the axis
@@ -68,9 +84,9 @@ private:
   static double kick_reward;
 
   // BALL VIEW
-  /// The maximal angle for viewing the ball
+  /// Ball is seen in [-viewing_angle, viewing_angle]
   static double viewing_angle;
-  /// the reward received when not seeing the ball.
+  /// The reward received when not seeing the ball.
   static double no_view_reward;
 
   // BALL COLLISION
@@ -91,4 +107,8 @@ private:
   /// In reality, there is a huge difference between the order given to the walk
   /// system and its result
   static double walk_gain;
+
+  std::uniform_real_distribution<double> step_x_noise_distrib;
+  std::uniform_real_distribution<double> step_y_noise_distrib;
+  std::uniform_real_distribution<double> step_theta_noise_distrib;
 };
