@@ -20,6 +20,9 @@ CartPole::CartPole()
   action_limits << -max_torque, max_torque;
   setStateLimits(state_limits);
   setActionLimits(action_limits);
+
+  setStateNames({"cart_pos", "cart_speed", "theta", "omega"});
+  setActionNames({"cart_cmd"});
 }
 
 bool CartPole::isTerminal(const Eigen::VectorXd & state) const

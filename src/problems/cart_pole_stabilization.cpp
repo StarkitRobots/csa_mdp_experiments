@@ -32,6 +32,8 @@ CartPoleStabilization::CartPoleStabilization()
 
   setStateLimits(state_limits);
   setActionLimits(action_limits);
+  setStateNames({"theta","omega"});
+  setActionNames({"torque"});
 
   generator = regression_forests::get_random_engine();
   noise_distribution = std::uniform_real_distribution<double>(-noise_max, noise_max);
