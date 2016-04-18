@@ -1,5 +1,6 @@
 #include "problems/problem_factory.h"
 
+#include "problems/approach.h"
 #include "problems/cart_pole.h"
 #include "problems/cart_pole_stabilization.h"
 #include "problems/double_integrator.h"
@@ -10,6 +11,8 @@ using csa_mdp::Problem;
 
 ProblemFactory::ProblemFactory()
 {
+  registerBuilder("Approach",
+                  [](TiXmlNode *node) {(void)node;return new Approach();});
   registerBuilder("CartPole",
                   [](TiXmlNode *node) {(void)node;return new CartPole();});
   registerBuilder("CartPoleStabilization",

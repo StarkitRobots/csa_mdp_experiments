@@ -1,5 +1,6 @@
 #include "interface/interface.h"
 
+// TODO: externalize
 static double normalizeAngle(double value)
 {
   while (value > M_PI)

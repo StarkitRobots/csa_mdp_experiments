@@ -146,16 +146,14 @@ void MREMachine::writeRunLogHeader(std::ostream &out)
 {
   out << "run,step,";
   // State information
-  int x_dim = config->mre_config.mrefpf_conf.getStateLimits().rows();
-  for (int i = 0; i < x_dim; i++)
+  for (const std::string & name : problem->getStateNames())
   {
-    out << "state_" << i << ",";
+    out << name << ",";
   }
   // Commands
-  int u_dim = config->mre_config.mrefpf_conf.getActionLimits().rows();
-  for (int i = 0; i < u_dim; i++)
+  for (const std::string & name : problem->getActionNames())
   {
-    out << "action_" << i << ",";
+    out << name << ",";
   }
   out << "reward" << std::endl;
 }
@@ -171,6 +169,7 @@ void MREMachine::writeRunLog(std::ostream &out, int run, int step,
                              double reward)
 {
   out << run << "," << step << ",";
+
   for (int i = 0; i < state.rows(); i++)
   {
     out << state(i) << ",";
