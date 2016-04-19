@@ -20,16 +20,17 @@ double Approach::kick_x_min     = 0.1    ;
 double Approach::kick_x_max     = 0.2    ;
 double Approach::kick_y_tol     = 0.05   ;
 double Approach::kick_theta_tol = M_PI/30;
-double Approach::kick_reward = 1;
+double Approach::kick_reward = 0;
 // Viewing the ball
 double Approach::viewing_angle  = 2*M_PI/3;
 double Approach::no_view_reward = -0.01   ;
 // Collision
 double Approach::collision_x      =  0.1;
 double Approach::collision_y      =  0.3;
-double Approach::collision_reward = -1  ;
+double Approach::collision_reward = -100;
 // Misc
-double Approach::out_of_space_reward = -1;
+double Approach::out_of_space_reward = -100;
+double Approach::step_reward         = -1;
 double Approach::init_min_dist = 0.4;
 double Approach::walk_gain = 3;
 
@@ -89,8 +90,9 @@ double  Approach::getReward(const Eigen::VectorXd & state,
   if (isKickable(dst)  ) return kick_reward;
   if (isColliding(dst) ) return collision_reward;
   if (isOutOfSpace(dst)) return out_of_space_reward;
-  if (seeBall(dst)     ) return no_view_reward;
-  return 0;
+  double reward = step_reward;
+  if (!seeBall(dst)    ) reward += no_view_reward;
+  return reward;
 }
 
 Eigen::VectorXd Approach::getSuccessor(const Eigen::VectorXd & state,
@@ -114,14 +116,14 @@ Eigen::VectorXd Approach::getSuccessor(const Eigen::VectorXd & state,
   real_move(1) = next_cmd(1) * walk_gain + step_y_noise_distrib(random_engine);
   real_move(2) = next_cmd(2) + step_theta_noise_distrib(random_engine);// No walk gain for theta
   // Apply the real move
-  Eigen::VectorXd next_state = state;
+  Eigen::VectorXd next_state(6);
   // Apply rotation first
   double delta_theta = real_move(2);
-  next_state(2) -= normalizeAngle(state(2) + delta_theta);
+  next_state(2) = normalizeAngle(state(2) - delta_theta);
   next_state(0) = state(0) * cos(delta_theta) - state(1) * sin(delta_theta);
   next_state(1) = state(1) * sin(delta_theta) + state(0) * cos(delta_theta);
   // Then, apply translation
-  next_state.segment(0,2) = state.segment(0,2) - real_move.segment(0,2);
+  next_state.segment(0,2) = next_state.segment(0,2) - real_move.segment(0,2);
   // Update cmd
   next_state.segment(3,3) = next_cmd;
   return next_state;

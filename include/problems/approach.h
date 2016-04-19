@@ -101,6 +101,10 @@ private:
   /// The reward received when getting out of space
   static double out_of_space_reward;
 
+  // Step reward
+  /// This reward is received at each non-terminal step
+  static double step_reward;
+
   /// Minimal distance at the beginning
   static double init_min_dist;
 
