@@ -151,9 +151,11 @@ bool Approach::isKickable(const Eigen::VectorXd & state) const
 {
   double ball_x = state(0);
   double ball_y = state(1);
+  double theta  = state(2);
   bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
   bool y_ok = std::fabs(ball_y) < kick_y_tol;
-  return x_ok && y_ok;
+  bool theta_ok = - kick_theta_tol < theta && theta < kick_theta_tol;
+  return x_ok && y_ok && theta_ok;
 }
 
 bool Approach::isColliding(const Eigen::VectorXd & state) const
