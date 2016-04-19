@@ -120,8 +120,8 @@ Eigen::VectorXd Approach::getSuccessor(const Eigen::VectorXd & state,
   // Apply rotation first
   double delta_theta = real_move(2);
   next_state(2) = normalizeAngle(state(2) - delta_theta);
-  next_state(0) = state(0) * cos(delta_theta) - state(1) * sin(delta_theta);
-  next_state(1) = state(1) * sin(delta_theta) + state(0) * cos(delta_theta);
+  next_state(0) = state(0) * cos(-delta_theta) - state(1) * sin(-delta_theta);
+  next_state(1) = state(0) * sin(-delta_theta) + state(1) * cos(-delta_theta);
   // Then, apply translation
   next_state.segment(0,2) = next_state.segment(0,2) - real_move.segment(0,2);
   // Update cmd
