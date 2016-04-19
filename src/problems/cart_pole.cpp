@@ -48,10 +48,11 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -200;
   }
-  bool binary_reward = false;
+  bool binary_reward = true;
   if (binary_reward)
   {
-    if (std::fabs(dst(2)) < M_PI / 12)
+    if (std::fabs(dst(0)) < max_pos / 10 &&
+        std::fabs(dst(2)) < M_PI / 10)
     {
       return 0;
     }
