@@ -53,6 +53,7 @@ include_directories(
 # Directories containing sources files
 set(DIRECTORIES
   src/mre_machine
+  src/policies
   src/problems
   src/interface
   )

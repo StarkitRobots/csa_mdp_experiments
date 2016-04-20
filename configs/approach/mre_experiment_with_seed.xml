@@ -1,0 +1,19 @@
+<mre_experiment>
+  <class_name>blackbox</class_name>
+  <mre_machine>
+    <mode>exploration</mode>
+    <seed_path>../run_logs.csv</seed_path>
+    <nb_runs>100</nb_runs>
+    <nb_steps>100</nb_steps>
+    <problem>Approach</problem>
+    <mre>
+      <mrefpf_conf>
+        <nb_threads>3</nb_threads>
+        <horizon>20</horizon>
+        <discount>0.98</discount>
+        <max_action_tiles>200</max_action_tiles>
+        <reward_max>0</reward_max>
+      </mrefpf_conf>
+    </mre>
+  </mre_machine>
+</mre_experiment>

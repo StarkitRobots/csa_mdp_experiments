@@ -2,6 +2,7 @@
 
 #include "rosban_csa_mdp/solvers/mre.h"
 
+#include "rosban_csa_mdp/core/policy.h"
 #include "rosban_csa_mdp/core/problem.h"
 
 #include <fstream>
@@ -10,6 +11,14 @@
 class MREMachine
 {
 public:
+
+  /// There is three types of mode for a mre_machine
+  /// 1. exploration (gather samples and update policy frequently)
+  /// 2. evaluation (uses a provided policy for runs)
+  /// 3. full (gather samples, then learn policies and finally perform an evaluation)
+  enum class Mode
+  { exploration, evaluation, full };
+
   class Config : rosban_utils::Serializable
   {
   public:
@@ -19,10 +28,15 @@ public:
     void to_xml(std::ostream &out) const override;
     void from_xml(TiXmlNode *node) override;
 
+    Mode mode;
     int nb_runs;
     int nb_steps;
     std::string problem;
     csa_mdp::MRE::Config mre_config;
+    /// When using exploration mode, a 'seed' can be provided which is a file containing
+    /// one or several runs which can be used to learn a first policy 
+    std::string seed_path;
+    std::unique_ptr<csa_mdp::Policy> policy;
     //TODO add a boolean for choosing if details should be written or not
   };
 
@@ -88,3 +102,6 @@ protected:
   int nb_updates;
   int next_update;
 };
+
+std::string to_string(MREMachine::Mode mode);
+MREMachine::Mode loadMode(const std::string &mode);
