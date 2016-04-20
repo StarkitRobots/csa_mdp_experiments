@@ -14,7 +14,7 @@ ExpertApproach::ExpertApproach()
     near_lateral_p(0.6),
     stop_y_near(0.125),
     max_y_near(0.25),
-    wished_x(0.1),
+    wished_x(0.15),
     wished_y(0.0),
     target_theta_tol(15 * M_PI / 180),
     ball_theta_tol(15 * M_PI / 180)
@@ -43,9 +43,6 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
   float x_error = ball_x - wished_x;
   float y_error = ball_y - wished_y;
 
-  std::cout << "Input: " << state.transpose() << std::endl;
-  std::cout << "\tinitial_state: " << to_string(current_state) << std::endl;
-
   // Updating state
   if (current_state == State::far && ball_distance < min_far_radius)
   {
@@ -64,10 +61,6 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
     current_state = State::rotate;
   }
 
-  std::cout << "\tupdated_state: " << to_string(current_state) << std::endl;
-
-
-  
   // Computing command
   Eigen::VectorXd wished_cmd = Eigen::VectorXd::Zero(3);
   switch(current_state)
@@ -77,7 +70,7 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
       wished_cmd(2) = far_theta_p * ball_azimuth;
       break;
     case State::rotate:
-      wished_cmd(0) = step_p * radius;
+      wished_cmd(0) = step_p * (ball_distance - radius);
       wished_cmd(1) = rotate_lateral_p * target_angle;
       wished_cmd(2) = rotate_theta_p * ball_azimuth;
       break;
@@ -97,9 +90,6 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
   }
 
   Eigen::VectorXd delta_cmd = wished_cmd - state.segment(3,3);
-
-  std::cout << "\tWished cmd: " << wished_cmd.transpose() << std::endl
-            << "\tDelta  cmd: " << delta_cmd.transpose() << std::endl;
 
   return delta_cmd;
 }

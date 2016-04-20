@@ -2,10 +2,12 @@
 
 #include "problems/problem_factory.h"
 
+#include "rosban_csa_mdp/core/history.h"
 #include "rosban_csa_mdp/core/policy_factory.h"
 
 #include "rosban_utils/benchmark.h"
 
+using csa_mdp::History;
 using csa_mdp::Problem;
 using csa_mdp::MRE;
 
@@ -60,6 +62,7 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
     }
     case MREMachine::Mode::exploration:
       mre_config.read(node, "mre");
+      rosban_utils::xml_tools::try_read<std::string>(node, "seed_path", seed_path);
       break;
     case MREMachine::Mode::full:
       throw std::runtime_error("MREMachine does not implement mode 'full' yet");      
@@ -161,6 +164,19 @@ void MREMachine::init()
   writeRunLogHeader(run_logs);
   time_logs << "run,type,time" << std::endl;
   reward_logs << "run,reward" << std::endl;
+  // Preload some experiment
+  if (config->mode == MREMachine::Mode::exploration && config->seed_path != "")
+  {
+    std::vector<History> histories = History::readCSV(config->seed_path,
+                                                      problem->getStateLimits().rows(),
+                                                      problem->getActionLimits().rows());
+    std::vector<csa_mdp::Sample> samples = History::getBatch(histories);
+    for (const csa_mdp::Sample & s : samples)
+    {
+      mre->feed(s);
+    }
+    mre->updatePolicy();
+  }
 }
 
 bool MREMachine::alive()

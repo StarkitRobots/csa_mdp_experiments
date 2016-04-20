@@ -33,6 +33,9 @@ public:
     int nb_steps;
     std::string problem;
     csa_mdp::MRE::Config mre_config;
+    /// When using exploration mode, a 'seed' can be provided which is a file containing
+    /// one or several runs which can be used to learn a first policy 
+    std::string seed_path;
     std::unique_ptr<csa_mdp::Policy> policy;
     //TODO add a boolean for choosing if details should be written or not
   };
