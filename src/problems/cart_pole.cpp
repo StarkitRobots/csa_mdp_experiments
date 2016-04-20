@@ -51,11 +51,9 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   bool binary_reward = true;
   if (binary_reward)
   {
-    if (std::fabs(dst(0)) < max_pos / 10 &&
-        std::fabs(dst(2)) < M_PI / 10)
-    {
-      return 0;
-    }
+    bool pole_ok = std::fabs(dst(2)) < M_PI / 10;
+    bool cart_ok = true;//std::fabs(dst(0)) < max_pos / 10;
+    if ( cart_ok && pole_ok) return 0;
     return -1;
   }
   double cart_cost = std::pow(dst(0) / max_pos, 4);
@@ -98,5 +96,7 @@ Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const
   {
     cmd(0) = max_torque;
   }
+  // Ensuring that limits are respected
+  cmd(0) = std::min(max_torque, std::max(-max_torque, cmd(0)));
   return cmd;
 }
