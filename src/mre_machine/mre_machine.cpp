@@ -38,7 +38,7 @@ void MREMachine::Config::to_xml(std::ostream &out) const
       mre_config.write("mre", out);
       break;
     case MREMachine::Mode::full:
-      throw std::runtime_error("MREMachine doest not implement mode 'full' yet");
+      throw std::runtime_error("MREMachine does not implement mode 'full' yet");
   }
 }
 
@@ -62,7 +62,7 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
       mre_config.read(node, "mre");
       break;
     case MREMachine::Mode::full:
-      throw std::runtime_error("MREMachine doest not implement mode 'full' yet");      
+      throw std::runtime_error("MREMachine does not implement mode 'full' yet");      
   }
 }
 
@@ -83,6 +83,11 @@ MREMachine::MREMachine(std::shared_ptr<Config> config_)
       return this->problem->isTerminal(state);
     }
                                  ));
+  }
+  // Setting action space for policy
+  if ( config->mode == MREMachine::Mode::evaluation )
+  {
+    config->policy->setActionLimits(problem->getActionLimits());
   }
   // Opening log files
   run_logs.open("run_logs.csv");
@@ -131,7 +136,7 @@ void MREMachine::doStep()
       cmd = mre->getAction(current_state);
       break;
     case MREMachine::Mode::evaluation:
-      cmd = policy->getAction(current_state);
+      cmd = config->policy->getAction(current_state);
       break;
     case MREMachine::Mode::full:
       throw std::runtime_error("MREMachine doest not implement mode 'full' yet");      
@@ -189,6 +194,10 @@ void MREMachine::endRun()
     writeTimeLog("policyTS", mre->getPolicyTrainingSetTime());
     writeTimeLog("policyET", mre->getPolicyExtraTreesTime());
     next_update = pow(nb_updates + 1, 2);
+  }
+  if (config->mode == MREMachine::Mode::evaluation)
+  {
+    config->policy->init();
   }
 }
 

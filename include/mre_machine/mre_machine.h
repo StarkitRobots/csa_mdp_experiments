@@ -83,9 +83,6 @@ protected:
   /// The online explorator
   std::unique_ptr<csa_mdp::MRE> mre;
 
-  /// The current policy
-  std::unique_ptr<csa_mdp::Policy> policy;
-
   /// Output files
   std::ofstream run_logs;
   std::ofstream time_logs;
