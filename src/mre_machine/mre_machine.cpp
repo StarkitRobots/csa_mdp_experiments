@@ -2,6 +2,8 @@
 
 #include "problems/problem_factory.h"
 
+#include "rosban_csa_mdp/core/policy_factory.h"
+
 #include "rosban_utils/benchmark.h"
 
 using csa_mdp::Problem;
@@ -9,7 +11,10 @@ using csa_mdp::MRE;
 
 using rosban_utils::Benchmark;
 
+using csa_mdp::Policy;
+
 MREMachine::Config::Config()
+  : mode(MREMachine::Mode::exploration)
 {
 }
 
@@ -20,18 +25,45 @@ std::string MREMachine::Config::class_name() const
 
 void MREMachine::Config::to_xml(std::ostream &out) const
 {
+  rosban_utils::xml_tools::write<std::string>("mode", to_string(mode), out);
   rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
   rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
   rosban_utils::xml_tools::write<std::string>("problem", problem, out);
-  mre_config.write("mre", out);
+  switch(mode)
+  {
+    case MREMachine::Mode::evaluation:
+      policy->write("policy", out);
+      break;
+    case MREMachine::Mode::exploration:
+      mre_config.write("mre", out);
+      break;
+    case MREMachine::Mode::full:
+      throw std::runtime_error("MREMachine doest not implement mode 'full' yet");
+  }
 }
 
 void MREMachine::Config::from_xml(TiXmlNode *node)
 {
+  std::string mode_str = rosban_utils::xml_tools::read<std::string>(node, "mode");
+  mode = loadMode(mode_str);
   nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
   problem  = rosban_utils::xml_tools::read<std::string>(node, "problem");
-  mre_config.read(node, "mre");
+  switch(mode)
+  {
+    case MREMachine::Mode::evaluation:
+    {
+      TiXmlNode * policy_node = node->FirstChild("policy");
+      if(!policy_node) throw std::runtime_error("Failed to find node 'policy'");
+      policy = std::unique_ptr<Policy>(PolicyFactory().build(policy_node));
+      break;
+    }
+    case MREMachine::Mode::exploration:
+      mre_config.read(node, "mre");
+      break;
+    case MREMachine::Mode::full:
+      throw std::runtime_error("MREMachine doest not implement mode 'full' yet");      
+  }
 }
 
 MREMachine::MREMachine(std::shared_ptr<Config> config_)
@@ -43,12 +75,15 @@ MREMachine::MREMachine(std::shared_ptr<Config> config_)
   config->mre_config.mrefpf_conf.setStateLimits(problem->getStateLimits());
   config->mre_config.mrefpf_conf.setActionLimits(problem->getActionLimits());
   // Initalizing mre
-  mre = std::unique_ptr<MRE>(new MRE(config->mre_config,
-                                     [this](const Eigen::VectorXd &state)
+  if ( config->mode != MREMachine::Mode::evaluation )
   {
-    return this->problem->isTerminal(state);
+    mre = std::unique_ptr<MRE>(new MRE(config->mre_config,
+                                       [this](const Eigen::VectorXd &state)
+    {
+      return this->problem->isTerminal(state);
+    }
+                                 ));
   }
-                               ));
   // Opening log files
   run_logs.open("run_logs.csv");
   time_logs.open("time_logs.csv");
@@ -89,16 +124,30 @@ void MREMachine::doRun()
 
 void MREMachine::doStep()
 {
-  Eigen::VectorXd cmd = mre->getAction(current_state);
+  Eigen::VectorXd cmd;
+  switch(config->mode)
+  {
+    case MREMachine::Mode::exploration:
+      cmd = mre->getAction(current_state);
+      break;
+    case MREMachine::Mode::evaluation:
+      cmd = policy->getAction(current_state);
+      break;
+    case MREMachine::Mode::full:
+      throw std::runtime_error("MREMachine doest not implement mode 'full' yet");      
+  }
   Eigen::VectorXd last_state = current_state;
   applyAction(cmd);
   writeRunLog(run_logs, run, step, last_state, cmd, current_reward);
-  csa_mdp::Sample new_sample(last_state,
-                             cmd,
-                             current_state,
-                             current_reward);
-  // Apply modifications
-  mre->feed(new_sample);
+  if (config->mode == MREMachine::Mode::exploration)
+  {
+    csa_mdp::Sample new_sample(last_state,
+                               cmd,
+                               current_state,
+                               current_reward);
+    // Add new sample
+    mre->feed(new_sample);
+  }
   trajectory_reward += current_reward;
 }
 
@@ -127,10 +176,11 @@ void MREMachine::endRun()
   if (step <= config->nb_steps)
   {
     int u_dim = problem->getActionLimits().rows();
-    writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), current_reward);
+    writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
   }
   reward_logs << run << "," << trajectory_reward << std::endl;
-  if (run < config->nb_runs && run == next_update)
+  if (config->mode == MREMachine::Mode::exploration &&
+      run < config->nb_runs && run == next_update)
   {
     mre->updatePolicy();
     nb_updates++;
@@ -179,4 +229,32 @@ void MREMachine::writeRunLog(std::ostream &out, int run, int step,
     out << action(i) << ",";
   }
   out << reward << std::endl;
+}
+
+std::string to_string(MREMachine::Mode mode)
+{
+  switch (mode)
+  {
+    case MREMachine::Mode::exploration: return "exploration";
+    case MREMachine::Mode::evaluation:  return "evaluation";
+    case MREMachine::Mode::full:        return "full";
+  }
+  throw std::runtime_error("Unknown MREMachine::Mode type in to_string(Type)");
+}
+
+MREMachine::Mode loadMode(const std::string &mode)
+{
+  if (mode == "exploration")
+  {
+    return MREMachine::Mode::exploration;
+  }
+  if (mode == "evaluation")
+  {
+    return MREMachine::Mode::evaluation;
+  }
+  if (mode == "full")
+  {
+    return MREMachine::Mode::full;
+  }
+  throw std::runtime_error("Unknown MREMachine::Mode: '" + mode + "'");
 }
