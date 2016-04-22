@@ -80,6 +80,10 @@ int main(int argc, char ** argv)
   // Building problem
   Problem * problem = ProblemFactory().build(config.problem);
 
+  // Setting limits
+  config.fpf_conf.setStateLimits(problem->getStateLimits());
+  config.fpf_conf.setActionLimits(problem->getActionLimits());
+
   // Specifying reward function
   Problem::RewardFunction reward_func = [problem](const Eigen::VectorXd &src,
                                                   const Eigen::VectorXd &action,

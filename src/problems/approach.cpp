@@ -2,7 +2,7 @@
 
 
 // State limits
-double Approach::max_pos        =  3   ;
+double Approach::max_pos        =  1   ;
 double Approach::min_step_x     = -0.02;
 double Approach::max_step_x     =  0.04;
 double Approach::max_step_y     =  0.03;
@@ -25,8 +25,8 @@ double Approach::kick_reward = 0;
 double Approach::viewing_angle  = 2*M_PI/3;
 double Approach::no_view_reward = -0.01   ;
 // Collision
-double Approach::collision_x      =  0.1;
-double Approach::collision_y      =  0.3;
+double Approach::collision_x      =  0.05;
+double Approach::collision_y      =  0.25;
 double Approach::collision_reward = -100;
 // Misc
 double Approach::out_of_space_reward = -100;
