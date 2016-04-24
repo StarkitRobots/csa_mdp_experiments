@@ -121,7 +121,7 @@ void MREMachine::doRun()
   prepareRun();
   writeTimeLog("preparation", Benchmark::close());
   Benchmark::open("simulation");
-  while (alive() && step <= config->nb_steps && !problem->isTerminal(current_state))
+  while (alive() && step < config->nb_steps && !problem->isTerminal(current_state))
   {
     doStep();
     step++;
@@ -194,11 +194,8 @@ void MREMachine::prepareRun()
 void MREMachine::endRun()
 {
   // If the maximal step has not been reached, it mean we reached a final state
-  if (step <= config->nb_steps)
-  {
-    int u_dim = problem->getActionLimits().rows();
-    writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
-  }
+  int u_dim = problem->getActionLimits().rows();
+  writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
   reward_logs << run << "," << trajectory_reward << std::endl;
   if (config->mode == MREMachine::Mode::exploration &&
       run < config->nb_runs && run == next_update)

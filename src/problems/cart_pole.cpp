@@ -3,7 +3,7 @@
 double CartPole::max_pos = 1;
 double CartPole::max_vel = 5;
 double CartPole::max_torque = 20;
-double CartPole::max_axis_vel = 15;
+double CartPole::max_axis_vel = 20;
 double CartPole::start_axis_pos_tol = M_PI / 180;
 double CartPole::start_axis_vel_tol = 0.01;
 double CartPole::start_cart_pos_tol = 0.05;
@@ -48,7 +48,7 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -200;
   }
-  bool binary_reward = true;
+  bool binary_reward = false;
   if (binary_reward)
   {
     bool pole_ok = std::fabs(dst(2)) < M_PI / 10;
@@ -87,7 +87,7 @@ bool CartPole::isValidStart(const Eigen::VectorXd &state) const
 Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const
 {
   static double kp = 10;
-  static double kd = 5;
+  static double kd = 10;
   Eigen::VectorXd cmd(1);
   cmd(0) = - (kp * state(0) + kd * state(1));
   // Avoid to stay stable with pendulum vertical

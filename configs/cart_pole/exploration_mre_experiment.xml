@@ -1,13 +1,14 @@
 <mre_experiment>
   <class_name>control</class_name>
   <mre_machine>
+    <mode>exploration</mode>
     <nb_runs>10</nb_runs>
     <nb_steps>100</nb_steps>
     <problem>CartPole</problem>
     <mre>
       <mrefpf_conf>
-        <nb_threads>3</nb_threads>
-        <horizon>20</horizon>
+        <nb_threads>2</nb_threads>
+        <horizon>10</horizon>
         <discount>0.98</discount>
         <max_action_tiles>200</max_action_tiles>
         <reward_max>0</reward_max>
@@ -15,7 +16,7 @@
     </mre>
     <control>
       <robot>cart_pole</robot>
-      <frequency>10</frequency>
+      <frequency>25</frequency>
       <linear_sensors>
         <v>cart_joint</v>
       </linear_sensors>
