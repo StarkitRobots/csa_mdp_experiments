@@ -2,9 +2,12 @@
 
 NB_POLICIES=10
 
-if [ ! -f TestConfig.xml ]
+SRC_NAME="evaluation_config.xml"
+DST_NAME="mre_experiment.xml"
+
+if [ ! -f ${SRC_NAME} ]
 then
-    echo "Missing TestConfig.xml"
+    echo "Missing ${SRC_NAME}"
     exit 1
 fi
 
@@ -18,8 +21,8 @@ do
     fi
     # Creating folder and copying config file
     mkdir -p policy$i/test
-    cp TestConfig.xml policy$i/test/Config.xml
+    cp ${SRC_NAME} policy$i/test/${DST_NAME}
     cd policy$i/test
-    rosrun csa_mdp_experiments forests_controller config_path:=`pwd`
+    rosrun csa_mdp_experiments mre_experiment `pwd`
     cd ../..
 done
