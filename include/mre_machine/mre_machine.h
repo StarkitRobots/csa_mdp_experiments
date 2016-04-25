@@ -35,6 +35,10 @@ public:
     UpdateRule update_rule;
     int nb_runs;
     int nb_steps;
+
+    /// Are the policy / q_value saved after each policy update?
+    bool save_details;
+
     std::shared_ptr<csa_mdp::Problem> problem;
     csa_mdp::MRE::Config mre_config;
     /// When using exploration mode, a 'seed' can be provided which is a file containing

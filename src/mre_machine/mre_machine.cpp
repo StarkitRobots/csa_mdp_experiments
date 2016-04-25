@@ -17,7 +17,7 @@ using rosban_utils::Benchmark;
 using csa_mdp::Policy;
 
 MREMachine::Config::Config()
-  : mode(MREMachine::Mode::exploration)
+  : mode(MREMachine::Mode::exploration), save_details(false)
 {
 }
 
@@ -32,6 +32,7 @@ void MREMachine::Config::to_xml(std::ostream &out) const
   rosban_utils::xml_tools::write<std::string>("update_rule", to_string(update_rule), out);
   rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
   rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
+  rosban_utils::xml_tools::write<bool>("save_details", save_details, out);
   out << "<problem>";
   problem->write(problem->class_name(), out);
   out << "</problem>";
@@ -52,10 +53,15 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
 {
   std::string mode_str = rosban_utils::xml_tools::read<std::string>(node, "mode");
   mode = loadMode(mode_str);
-  std::string update_rule_str = rosban_utils::xml_tools::read<std::string>(node, "update_rule");
-  update_rule = loadUpdateRule(update_rule_str);
+  std::string update_rule_str;
+  rosban_utils::xml_tools::try_read<std::string>(node, "update_rule", update_rule_str);
+  if (update_rule_str != "")
+  {
+    update_rule = loadUpdateRule(update_rule_str);
+  }
   nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
+  rosban_utils::xml_tools::try_read<bool>(node, "save_details", save_details);
   TiXmlNode * problem_node = node->FirstChild("problem");
   if(!problem_node) throw std::runtime_error("Failed to find node 'problem'");
   problem = std::unique_ptr<Problem>(ProblemFactory().build(problem_node));
@@ -210,6 +216,14 @@ void MREMachine::endRun()
   {
     mre->updatePolicy();
     nb_updates++;
+    // Save q_value and nb_steps
+    if (config->save_details)
+    {
+      std::ostringstream oss;
+      oss << "details/upate_" << nb_updates << "_";
+      std::string prefix = oss.str();
+      mre->saveStatus(prefix);
+    }
     writeTimeLog("qValueTS", mre->getQValueTrainingSetTime());
     writeTimeLog("qValueET", mre->getQValueExtraTreesTime());
     writeTimeLog("policyTS", mre->getPolicyTrainingSetTime());
