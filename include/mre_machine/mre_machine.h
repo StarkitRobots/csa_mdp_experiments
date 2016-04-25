@@ -19,6 +19,9 @@ public:
   enum class Mode
   { exploration, evaluation, full };
 
+  enum class UpdateRule
+  { each, square };
+
   class Config : rosban_utils::Serializable
   {
   public:
@@ -29,6 +32,7 @@ public:
     void from_xml(TiXmlNode *node) override;
 
     Mode mode;
+    UpdateRule update_rule;
     int nb_runs;
     int nb_steps;
     std::shared_ptr<csa_mdp::Problem> problem;
@@ -105,3 +109,6 @@ protected:
 
 std::string to_string(MREMachine::Mode mode);
 MREMachine::Mode loadMode(const std::string &mode);
+
+std::string to_string(MREMachine::UpdateRule rule);
+MREMachine::UpdateRule loadUpdateRule(const std::string &rule);

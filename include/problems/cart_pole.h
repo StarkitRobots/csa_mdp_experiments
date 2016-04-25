@@ -10,6 +10,10 @@
 class CartPole : public ControlProblem
 {
 public:
+
+  enum class RewardType
+  { Binary, Continuous, Pilco };
+
   CartPole();
 
   void updateLimits();
@@ -48,4 +52,13 @@ private:
   double start_axis_pos_tol;
   // maximal angular velocity at start trajectory [rad/s]
   double start_axis_vel_tol;
+
+  /// Pole length [m] (Required for pilco reward)
+  double pole_length;  
+
+  /// Which type of reward is used
+  RewardType reward_type;
 };
+
+std::string to_string(CartPole::RewardType type);
+CartPole::RewardType loadRewardType(const std::string &type);

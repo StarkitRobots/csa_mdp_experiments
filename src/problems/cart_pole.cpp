@@ -5,7 +5,9 @@ CartPole::CartPole()
     start_cart_pos_tol(0.05),
     start_cart_vel_tol(0.01),
     start_axis_pos_tol(M_PI/180),
-    start_axis_vel_tol(0.01)
+    start_axis_vel_tol(0.01),
+    pole_length(0.3),
+    reward_type(RewardType::Continuous)
 {
   updateLimits();
 }
@@ -49,22 +51,42 @@ double CartPole::getReward(const Eigen::VectorXd &state,
   if (isTerminal(dst) || isTerminal(state)) {
     return -200;
   }
-  bool binary_reward = false;
-  if (binary_reward)
+  double cart_pos = dst(0);
+  double theta = dst(2);
+  switch(reward_type)
   {
-    bool pole_ok = std::fabs(dst(2)) < M_PI / 10;
-    bool cart_ok = true;//std::fabs(dst(0)) < max_pos / 10;
-    if ( cart_ok && pole_ok) return 0;
-    return -1;
+    case RewardType::Binary:
+    {
+      bool pole_ok = std::fabs(theta) < M_PI / 10;
+      bool cart_ok = true;//std::fabs(dst(0)) < max_pos / 10;
+      if ( cart_ok && pole_ok) return 0;
+      return -1;
+    }
+    case RewardType::Continuous:
+    {
+      double cart_cost = std::pow(cart_pos / max_pos, 4);
+      double poles_cost = std::pow(theta / M_PI, 2);
+      return -(cart_cost + poles_cost);
+    }
+    case RewardType::Pilco:
+    {
+      double pole_x = cart_pos - sin(theta) * pole_length;
+      double pole_y = cos(theta) * pole_length;
+      double dx = pole_x;
+      double dy = pole_y - pole_length;
+      double d2 = dx * dx + dy * dy;
+      double a = 1 / (pole_length * pole_length);//at distance 2 *pole_length, reward = e^{-1} - 1
+      //std::cout << "pole_x : " << pole_x << std::endl
+      //          << "pole_y : " << pole_y << std::endl
+      //          << "dx : " << dx << std::endl
+      //          << "dy : " << dy << std::endl
+      //          << "d2 : " << d2 << std::endl
+      //          << "a  : " << a << std::endl
+      //          << "R : " << exp(-0.5 * d2 * a) - 1 << std::endl;
+      return exp(-0.5 * d2 * a) - 1;
+    }
   }
-  double cart_cost = std::pow(dst(0) / max_pos, 4);
-  double poles_cost = 0;
-  for (int i = 2; i < dst.rows(); i += 2)
-  {
-    poles_cost += std::pow(dst(i) / M_PI, 2);
-    //poles_cost += std::fabs(dst(i) / M_PI);
-  }
-  return -(cart_cost + poles_cost);
+  throw std::runtime_error("Unkown reward_type in CartPole");
 }
 
 Eigen::VectorXd CartPole::getSuccessor(const Eigen::VectorXd & state,
@@ -104,14 +126,15 @@ Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const
 
 void CartPole::to_xml(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<double>("max_pos"           , max_pos           , out);
-  rosban_utils::xml_tools::write<double>("max_vel"           , max_vel           , out);
-  rosban_utils::xml_tools::write<double>("max_torque"        , max_torque        , out);
-  rosban_utils::xml_tools::write<double>("max_axis_vel"      , max_axis_vel      , out);
-  rosban_utils::xml_tools::write<double>("start_cart_pos_tol", start_cart_pos_tol, out);
-  rosban_utils::xml_tools::write<double>("start_cart_vel_tol", start_cart_vel_tol, out);
-  rosban_utils::xml_tools::write<double>("start_axis_pos_tol", start_axis_pos_tol, out);
-  rosban_utils::xml_tools::write<double>("start_axis_vel_tol", start_axis_vel_tol, out);
+  rosban_utils::xml_tools::write<double>("max_pos"           , max_pos               , out);
+  rosban_utils::xml_tools::write<double>("max_vel"           , max_vel               , out);
+  rosban_utils::xml_tools::write<double>("max_torque"        , max_torque            , out);
+  rosban_utils::xml_tools::write<double>("max_axis_vel"      , max_axis_vel          , out);
+  rosban_utils::xml_tools::write<double>("start_cart_pos_tol", start_cart_pos_tol    , out);
+  rosban_utils::xml_tools::write<double>("start_cart_vel_tol", start_cart_vel_tol    , out);
+  rosban_utils::xml_tools::write<double>("start_axis_pos_tol", start_axis_pos_tol    , out);
+  rosban_utils::xml_tools::write<double>("start_axis_vel_tol", start_axis_vel_tol    , out);
+  rosban_utils::xml_tools::write<std::string>("reward_type  ", to_string(reward_type), out);
 }
 
 void CartPole::from_xml(TiXmlNode * node)
@@ -124,10 +147,35 @@ void CartPole::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node, "start_cart_vel_tol", start_cart_vel_tol);
   rosban_utils::xml_tools::try_read<double>(node, "start_axis_pos_tol", start_axis_pos_tol);
   rosban_utils::xml_tools::try_read<double>(node, "start_axis_vel_tol", start_axis_vel_tol);
+  std::string reward_type_str;
+  rosban_utils::xml_tools::try_read<std::string>(node, "reward_type", reward_type_str);
+  if (reward_type_str != "")
+  {
+    reward_type =  loadRewardType(reward_type_str);
+  }
   updateLimits();
 }
 
 std::string CartPole::class_name() const
 {
   return "cart_pole";
+}
+
+std::string to_string(CartPole::RewardType type)
+{
+  switch (type)
+  {
+    case CartPole::RewardType::Binary: return "binary";
+    case CartPole::RewardType::Continuous: return "continuous";
+    case CartPole::RewardType::Pilco: return "pilco";
+  }
+  throw std::runtime_error("Unknown type in to_string(Type)");
+}
+
+CartPole::RewardType loadRewardType(const std::string &type)
+{
+  if (type == "binary"    ) return CartPole::RewardType::Binary;
+  if (type == "continuous") return CartPole::RewardType::Continuous;
+  if (type == "pilco"     ) return CartPole::RewardType::Pilco;
+  throw std::runtime_error("Unknown CartPole::RewardType: '" + type + "'");
 }

@@ -29,6 +29,7 @@ std::string MREMachine::Config::class_name() const
 void MREMachine::Config::to_xml(std::ostream &out) const
 {
   rosban_utils::xml_tools::write<std::string>("mode", to_string(mode), out);
+  rosban_utils::xml_tools::write<std::string>("update_rule", to_string(update_rule), out);
   rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
   rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
   out << "<problem>";
@@ -51,6 +52,8 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
 {
   std::string mode_str = rosban_utils::xml_tools::read<std::string>(node, "mode");
   mode = loadMode(mode_str);
+  std::string update_rule_str = rosban_utils::xml_tools::read<std::string>(node, "update_rule");
+  update_rule = loadUpdateRule(update_rule_str);
   nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
   TiXmlNode * problem_node = node->FirstChild("problem");
@@ -211,7 +214,15 @@ void MREMachine::endRun()
     writeTimeLog("qValueET", mre->getQValueExtraTreesTime());
     writeTimeLog("policyTS", mre->getPolicyTrainingSetTime());
     writeTimeLog("policyET", mre->getPolicyExtraTreesTime());
-    next_update = pow(nb_updates + 1, 2);
+    switch(config->update_rule)
+    {
+      case UpdateRule::each:
+        next_update++;
+        break;
+      case UpdateRule::square:
+        next_update = pow(nb_updates + 1, 2);
+        break;
+    }
   }
   if (config->mode == MREMachine::Mode::evaluation)
   {
@@ -284,4 +295,27 @@ MREMachine::Mode loadMode(const std::string &mode)
     return MREMachine::Mode::full;
   }
   throw std::runtime_error("Unknown MREMachine::Mode: '" + mode + "'");
+}
+
+std::string to_string(MREMachine::UpdateRule rule)
+{
+  switch (rule)
+  {
+    case MREMachine::UpdateRule::each:   return "each";
+    case MREMachine::UpdateRule::square: return "square";
+  }
+  throw std::runtime_error("Unknown MREMachine::UpdateRule type in to_string(Type)");
+}
+
+MREMachine::UpdateRule loadUpdateRule(const std::string &rule)
+{
+  if (rule == "each")
+  {
+    return MREMachine::UpdateRule::each;
+  }
+  if (rule == "square")
+  {
+    return MREMachine::UpdateRule::square;
+  }
+  throw std::runtime_error("Unknown MREMachine::UpdateRule: '" + rule + "'");
 }
