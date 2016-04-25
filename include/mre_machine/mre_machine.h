@@ -31,7 +31,7 @@ public:
     Mode mode;
     int nb_runs;
     int nb_steps;
-    std::string problem;
+    std::shared_ptr<csa_mdp::Problem> problem;
     csa_mdp::MRE::Config mre_config;
     /// When using exploration mode, a 'seed' can be provided which is a file containing
     /// one or several runs which can be used to learn a first policy 

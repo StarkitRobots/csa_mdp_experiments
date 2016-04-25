@@ -31,4 +31,8 @@ public:
                                const Eigen::VectorXd & action) override;
 
   Eigen::VectorXd getStartingState() override;
+
+  void to_xml(std::ostream & out) const override;
+  void from_xml(TiXmlNode * node) override;
+  std::string class_name() const override;
 };

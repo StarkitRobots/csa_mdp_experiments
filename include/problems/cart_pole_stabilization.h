@@ -30,6 +30,10 @@ public:
 
   Eigen::VectorXd getStartingState() override;
 
+  void to_xml(std::ostream & out) const override;
+  void from_xml(TiXmlNode * node) override;
+  std::string class_name() const override;
+
 private:
   std::default_random_engine generator;
   std::uniform_real_distribution<double> noise_distribution;

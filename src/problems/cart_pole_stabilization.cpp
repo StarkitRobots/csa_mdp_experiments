@@ -96,3 +96,12 @@ Eigen::VectorXd CartPoleStabilization::getStartingState()
 {
   return Eigen::VectorXd::Zero(2);
 }
+
+void CartPoleStabilization::to_xml(std::ostream & out) const {(void)out;}
+
+void CartPoleStabilization::from_xml(TiXmlNode * node) {(void)node;}
+
+std::string CartPoleStabilization::class_name() const
+{
+  return "cart_pole_stabilization";
+}

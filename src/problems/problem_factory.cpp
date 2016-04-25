@@ -11,17 +11,22 @@ using csa_mdp::Problem;
 
 ProblemFactory::ProblemFactory()
 {
-  registerBuilder("Approach",
+  registerBuilder("approach",
                   [](TiXmlNode *node) {(void)node;return new Approach();});
-  registerBuilder("CartPole",
-                  [](TiXmlNode *node) {(void)node;return new CartPole();});
-  registerBuilder("CartPoleStabilization",
+  registerBuilder("cart_pole",
+                  [](TiXmlNode *node)
+                  {
+                    Problem * p = new CartPole();
+                    p->from_xml(node);
+                    return p;
+                  });
+  registerBuilder("cart_pole_stabilization",
                   [](TiXmlNode *node) {(void)node;return new CartPoleStabilization();});
-  registerBuilder("InvertedPendulum",
+  registerBuilder("inverted_pendulum",
                   [](TiXmlNode *node) {(void)node;return new InvertedPendulum();});
-  registerBuilder("DoubleInvertedPendulum",
+  registerBuilder("double_inverted_pendulum",
                   [](TiXmlNode *node) {(void)node;return new DoubleInvertedPendulum();});
-  registerBuilder("DoubleIntegrator",
+  registerBuilder("double_integrator",
                   [](TiXmlNode *node) {(void)node;return new DoubleIntegrator();});
 }
 

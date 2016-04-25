@@ -47,6 +47,10 @@ public:
   /// Can the robot see the ball?
   bool seeBall(const Eigen::VectorXd & state) const;
 
+  void to_xml(std::ostream & out) const override;
+  void from_xml(TiXmlNode * node) override;
+  std::string class_name() const override;
+
 private:
 
   // STATE LIMITS

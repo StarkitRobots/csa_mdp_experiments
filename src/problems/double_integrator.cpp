@@ -81,3 +81,12 @@ Eigen::VectorXd DoubleIntegrator::getStartingState()
   state << 1, 0;
   return state;
 }
+
+void DoubleIntegrator::to_xml(std::ostream & out) const {(void)out;}
+
+void DoubleIntegrator::from_xml(TiXmlNode * node) {(void)node;}
+
+std::string DoubleIntegrator::class_name() const
+{
+  return "double_integrator";
+}

@@ -25,6 +25,10 @@ public:
 
   Eigen::VectorXd getResetCmd(const Eigen::VectorXd &state) const override;
 
+  void to_xml(std::ostream & out) const override;
+  void from_xml(TiXmlNode * node) override;
+  std::string class_name() const override;
+
   // maximal torque applied on axis [N*m]
   static std::vector<double> max_torque;
   // maximal velocity of the axis [rad/s]

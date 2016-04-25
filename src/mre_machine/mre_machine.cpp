@@ -30,7 +30,9 @@ void MREMachine::Config::to_xml(std::ostream &out) const
   rosban_utils::xml_tools::write<std::string>("mode", to_string(mode), out);
   rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
   rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
-  rosban_utils::xml_tools::write<std::string>("problem", problem, out);
+  out << "<problem>";
+  problem->write(problem->class_name(), out);
+  out << "</problem>";
   switch(mode)
   {
     case MREMachine::Mode::evaluation:
@@ -50,7 +52,9 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
   mode = loadMode(mode_str);
   nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
-  problem  = rosban_utils::xml_tools::read<std::string>(node, "problem");
+  TiXmlNode * problem_node = node->FirstChild("problem");
+  if(!problem_node) throw std::runtime_error("Failed to find node 'problem'");
+  problem = std::unique_ptr<Problem>(ProblemFactory().build(problem_node));
   switch(mode)
   {
     case MREMachine::Mode::evaluation:
@@ -73,7 +77,7 @@ MREMachine::MREMachine(std::shared_ptr<Config> config_)
   : config(config_), run(1), step(0), nb_updates(0), next_update(1)
 {
   // Generating problem
-  problem = std::shared_ptr<Problem>(ProblemFactory().build(config->problem));
+  problem = config->problem;
   // Applying problem Limits
   config->mre_config.mrefpf_conf.setStateLimits(problem->getStateLimits());
   config->mre_config.mrefpf_conf.setActionLimits(problem->getActionLimits());

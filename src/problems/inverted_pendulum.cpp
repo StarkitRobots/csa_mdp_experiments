@@ -68,3 +68,12 @@ Eigen::VectorXd InvertedPendulum::getResetCmd(const Eigen::VectorXd &state) cons
   }
   return cmd;
 }
+
+void InvertedPendulum::to_xml(std::ostream & out) const {(void)out;}
+
+void InvertedPendulum::from_xml(TiXmlNode * node) {(void)node;}
+
+std::string InvertedPendulum::class_name() const
+{
+  return "inverted_pendulum";
+}
