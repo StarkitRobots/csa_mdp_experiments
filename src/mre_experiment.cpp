@@ -1,6 +1,8 @@
 #include "mre_machine/mre_machine_controller.h"
 #include "mre_machine/mre_machine_factory.h"
 
+#include "problems/extended_problem_factory.h"
+
 #include "policies/expert_approach.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
@@ -8,6 +10,8 @@
 #include <ros/ros.h>
 
 #include <iostream>
+
+using csa_mdp::PolicyFactory;
 
 void usage()
 {
@@ -24,6 +28,7 @@ int main(int argc, char ** argv)
 
   PolicyFactory::registerExtraBuilder("expert_approach",[](TiXmlNode * node)
                                       { (void)node; return new ExpertApproach();});
+  ExtendedProblemFactory::registerExtraProblems();
 
   std::string config_path(argv[1]);
 

@@ -1,9 +1,7 @@
-#include "problems/problem_factory.h"
+#include "problems/extended_problem_factory.h"
 
 #include "rosban_csa_mdp/core/history.h"
 #include "rosban_csa_mdp/solvers/fpf.h"
-
-#include <ros/ros.h>
 
 #include <fstream>
 
@@ -11,6 +9,7 @@
 
 using csa_mdp::History;
 using csa_mdp::Problem;
+using csa_mdp::ProblemFactory;
 using csa_mdp::FPF;
 
 class Config : public rosban_utils::Serializable
@@ -22,50 +21,41 @@ public:
 
   std::string class_name() const override
     {
-      return "Config";
+      return "policy_learner";
     }
 
   void to_xml(std::ostream &out) const override
     {
-      rosban_utils::xml_tools::write<std::string>("log_path"      , log_path      , out);
-      rosban_utils::xml_tools::write<std::string>("problem"       , problem       , out);
-      rosban_utils::xml_tools::write<int>        ("run_column"    , run_column    , out);
-      rosban_utils::xml_tools::write<int>        ("step_column"   , step_column   , out);
-      rosban_utils::xml_tools::write_vector<int> ("state_columns" , state_columns , out);
-      rosban_utils::xml_tools::write_vector<int> ("action_columns", action_columns, out);
+      history_conf.write("history_conf", out);
       fpf_conf.write("fpf_conf", out);
     }
 
   void from_xml(TiXmlNode *node) override
     {
-      log_path       = rosban_utils::xml_tools::read<std::string>(node, "log_path"      );
-      problem        = rosban_utils::xml_tools::read<std::string>(node, "problem"       );
-      run_column     = rosban_utils::xml_tools::read<int>        (node, "run_column"    );
-      step_column    = rosban_utils::xml_tools::read<int>        (node, "step_column"   );
-      state_columns  = rosban_utils::xml_tools::read_vector<int> (node, "state_columns" );
-      action_columns = rosban_utils::xml_tools::read_vector<int> (node, "action_columns");
+      history_conf.read(node, "history_conf");
       fpf_conf.read(node, "fpf_conf");
     }
 
-  std::string log_path;
-  std::string problem;
-  int run_column;
-  int step_column;
-  std::vector<int> state_columns;
-  std::vector<int> action_columns;
+  History::Config history_conf;
   FPF::Config fpf_conf;
 };
 
+void usage()
+{
+  std::cerr << "Usage: ... <config_path>" << std::endl;
+  exit(EXIT_FAILURE);
+}
 
 int main(int argc, char ** argv)
 {
-  std::string config_path = ros::getROSArg(argc, argv, "config_path");
-  if (config_path == "")
+  if (argc < 2)
   {
-    std::cerr << "Usage: rosrun .... config_path:=<path>" << std::endl;
-    std::cerr << "\tNote: <path> folder should contain a file named Config.xml" << std::endl;
-    exit(EXIT_FAILURE);
+    usage();
   }
+  std::string config_path = (argv[1]);
+
+  // Registering extra_types
+  ExtendedProblemFactory::registerExtraProblems();
 
   if (chdir(config_path.c_str()))
   {
@@ -77,8 +67,7 @@ int main(int argc, char ** argv)
   Config config;
   config.load_file();// Loading file Config.xml
 
-  // Building problem
-  Problem * problem = ProblemFactory().build(config.problem);
+  std::shared_ptr<Problem> problem = config.history_conf.problem;
 
   // Setting limits
   config.fpf_conf.setStateLimits(problem->getStateLimits());
@@ -93,13 +82,7 @@ int main(int argc, char ** argv)
     };
 
   // Reading csv file
-  std::vector<History> histories = History::readCSV(config.log_path,
-                                                    config.run_column,
-                                                    config.step_column,
-                                                    config.state_columns,
-                                                    config.action_columns,
-                                                    reward_func,
-                                                    true);
+  std::vector<History> histories = History::readCSV(config.history_conf);
 
   // Producing Samples
   std::vector<csa_mdp::Sample> samples = History::getBatch(histories);

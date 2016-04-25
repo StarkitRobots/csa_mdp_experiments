@@ -84,23 +84,7 @@ target_link_libraries(csa_mdp_experiments ${catkin_LIBRARIES})
 add_executable(learn_from_logs src/learn_from_logs.cpp)
 target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 
-## Generic programs for control problems
-if(rosban_control_FOUND)
-  add_executable(random_controller src/random_controller.cpp)
-  target_link_libraries(random_controller ${catkin_LIBRARIES} csa_mdp_experiments)
-
-  add_executable(forests_controller src/forests_controller.cpp)
-  target_link_libraries(forests_controller ${catkin_LIBRARIES} csa_mdp_experiments)
-endif(rosban_control_FOUND)
-
-## Generic programs for blackbox problems
-add_executable(forests_bb_evaluator src/forests_bb_evaluator.cpp)
-target_link_libraries(forests_bb_evaluator ${catkin_LIBRARIES} csa_mdp_experiments)
-
-add_executable(random_bb src/random_bb.cpp)
-target_link_libraries(random_bb ${catkin_LIBRARIES} csa_mdp_experiments)
-
-# And even more generical...
+# Generic MRE experiments (evaluation / exploration)
 add_executable(mre_experiment src/mre_experiment.cpp)
 target_link_libraries(mre_experiment ${catkin_LIBRARIES} csa_mdp_experiments)
 

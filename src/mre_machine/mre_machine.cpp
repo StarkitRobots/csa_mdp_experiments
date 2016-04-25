@@ -1,14 +1,15 @@
 #include "mre_machine/mre_machine.h"
 
-#include "problems/problem_factory.h"
-
 #include "rosban_csa_mdp/core/history.h"
+#include "rosban_csa_mdp/core/problem_factory.h"
 #include "rosban_csa_mdp/core/policy_factory.h"
 
 #include "rosban_utils/benchmark.h"
 
 using csa_mdp::History;
+using csa_mdp::PolicyFactory;
 using csa_mdp::Problem;
+using csa_mdp::ProblemFactory;
 using csa_mdp::MRE;
 
 using rosban_utils::Benchmark;
