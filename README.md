@@ -23,113 +23,110 @@ dependencies.
 - rosban_simu
 
 A specific attention should be brought to the dependencies of *rosban_simu*
-(cf. README), since if some dependencies are not fulfilled, it can results with
+(cf. README), since if some dependencies are not fulfilled, it can results in
 silent errors.
 
 
 # How to use the programs
 
-This repository contains three different types of programs
+This repository contains code allowing to produce two different binaries
 
-- Sample Generators
-  1. Random actions
-  2. Based on Multiple Resolution Exploration (MRE)
-- Policy Learner
-  - Load samples from a file and learn a policy
-- Policy Evaluation
-  - Test several runs on a given problem with a specified policy
+- mre_experiment
+- learn_from_logs
+
+Both takes a path as parameter and receive various parameters under the form of
+an xml file. Various examples can be found in the folders `configs`.
+
+## mre_experiment
+
+This program reads its configuration in `mre_experiment.xml`. It might be used for both,
+exploring a problem space using Multi-Resolution Exploration and evaluating a policy.
+Custom policies such as `Random`or `ExpertApproach` might also be used with this program.
+
+Usage: `rosrun csa_mdp_experiments mre_experiment <path>`
+
+## learn_from_logs
+
+This program reads its configuration in `policy_learner.xml`, it will load an history of
+samples gathered by using `mre_experiment` and analyze them with the provided parameters
+and finally produce one policy per dimension
+
+Usage: `rosrun csa_mdp_experiments learn_from_logs <path>`
 
 ## Usual structure
 
-Each program will create and write in different files such as `logs.csv` or
-`rewards.csv`. It will also read the content of an xml file called `Config.xml`
-in order to configure its parameters. Therefore, it is required to prepare a
-folder containing only the `Config.xml` file in order to execute a program. The
-path to this folder is provided as a parameter.
+Each program will read its parameter from an xml file and produce different files during
+execution such as `run_logs.csv`, `rewards_logs.csv` or `time_logs.csv`. Therefore,
+it is required to prepare a folder containing only the configuration file before executing
+a program. The path to this folder is provided as a parameter.
 
 A complete task involves:
 - Generating samples using an exploration policy
 - Computing policies from those samples
 - Evaluating those policies
 
+The initial structure of an experiment folder is the following
+
+```
+experiment_name
+  mre_exploration.xml   //Used for exploration
+  policy_learner.xml    //Used for learning policies from acquired samples
+  evaluation_config.xml //Used for evaluating computed policies
+
+
 The final structure of the created files is similar to the following:
 
 ```
 experiment_name
-  Config.xml    //The configuration used for exploration
-  logs.csv      //The sample acquired
-  time_logs.csv //The time needed for the different steps
-  details       //Data acquired during the exploration process (folder)
-    ...
-  policy_1      //The first policy
-    Config.xml    //The configuration of the learning process
-    policy_0.data //The forest describing the policy
-    q_values.data //The forest describing the compute Q value
-    test          //A folder containing the results obtained with the policy
-      Config.xml    //The configuration used to test the problem
-      logs.csv      //Trajectories obtained for all the test runs
-      rewards.csv   //The cumulative rewards for all the runs
-  policy_2      //The second policy
-    ...
-  ...           //Other policies
+  mre_exploration.xml   //Used for exploration
+  policy_learner.xml    //Used for learning policies from acquired samples
+  evaluation_config.xml //Used for evaluating computed policies
+  run_logs.csv          //The sample acquired
+  prepare_logs.csv      //The samples acquired when resetting the experiment (for debug)
+  time_logs.csv         //The time needed for the different steps
+  details               //Data acquired during the exploration process (optional)
+    ...                 
+  policy_1              //The first policy
+    policy_learner.xml    //Copied from root
+    policy_0.data         //The forest describing the policy for dimension 0
+    ...                   //The forests describing the policies for dimension k
+    q_values.data         //The forest describing the computed Q value
+    test                  //A folder containing the results obtained with the policy
+      mre_experiment.xml    //Copied from evaluation_config.xml
+      run_logs.csv          //Trajectories obtained for all the test runs
+      rewards_logs.csv      //The cumulative rewards for all the runs
+  policy_2              //The second policy
+    ...                 
+  ...                   //Other policies
 ```
-
-## Launching a blackbox experiment
-
-In order to run a *blackbox* experiment, a folder containing an appropriate
-`Config.xml` file should first be created, then we can use the following
-command: `rosrun csa_mdp_experiments mre_blackbox config_path:=...`
 
 ## Launching a controller experiment
 
-In order to run a *controller* experiment, a folder containing an appropriate
-`Config.xml` file should first be created. Then the gazebo simulation need to
-be started:
+In order to run a *controller* experiment (experiment using gazebo), the simulation
+needs to be started before calling `mre_experiment`.
 
+It can be run by using the following commands:
 ```
 roslaunch rosban_simu launch_robot.launch robot:=...
 roslaunch rosban_simu ..._control.launch
 ```
+Or as a background task without gui by using the scripts `bg_simu.sh` in `rosban_simu`:
+```.../rosban_simu/launch/bg_simu.sh <robot>```
 
-If graphical display is not necessary, it is also possible to run both using
-the script `rosban_simu/bg_simu.sh`.
-
-Once the simulator is started, the exploration process can be started using the
-following command: `rosrun csa_mdp_experiments mre_controller config_path:=...`
-
-## Learning a policy
-
-In order to learn a policy, one should first acquire data and then prepare a
-folder containing an appropriate `Config.xml` file. Then, the learning can be
-performed as following:
-`rosrun csa_mdp_experiments learn_from_logs config_path:=...`
-
-## Evaluating a policy for a blackbox problem
-
-In order to evaluate a policy, one should first generate it and then prepare a
-folder containing an appropriate `Config.xml` file. Then, the evaluation can be
-performed as following:
-`rosrun csa_mdp_experiments forests_bb_evaluator config_path:=...`
-
-## Evaluating a policy for a control problem
-In order to evaluate a policy, one should first generate it and then prepare a
-folder containing an appropriate `Config.xml`. It is also required to start the
-gazebo simulation (cf. Launching a controller experiment)
-
-Then, the evaluation can be performed as following:
-`rosrun csa_mdp_experiments forests_controller config_path:=...`
+Once the simulator is started, the exploration process can be started with the
+`mre_experiment` binary.
 
 ## Generating multiple policies
 
 The script `learn_policies.sh` allows to create multiple policies from a single
 set of samples. It requires the presency of a config file named
-`PolicyConfig.xml` and create all the necessary folders.
+`policy_learner.xml` and create all the necessary folders.
 
 ## Evaluating multiple policies
 
-The scripts `evaluate_policies_bb.sh` and `evaluate_policies_controller.sh`
-allow to evaluate multiple policies in a row. It requires the presency of a
-config file named `TestConfig.xml` and the presency of generated policies.
+The script `evaluate_policies.sh` allows to evaluate multiple policies at once.
+It requires the presency of a config file named `evaluation_config.xml` 
+and the presency of generated policies.
 
 # Examples
 
@@ -186,7 +183,49 @@ or a *controller* problem. Then, a new class extending `BlackBoxProblem` or
 `ControlProblem` should be written. Please refer to existing examples to see
 which methods need to be implemented.
 
-The method `ProblemFactory::build` in `src/problems/problem_factory.cpp` should
-be updated to include the new problem.
+The method `ExtendedProblemFactory::registerExtraProblems` in
+`src/problems/extended_problem_factory.cpp` should be updated to include
+the new problem.
 
 Finally, a new configuraton file should be built (based on existing files).
+
+# Configuration files
+
+By using `factory patterns` and `Serializable` objects, this project allows to
+customize runs without multiplying the binaries. Since the number of parameters
+tend to grow very quickly, the system allows to use *incomplete* xml files when
+default values are provided in the source code.
+
+## Problem
+
+A problem is described by its name, and eventually by sub_properties. It allows
+a brief description such as `<problem>cart_pole</problem>` if no default values
+need to be overriden. It also allows more complex initialization with explicit
+modification of the default parameters:
+```
+<problem>
+  <approach>
+    <max_pos>1.5</max_pos>
+  </approach>
+</problem>
+```
+
+## MreMachine
+
+The configuration of a MreMachine contains some mandatory parameters:
+- mode: `exploration` or `evaluation`
+- update_rule: `each` or `square`
+- nb_runs:
+- nb_steps: the maximal number of steps per run
+- problem: cf. above
+
+Other parameters are mandatory in certain situation:
+- policy: if `mode` is `evaluation`
+- mre_config: if `mode` is `exploration`
+
+And finally, some parameters are optional:
+- save_details: if enabled, then save the q_value and the knownness after each policy update
+
+## Others
+
+Configurations of other objects should be explained later.

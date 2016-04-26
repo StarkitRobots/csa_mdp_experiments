@@ -1,21 +1,17 @@
 <mre_experiment>
   <control>
     <mre_machine>
-      <mode>exploration</mode>
+      <mode>evaluation</mode>
+      <policy>
+        <forests_policy>
+          <paths>
+            <v>../policy_0.data</v>
+          </paths>
+        </forests_policy>
+      </policy>
       <nb_runs>10</nb_runs>
       <nb_steps>100</nb_steps>
-      <problem>
-        <cart_pole/>
-      </problem>
-      <mre>
-        <mrefpf_conf>
-          <nb_threads>2</nb_threads>
-          <horizon>10</horizon>
-          <discount>0.98</discount>
-          <max_action_tiles>200</max_action_tiles>
-          <reward_max>0</reward_max>
-        </mrefpf_conf>
-      </mre>
+      <problem>cart_pole</problem>
       <control>
         <robot>cart_pole</robot>
         <frequency>25</frequency>

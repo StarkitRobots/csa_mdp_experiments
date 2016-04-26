@@ -1,15 +1,13 @@
 <mre_experiment>
   <control>
     <mre_machine>
-      <mode>evaluation</mode>
-      <nb_runs>10</nb_runs>
+      <update_rule>square</update_rule>
+      <mode>exploration</mode>
+      <nb_runs>25</nb_runs>
       <nb_steps>100</nb_steps>
       <problem>
         <cart_pole/>
       </problem>
-      <policy>
-        <random/>
-      </policy>
       <mre>
         <mrefpf_conf>
           <nb_threads>2</nb_threads>
