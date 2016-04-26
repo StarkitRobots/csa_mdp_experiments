@@ -2,9 +2,12 @@
 
 NB_POLICIES=10
 
-if [ ! -f PolicyConfig.xml ]
+SRC_NAME="policy_learner.xml"
+DST_NAME="policy_learner.xml"
+
+if [ ! -f ${SRC_NAME} ]
 then
-    echo "Missing PolicyConfig.xml"
+    echo "Missing ${SRC_NAME}"
     exit 1
 fi
 
@@ -13,8 +16,8 @@ do
     echo "Creating policy $i/$NB_POLICIES"
     # Creating folders and copying config files
     mkdir -p policy$i
-    cp PolicyConfig.xml policy$i/Config.xml
+    cp ${SRC_NAME} policy$i/${DST_NAME}
     cd policy$i
-    rosrun csa_mdp_experiments learn_from_logs config_path:=`pwd`
+    rosrun csa_mdp_experiments learn_from_logs `pwd`
     cd ..
 done

@@ -3,7 +3,7 @@
     <mre_machine>
       <mode>evaluation</mode>
       <policy>expert_approach</policy>
-      <nb_runs>100</nb_runs>
+      <nb_runs>5</nb_runs>
       <nb_steps>100</nb_steps>
       <problem>approach</problem>
     </mre_machine>
