@@ -1,8 +1,0 @@
-<Config>
-  <nb_runs>50</nb_runs>
-  <nb_steps>3000</nb_steps>
-  <policies>
-    <v>../policy_0.data</v>
-  </policies>
-  <problem>CartPoleStabilization</problem>
-</Config>

@@ -1,0 +1,17 @@
+<mre_experiment>
+  <blackbox>
+    <mre_machine>
+      <mode>evaluation</mode>
+      <policy>
+        <forests_policy>
+          <paths>
+            <v>../policy_0.data</v>
+          </paths>
+        </forests_policy>
+      </policy>
+      <nb_runs>10</nb_runs>
+      <nb_steps>100</nb_steps>
+      <problem>cart_pole_stabilization</problem>
+    </mre_machine>
+  </blackbox>
+</mre_experiment>

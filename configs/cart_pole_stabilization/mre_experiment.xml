@@ -1,17 +1,20 @@
 <mre_experiment>
-  <class_name>blackbox</class_name>
-  <mre_machine>
-    <nb_runs>100</nb_runs>
-    <nb_steps>100</nb_steps>
-    <problem>CartPoleStabilization</problem>
-    <mre>
-      <mrefpf_conf>
-        <nb_threads>3</nb_threads>
-        <horizon>20</horizon>
-        <discount>0.98</discount>
-        <max_action_tiles>200</max_action_tiles>
-        <reward_max>0</reward_max>
-      </mrefpf_conf>
-    </mre>
-  </mre_machine>
+  <blackbox>
+    <mre_machine>
+      <update_rule>square</update_rule>
+      <mode>exploration</mode>
+      <nb_runs>10</nb_runs>
+      <nb_steps>100</nb_steps>
+      <problem>cart_pole_stabilization</problem>
+      <mre>
+        <mrefpf_conf>
+          <nb_threads>3</nb_threads>
+          <horizon>5</horizon>
+          <discount>0.98</discount>
+          <max_action_tiles>200</max_action_tiles>
+          <reward_max>0</reward_max>
+        </mrefpf_conf>
+      </mre>
+    </mre_machine>
+  </blackbox>
 </mre_experiment>
