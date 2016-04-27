@@ -3,8 +3,8 @@
 ExpertApproach::ExpertApproach()
   : current_state(State::far),
     step_max(0.04),
-    max_rotate_radius(0.75),
-    min_far_radius(1),
+    max_rotate_radius(1),
+    min_far_radius(0.75),
     radius(0.5),
     step_p(0.1),
     far_theta_p(0.2),
@@ -37,7 +37,7 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
 
   // Alignements
   bool good_align_goal = std::fabs(target_angle) < target_theta_tol;
-  bool good_align_ball = std::fabs(target_angle) < ball_theta_tol;
+  bool good_align_ball = std::fabs(ball_azimuth) < ball_theta_tol;
 
   // Errors
   float x_error = ball_x - wished_x;
