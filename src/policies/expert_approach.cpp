@@ -66,7 +66,7 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
   switch(current_state)
   {
     case State::far:
-      wished_cmd(0) = cos(ball_azimuth) * step_max;
+      wished_cmd(0) = std::max(0.0, cos(ball_azimuth) * step_max);
       wished_cmd(2) = far_theta_p * ball_azimuth;
       break;
     case State::rotate:

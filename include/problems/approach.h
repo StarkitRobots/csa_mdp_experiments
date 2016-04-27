@@ -112,6 +112,10 @@ private:
   /// Minimal distance at the beginning
   static double init_min_dist;
 
+  /// Maximal distance at the beginning
+  /// (not max_pos to ensure the robot does not loose during the first steps)
+  static double init_max_dist;
+
   /// In reality, there is a huge difference between the order given to the walk
   /// system and its result
   static double walk_gain;

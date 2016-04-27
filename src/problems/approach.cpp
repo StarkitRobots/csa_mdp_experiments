@@ -32,6 +32,7 @@ double Approach::collision_reward = -100;
 double Approach::out_of_space_reward = -100;
 double Approach::step_reward         = -1;
 double Approach::init_min_dist = 0.4;
+double Approach::init_max_dist = 0.95;
 double Approach::walk_gain = 3;
 
 // TODO: externalize
@@ -133,8 +134,10 @@ Eigen::VectorXd Approach::getStartingState()
 {
   Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
   // Creating the distribution
-  std::uniform_real_distribution<double> dist_distrib(init_min_dist, max_pos);
-  std::uniform_real_distribution<double> angle_distrib(-M_PI,M_PI);
+  std::uniform_real_distribution<double> dist_distrib(init_min_dist, init_max_dist);
+  // Ball is always in sight at the beginning of an experiment
+  std::uniform_real_distribution<double> angle_distrib(-viewing_angle,
+                                                       viewing_angle);
   // Generating random values
   double dist = dist_distrib(random_engine);
   double ball_theta = angle_distrib(random_engine);
@@ -177,6 +180,12 @@ bool Approach::isOutOfSpace(const Eigen::VectorXd & state) const
       return true;
     }
   }
+  // Additionally, if ball_distance is greater than max_pos, then ball is out of space
+  double x = state(0);
+  double y = state(1);
+  double dist = std::sqrt(x*x + y*y);
+  if (dist > max_pos) return true;
+  // If none of the forbidden condition is reached, then state is not terminal
   return false;
 }
 
