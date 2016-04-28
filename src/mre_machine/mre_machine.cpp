@@ -220,7 +220,7 @@ void MREMachine::endRun()
     if (config->save_details)
     {
       std::ostringstream oss;
-      oss << "details/upate_" << nb_updates << "_";
+      oss << "details/update_" << nb_updates << "_";
       std::string prefix = oss.str();
       mre->saveStatus(prefix);
     }
