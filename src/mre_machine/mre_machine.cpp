@@ -191,6 +191,22 @@ void MREMachine::init()
     }
     mre->updatePolicy();
   }
+  // If saving details, then create folder
+  if (config->save_details)
+  {
+    std::string details_path("details");
+    struct stat folder_stat;
+    if (stat(details_path.c_str(), &folder_stat) != 0 || !S_ISDIR(folder_stat.st_mode))
+    {
+      std::string mkdir_cmd = "mkdir " + details_path;
+      // If it fails, exit
+      if (system(mkdir_cmd.c_str()))
+      {
+        std::cerr << "Failed to create '" << details_path << "' folder" << std::endl;
+        exit(EXIT_FAILURE);
+      }
+    }
+  }
 }
 
 bool MREMachine::alive()
