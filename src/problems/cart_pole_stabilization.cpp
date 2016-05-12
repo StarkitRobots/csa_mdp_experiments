@@ -1,6 +1,6 @@
 #include "problems/cart_pole_stabilization.h"
 
-#include "rosban_regression_forests/tools/random.h"
+#include "rosban_random/tools.h"
 
 // Above this threshold, trial is a failure
 double CartPoleStabilization::theta_max = M_PI / 2;//[rad]
@@ -35,7 +35,7 @@ CartPoleStabilization::CartPoleStabilization()
   setStateNames({"theta","omega"});
   setActionNames({"torque"});
 
-  generator = regression_forests::get_random_engine();
+  generator = rosban_random::getRandomEngine();
   noise_distribution = std::uniform_real_distribution<double>(-noise_max, noise_max);
 }
 

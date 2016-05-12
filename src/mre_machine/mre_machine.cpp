@@ -6,6 +6,8 @@
 
 #include "rosban_utils/benchmark.h"
 
+#include <sys/stat.h>
+
 using csa_mdp::History;
 using csa_mdp::PolicyFactory;
 using csa_mdp::Problem;

@@ -1,6 +1,6 @@
 #include "problems/double_integrator.h"
 
-#include "rosban_regression_forests/tools/random.h"
+#include "rosban_random/tools.h"
 
 #include <iostream>
 
@@ -19,7 +19,7 @@ DoubleIntegrator::DoubleIntegrator(Version version_)
       state_limits << -5, 5, -5, 5;
       action_limits << -1.5, 1.5;
       // Preparing random
-      generator = regression_forests::get_random_engine();
+      generator = rosban_random::getRandomEngine();
       noise_distribution = std::uniform_real_distribution<double>(-0.1, 0.1);
       break;
   }
