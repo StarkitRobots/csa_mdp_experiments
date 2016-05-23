@@ -103,6 +103,7 @@ protected:
   int run;
   int step;
   double trajectory_reward;
+  double trajectory_disc_reward;
   Eigen::VectorXd current_state;
   double current_reward;
 

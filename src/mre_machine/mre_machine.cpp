@@ -173,13 +173,16 @@ void MREMachine::doStep()
     mre->feed(new_sample);
   }
   trajectory_reward += current_reward;
+  double disc = config->mre_config.mrefpf_conf.discount;
+  double disc_reward = current_reward * std::pow(disc, step);
+  trajectory_disc_reward += disc_reward;
 }
 
 void MREMachine::init()
 {
   writeRunLogHeader(run_logs);
   time_logs << "run,type,time" << std::endl;
-  reward_logs << "run,reward" << std::endl;
+  reward_logs << "run,reward,disc_reward" << std::endl;
   // Preload some experiment
   if (config->mode == MREMachine::Mode::exploration && config->seed_path != "")
   {
@@ -220,6 +223,7 @@ void MREMachine::prepareRun()
 {
   step = 0;
   trajectory_reward = 0;
+  trajectory_disc_reward = 0;
   current_reward = 0;
 }
 
@@ -228,7 +232,9 @@ void MREMachine::endRun()
   // If the maximal step has not been reached, it mean we reached a final state
   int u_dim = problem->getActionLimits().rows();
   writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
-  reward_logs << run << "," << trajectory_reward << std::endl;
+  reward_logs << run << ","
+              << trajectory_reward << ","
+              << trajectory_disc_reward << std::endl;
   if (config->mode == MREMachine::Mode::exploration &&
       run < config->nb_runs && run == next_update)
   {
