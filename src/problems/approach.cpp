@@ -80,7 +80,7 @@ Approach::Approach()
 
 bool Approach::isTerminal(const Eigen::VectorXd & state) const
 {
-  return isKickable(state) || isColliding(state) || isOutOfSpace(state);
+  return isColliding(state) || isOutOfSpace(state);
 }
 
 double  Approach::getReward(const Eigen::VectorXd & state,
