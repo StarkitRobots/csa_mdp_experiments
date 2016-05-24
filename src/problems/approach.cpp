@@ -27,7 +27,7 @@ double Approach::no_view_reward = -0.01   ;
 // Collision
 double Approach::collision_x      =  0.05;
 double Approach::collision_y      =  0.25;
-double Approach::collision_reward = -100;
+double Approach::collision_reward = -3;
 // Misc
 double Approach::out_of_space_reward = -100;
 double Approach::step_reward         = -1;
@@ -80,7 +80,7 @@ Approach::Approach()
 
 bool Approach::isTerminal(const Eigen::VectorXd & state) const
 {
-  return isColliding(state) || isOutOfSpace(state);
+  return isOutOfSpace(state);
 }
 
 double  Approach::getReward(const Eigen::VectorXd & state,
