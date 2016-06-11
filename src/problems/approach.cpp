@@ -8,13 +8,13 @@ double Approach::max_step_x     =  0.04;
 double Approach::max_step_y     =  0.03;
 double Approach::max_step_theta =  0.4 ;
 // Action limits
-double Approach::max_step_x_diff     = 0.01;
-double Approach::max_step_y_diff     = 0.01;
-double Approach::max_step_theta_diff = 0.15;
+double Approach::max_step_x_diff     = 0.03;
+double Approach::max_step_y_diff     = 0.03;
+double Approach::max_step_theta_diff = 0.4;
 // Step noise
-double Approach::step_x_noise     = 0.0;//0.01;
-double Approach::step_y_noise     = 0.0;//0.01;
-double Approach::step_theta_noise = 0.0;//0.02;
+double Approach::step_x_noise     = 0.01;
+double Approach::step_y_noise     = 0.01;
+double Approach::step_theta_noise = 0.02;
 // Kick
 double Approach::kick_x_min     = 0.05   ;
 double Approach::kick_x_max     = 0.25   ;
