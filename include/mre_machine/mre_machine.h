@@ -107,9 +107,15 @@ protected:
   Eigen::VectorXd current_state;
   double current_reward;
 
-  // Spacing updates
-  int nb_updates;
-  int next_update;
+  int policy_id;
+  // Nb runs required for the given policy
+  int policy_runs_required;
+  // Nb runs performed by the current policy
+  int policy_runs_performed;
+  // Total reward gathered by the current policy
+  double policy_total_reward;
+  // Policy score: average reward per trial
+  double best_policy_score;
 };
 
 std::string to_string(MREMachine::Mode mode);

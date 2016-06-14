@@ -86,7 +86,9 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
 }
 
 MREMachine::MREMachine(std::shared_ptr<Config> config_)
-  : config(config_), run(1), step(0), nb_updates(0), next_update(1)
+  : config(config_), run(1), step(0),
+    policy_id(1), policy_runs_required(1), policy_runs_performed(0), policy_total_reward(0),
+    best_policy_score(std::numeric_limits<double>::lowest())
 {
   // Generating problem
   problem = config->problem;
@@ -229,37 +231,53 @@ void MREMachine::prepareRun()
 
 void MREMachine::endRun()
 {
+  policy_runs_performed++;
   // If the maximal step has not been reached, it mean we reached a final state
   int u_dim = problem->getActionLimits().rows();
   writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
   reward_logs << run << ","
               << trajectory_reward << ","
               << trajectory_disc_reward << std::endl;
+  // If it is the last run of the policy, perform some operations
   if (config->mode == MREMachine::Mode::exploration &&
-      run < config->nb_runs && run == next_update)
+      policy_runs_performed >= policy_runs_required)
   {
-    mre->updatePolicy();
-    nb_updates++;
-    // Save q_value and nb_steps
-    if (config->save_details)
-    {
+    // If current policy is better than the other, then save it
+    double policy_score = policy_total_reward / policy_runs_performed;
+    if (policy_score > best_policy_score) {
       std::ostringstream oss;
-      oss << "details/update_" << nb_updates << "_";
+      oss << "details/best_";
       std::string prefix = oss.str();
       mre->saveStatus(prefix);
     }
-    writeTimeLog("qValueTS", mre->getQValueTrainingSetTime());
-    writeTimeLog("qValueET", mre->getQValueExtraTreesTime());
-    writeTimeLog("policyTS", mre->getPolicyTrainingSetTime());
-    writeTimeLog("policyET", mre->getPolicyExtraTreesTime());
-    switch(config->update_rule)
-    {
-      case UpdateRule::each:
-        next_update++;
-        break;
-      case UpdateRule::square:
-        next_update = pow(nb_updates + 1, 2);
-        break;
+    // Do not update policy if its the last trial (it won't be tested)
+    if (run < config->nb_runs) {
+      mre->updatePolicy();
+      // Save q_value and nb_steps
+      if (config->save_details)
+      {
+        std::ostringstream oss;
+        oss << "details/update_" << policy_id << "_";
+        std::string prefix = oss.str();
+        mre->saveStatus(prefix);
+      }
+      writeTimeLog("qValueTS", mre->getQValueTrainingSetTime());
+      writeTimeLog("qValueET", mre->getQValueExtraTreesTime());
+      writeTimeLog("policyTS", mre->getPolicyTrainingSetTime());
+      writeTimeLog("policyET", mre->getPolicyExtraTreesTime());
+      // Set properties for the next policy
+      policy_id++;
+      policy_total_reward = 0;
+      policy_runs_performed = 0;
+      switch(config->update_rule)
+      {
+        case UpdateRule::each:
+          policy_runs_required = 1;
+          break;
+        case UpdateRule::square:
+          policy_runs_required = policy_id;
+          break;
+      }
     }
   }
   if (config->mode == MREMachine::Mode::evaluation)
