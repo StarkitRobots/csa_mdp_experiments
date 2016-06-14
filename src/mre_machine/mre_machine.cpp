@@ -184,7 +184,7 @@ void MREMachine::init()
 {
   writeRunLogHeader(run_logs);
   time_logs << "run,type,time" << std::endl;
-  reward_logs << "run,reward,disc_reward" << std::endl;
+  reward_logs << "run,policy,reward,disc_reward" << std::endl;
   // Preload some experiment
   if (config->mode == MREMachine::Mode::exploration && config->seed_path != "")
   {
@@ -236,6 +236,7 @@ void MREMachine::endRun()
   int u_dim = problem->getActionLimits().rows();
   writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
   reward_logs << run << ","
+              << policy_id << ","
               << trajectory_reward << ","
               << trajectory_disc_reward << std::endl;
   // If it is the last run of the policy, perform some operations
