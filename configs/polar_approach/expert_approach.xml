@@ -1,0 +1,15 @@
+<mre_experiment>
+  <blackbox>
+    <mre_machine>
+      <mode>evaluation</mode>
+      <policy>
+        <expert_approach>
+          <type>polar</type>
+        </expert_approach>
+      </policy>
+      <nb_runs>1000</nb_runs>
+      <nb_steps>100</nb_steps>
+      <problem>polar_approach</problem>
+    </mre_machine>
+  </blackbox>
+</mre_experiment>
