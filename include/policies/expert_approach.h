@@ -7,6 +7,8 @@ class ExpertApproach : public csa_mdp::Policy
 public:
   enum class State
   { far, rotate, near };
+  enum class Type
+  { cartesian, polar };
 
   ExpertApproach();
 
@@ -18,7 +20,12 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
+  // Read type from the given string
+  Type loadType(const std::string & type_str);
+
 private:
+
+  Type type;
 
   State current_state;
 
@@ -53,3 +60,4 @@ private:
 };
 
 std::string to_string(ExpertApproach::State state);
+std::string to_string(ExpertApproach::Type state);

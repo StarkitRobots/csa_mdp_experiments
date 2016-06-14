@@ -1,6 +1,7 @@
 #include "problems/extended_problem_factory.h"
 
 #include "problems/approach.h"
+#include "problems/polar_approach.h"
 #include "problems/cart_pole.h"
 #include "problems/cart_pole_stabilization.h"
 #include "problems/double_integrator.h"
@@ -22,6 +23,8 @@ void ExtendedProblemFactory::registerExtraProblems()
   // Registering extra builders
   registerExtraBuilder("approach",
                        [](TiXmlNode *node) {(void)node;return new Approach();});
+  registerExtraBuilder("polar_approach",
+                       [](TiXmlNode *node) {(void)node;return new PolarApproach();});
   registerExtraBuilder("cart_pole",
                        [](TiXmlNode *node)
                        {

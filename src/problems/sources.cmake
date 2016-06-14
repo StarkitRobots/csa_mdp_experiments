@@ -6,4 +6,5 @@ set (SOURCES
   inverted_pendulum.cpp
   double_inverted_pendulum.cpp
   extended_problem_factory.cpp
+  polar_approach.cpp
 )

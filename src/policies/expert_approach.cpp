@@ -1,7 +1,8 @@
 #include "policies/expert_approach.h"
 
 ExpertApproach::ExpertApproach()
-  : current_state(State::far),
+  : type(Type::cartesian),
+    current_state(State::far),
     step_max(0.04),
     max_rotate_radius(1),
     min_far_radius(0.75),
@@ -96,12 +97,23 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
 
 void ExpertApproach::to_xml(std::ostream & out) const
 {
-  (void) out;
+  rosban_utils::xml_tools::write<std::string>("type", to_string(type), out);
 }
 
 void ExpertApproach::from_xml(TiXmlNode * node)
 {
-  (void) node;
+  std::string type_str;
+  rosban_utils::xml_tools::try_read<std::string>(node, "type", type_str);
+  if (type_str != "") {
+    type = loadType(type_str);
+  }
+}
+
+ExpertApproach::Type ExpertApproach::loadType(const std::string & type_str)
+{
+  if (type_str == "cartesian") return Type::cartesian;
+  if (type_str == "polar") return Type::polar;
+  throw std::runtime_error("Unknown ExpertApproach::Type: '" + type_str + "'");
 }
 
 std::string ExpertApproach::class_name() const
@@ -115,4 +127,15 @@ std::string to_string(ExpertApproach::State state)
     case ExpertApproach::State::far: return "far";
     case ExpertApproach::State::rotate: return "rotate";
   }
+  throw std::runtime_error("Invalid ExpertApproach::State in to_string");
+}
+
+std::string to_string(ExpertApproach::Type type)
+{
+  switch(type)
+  {
+    case ExpertApproach::Type::cartesian: return "cartesian";
+    case ExpertApproach::Type::polar: return "polar";
+  }
+  throw std::runtime_error("Invalid ExpertApproach::Type in to_string");
 }
