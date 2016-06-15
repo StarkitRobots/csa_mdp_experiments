@@ -51,11 +51,11 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
-private:
+protected:
 
   // STATE LIMITS
   /// The maximal distance to the ball along one of the axis
-  static double max_pos;
+  static double max_dist;
   /// The minimal order of step_x [m/step]
   static double min_step_x;
   /// The maximal order for step_x [m/step]
@@ -113,7 +113,7 @@ private:
   static double init_min_dist;
 
   /// Maximal distance at the beginning
-  /// (not max_pos to ensure the robot does not loose during the first steps)
+  /// (not max_dist to ensure the robot does not loose during the first steps)
   static double init_max_dist;
 
   /// In reality, there is a huge difference between the order given to the walk

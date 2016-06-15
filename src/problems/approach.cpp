@@ -2,7 +2,7 @@
 
 
 // State limits
-double Approach::max_pos        =  1   ;
+double Approach::max_dist       =  1   ;
 double Approach::min_step_x     = -0.02;
 double Approach::max_step_x     =  0.04;
 double Approach::max_step_y     =  0.03;
@@ -54,8 +54,8 @@ Approach::Approach()
 {
   Eigen::MatrixXd state_limits(6,2), action_limits(3,2);
   state_limits <<
-    -max_pos, max_pos,
-    -max_pos, max_pos,
+    -max_dist, max_dist,
+    -max_dist, max_dist,
     -M_PI, M_PI,
     min_step_x, max_step_x,
     -max_step_y, max_step_y,
@@ -180,11 +180,11 @@ bool Approach::isOutOfSpace(const Eigen::VectorXd & state) const
       return true;
     }
   }
-  // Additionally, if ball_distance is greater than max_pos, then ball is out of space
+  // Additionally, if ball_distance is greater than max_dist, then ball is out of space
   double x = state(0);
   double y = state(1);
   double dist = std::sqrt(x*x + y*y);
-  if (dist > max_pos) return true;
+  if (dist > max_dist) return true;
   // If none of the forbidden condition is reached, then state is not terminal
   return false;
 }
