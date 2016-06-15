@@ -117,7 +117,7 @@ Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
   real_move(1) = next_cmd(1) * walk_gain + step_y_noise_distrib(random_engine);
   real_move(2) = next_cmd(2) + step_theta_noise_distrib(random_engine);// No walk gain for theta
   // Apply the real move
-  Eigen::VectorXd next_state(6);
+  Eigen::VectorXd next_state = state;
   // Apply rotation first
   double delta_theta = real_move(2);
   next_state(2) = normalizeAngle(state(2) - delta_theta);
@@ -147,8 +147,8 @@ Eigen::VectorXd PolarApproach::getStartingState()
   double ball_theta = angle_distrib(random_engine);
   double target_theta = angle_distrib(random_engine);
   // Updating state
-  state(0) = cos(ball_theta) * dist;
-  state(1) = sin(ball_theta) * dist;
+  state(0) = dist;
+  state(1) = ball_theta;
   state(2) = target_theta;
 
   return state;

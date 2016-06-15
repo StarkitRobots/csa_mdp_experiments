@@ -30,11 +30,20 @@ void ExpertApproach::init()
 Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
 {
   // Properties
-  double ball_x = state(0);
-  double ball_y = state(1);
-  double target_angle = state(2);
+  double ball_x, ball_y;
+  switch(type) {
+    case Type::cartesian:
+      ball_x = state(0);
+      ball_y = state(1);
+      break;
+    case Type::polar:
+      ball_x = cos(state(1)) * state(0);
+      ball_y = sin(state(1)) * state(0);
+      break;
+  }
   double ball_azimuth = atan2(state(1),state(0));
   double ball_distance = std::sqrt(ball_x * ball_x + ball_y * ball_y);
+  double target_angle = state(2);
 
   // Alignements
   bool good_align_goal = std::fabs(target_angle) < target_theta_tol;
