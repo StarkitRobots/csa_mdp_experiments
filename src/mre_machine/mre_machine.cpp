@@ -245,11 +245,12 @@ void MREMachine::endRun()
   {
     // If current policy is better than the other, then save it
     double policy_score = policy_total_reward / policy_runs_performed;
-    if (policy_score > best_policy_score) {
+    if (mre->hasAvailablePolicy() && policy_score > best_policy_score) {
       std::ostringstream oss;
       oss << "details/best_";
       std::string prefix = oss.str();
       mre->saveStatus(prefix);
+      best_policy_score = policy_score;
     }
     // Do not update policy if its the last trial (it won't be tested)
     if (run < config->nb_runs) {
