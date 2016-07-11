@@ -232,6 +232,7 @@ void MREMachine::prepareRun()
 void MREMachine::endRun()
 {
   policy_runs_performed++;
+  policy_total_reward += trajectory_reward;
   // If the maximal step has not been reached, it mean we reached a final state
   int u_dim = problem->getActionLimits().rows();
   writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
@@ -251,6 +252,8 @@ void MREMachine::endRun()
       std::string prefix = oss.str();
       mre->saveStatus(prefix);
       best_policy_score = policy_score;
+      std::cout << "Found a new 'best policy' at policy_id: " << policy_id
+                << " with a score of: " << policy_score << std::endl;
     }
     // Do not update policy if its the last trial (it won't be tested)
     if (run < config->nb_runs) {
