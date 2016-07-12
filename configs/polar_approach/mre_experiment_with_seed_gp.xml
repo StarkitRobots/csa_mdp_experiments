@@ -3,13 +3,14 @@
     <mre_machine>
       <update_rule>square</update_rule>
       <mode>exploration</mode>
-      <nb_runs>100</nb_runs>
+      <seed_path>seed/run_logs.csv</seed_path>
+      <nb_runs>50</nb_runs>
       <nb_steps>100</nb_steps>
-      <problem>cart_pole_stabilization</problem>
+      <problem>polar_approach</problem>
       <mre>
         <mrefpf_conf>
           <nb_threads>3</nb_threads>
-          <horizon>2</horizon>
+          <horizon>5</horizon>
           <discount>0.98</discount>
           <max_action_tiles>200</max_action_tiles>
           <reward_max>0</reward_max>
