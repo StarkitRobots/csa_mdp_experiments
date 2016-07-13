@@ -3,11 +3,18 @@
 # This script allows to run several experiments in a row
 if [ $# -lt 2 ]
 then
-    echo "Usage: $0 <original_folder> <number of tests>"
+    echo "Usage: $0 <original_folder> <last_test> <optional:first_test(default=1)>"
     exit -1
 fi
 
 folder=$1
+last_test=$2
+first_test=1
+if [ $# -gt 2 ]
+then
+    first_test=$3
+fi
+
 # Forbidding situations where the folder is not a child of current directory
 if [[ "$string" == *\/* ]]
 then
@@ -22,13 +29,15 @@ then
     exit -1
 fi
 
-i=1
+i=$first_test
 while [[ i -le $2 ]]
 do
     newFolder="${folder}$i"
     mkdir $newFolder
-    if [ -e newFolder ]
+    if [ $? -eq 0 ]
     then
+        echo "Creating folder '${newFolder}'"
+    else
         echo "ERROR: failed to create folder '${newFolder}'"
         exit -1
     fi
