@@ -2,15 +2,16 @@
   <blackbox>
     <mre_machine>
       <mode>evaluation</mode>
+      <save_run_logs>false</save_run_logs>
       <policy>
         <forests_policy>
           <paths>
-            <v>../policy_0.data</v>
+            <v>../best_policy_d0.data</v>
           </paths>
         </forests_policy>
       </policy>
-      <nb_runs>10</nb_runs>
-      <nb_steps>100</nb_steps>
+      <nb_runs>1000</nb_runs>
+      <nb_steps>3000</nb_steps>
       <problem>cart_pole_stabilization</problem>
     </mre_machine>
   </blackbox>
