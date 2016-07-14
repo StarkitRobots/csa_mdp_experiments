@@ -2,13 +2,13 @@
   <blackbox>
     <mre_machine>
       <mode>evaluation</mode>
-      <save_run_logs>false</save_run_logs>
+      <save_run_logs>true</save_run_logs>
       <policy>
         <expert_approach>
           <type>polar</type>
         </expert_approach>
       </policy>
-      <nb_runs>10000</nb_runs>
+      <nb_runs>10</nb_runs>
       <nb_steps>50</nb_steps>
       <problem>polar_approach</problem>
     </mre_machine>

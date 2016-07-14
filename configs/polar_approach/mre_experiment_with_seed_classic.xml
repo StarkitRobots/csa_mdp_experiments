@@ -4,8 +4,8 @@
       <update_rule>square</update_rule>
       <mode>exploration</mode>
       <save_run_logs>true</save_run_logs>
-      <seed_path>seed/run_logs.csv</seed_path>
-      <nb_runs>55</nb_runs>
+      <seed_path>../seed/run_logs.csv</seed_path>
+      <nb_runs>1275</nb_runs>
       <nb_steps>50</nb_steps>
       <problem>polar_approach</problem>
       <mre>
@@ -15,16 +15,6 @@
           <discount>0.98</discount>
           <max_action_tiles>2000</max_action_tiles>
           <reward_max>0</reward_max>
-          <update_type>MRE</update_type>
-          <gp_values>true</gp_values>
-          <gp_policies>false</gp_policies>
-          <hyper_rprop_conf>
-            <nb_trials>2</nb_trials>
-            <rprop_conf>
-              <max_iterations>100</max_iterations>
-              <tuning_space>Log</tuning_space>
-            </rprop_conf>
-          </hyper_rprop_conf>
         </mrefpf_conf>
       </mre>
     </mre_machine>
