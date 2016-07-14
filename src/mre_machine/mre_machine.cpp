@@ -18,8 +18,10 @@ using rosban_utils::Benchmark;
 
 using csa_mdp::Policy;
 
+std::string MREMachine::details_path("details");
+
 MREMachine::Config::Config()
-  : mode(MREMachine::Mode::exploration), save_details(false)
+  : mode(MREMachine::Mode::exploration), save_details(false), save_run_logs(true)
 {
 }
 
@@ -35,6 +37,7 @@ void MREMachine::Config::to_xml(std::ostream &out) const
   rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
   rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
   rosban_utils::xml_tools::write<bool>("save_details", save_details, out);
+  rosban_utils::xml_tools::write<bool>("save_run_logs", save_run_logs, out);
   out << "<problem>";
   problem->write(problem->class_name(), out);
   out << "</problem>";
@@ -64,6 +67,7 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
   nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
   rosban_utils::xml_tools::try_read<bool>(node, "save_details", save_details);
+  rosban_utils::xml_tools::try_read<bool>(node, "save_run_logs", save_run_logs);
   TiXmlNode * problem_node = node->FirstChild("problem");
   if(!problem_node) throw std::runtime_error("Failed to find node 'problem'");
   problem = std::unique_ptr<Problem>(ProblemFactory().build(problem_node));
@@ -111,14 +115,14 @@ MREMachine::MREMachine(std::shared_ptr<Config> config_)
     config->policy->setActionLimits(problem->getActionLimits());
   }
   // Opening log files
-  run_logs.open("run_logs.csv");
+  if (config->save_run_logs) { run_logs.open("run_logs.csv"); }
   time_logs.open("time_logs.csv");
   reward_logs.open("reward_logs.csv");
 }
 
 MREMachine::~MREMachine()
 {
-  run_logs.close();
+  if (config->save_run_logs) { run_logs.close(); }
   time_logs.close();
   reward_logs.close();
 }
@@ -164,7 +168,9 @@ void MREMachine::doStep()
   }
   Eigen::VectorXd last_state = current_state;
   applyAction(cmd);
-  writeRunLog(run_logs, run, step, last_state, cmd, current_reward);
+  if (config->save_run_logs) {
+    writeRunLog(run_logs, run, step, last_state, cmd, current_reward);
+  }
   if (config->mode == MREMachine::Mode::exploration)
   {
     csa_mdp::Sample new_sample(last_state,
@@ -182,7 +188,7 @@ void MREMachine::doStep()
 
 void MREMachine::init()
 {
-  writeRunLogHeader(run_logs);
+  if (config->save_run_logs) { writeRunLogHeader(run_logs); }
   time_logs << "run,type,time" << std::endl;
   reward_logs << "run,policy,reward,disc_reward" << std::endl;
   // Preload some experiment
@@ -199,21 +205,7 @@ void MREMachine::init()
     mre->updatePolicy();
   }
   // If saving details, then create folder
-  if (config->save_details)
-  {
-    std::string details_path("details");
-    struct stat folder_stat;
-    if (stat(details_path.c_str(), &folder_stat) != 0 || !S_ISDIR(folder_stat.st_mode))
-    {
-      std::string mkdir_cmd = "mkdir " + details_path;
-      // If it fails, exit
-      if (system(mkdir_cmd.c_str()))
-      {
-        std::cerr << "Failed to create '" << details_path << "' folder" << std::endl;
-        exit(EXIT_FAILURE);
-      }
-    }
-  }
+  if (config->save_details) { createDetailFolder(); }
 }
 
 bool MREMachine::alive()
@@ -235,7 +227,9 @@ void MREMachine::endRun()
   policy_total_reward += trajectory_reward;
   // If the maximal step has not been reached, it mean we reached a final state
   int u_dim = problem->getActionLimits().rows();
-  writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
+  if (config->save_run_logs) {
+    writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
+  }
   reward_logs << run << ","
               << policy_id << ","
               << trajectory_reward << ","
@@ -247,10 +241,11 @@ void MREMachine::endRun()
     // If current policy is better than the other, then save it
     double policy_score = policy_total_reward / policy_runs_performed;
     if (mre->hasAvailablePolicy() && policy_score > best_policy_score) {
+      createDetailFolder();
       std::ostringstream oss;
-      oss << "details/best_";
+      oss << details_path << "/best_";
       std::string prefix = oss.str();
-      mre->saveStatus(prefix);
+      mre->savePolicies(prefix);
       best_policy_score = policy_score;
       std::cout << "Found a new 'best policy' at policy_id: " << policy_id
                 << " with a score of: " << policy_score << std::endl;
@@ -262,7 +257,7 @@ void MREMachine::endRun()
       if (config->save_details)
       {
         std::ostringstream oss;
-        oss << "details/update_" << policy_id << "_";
+        oss << details_path << "/update_" << policy_id << "_";
         std::string prefix = oss.str();
         mre->saveStatus(prefix);
       }
@@ -328,6 +323,21 @@ void MREMachine::writeRunLog(std::ostream &out, int run, int step,
     out << action(i) << ",";
   }
   out << reward << std::endl;
+}
+
+void MREMachine::createDetailFolder() const
+{
+  struct stat folder_stat;
+  if (stat(details_path.c_str(), &folder_stat) != 0 || !S_ISDIR(folder_stat.st_mode))
+  {
+    std::string mkdir_cmd = "mkdir " + details_path;
+    // If it fails, exit
+    if (system(mkdir_cmd.c_str()))
+    {
+      std::cerr << "Failed to create '" << details_path << "' folder" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
 }
 
 std::string to_string(MREMachine::Mode mode)

@@ -38,6 +38,8 @@ public:
 
     /// Are the policy / q_value saved after each policy update?
     bool save_details;
+    /// Are the run content saved?
+    bool save_run_logs;
 
     std::shared_ptr<csa_mdp::Problem> problem;
     csa_mdp::MRE::Config mre_config;
@@ -45,7 +47,6 @@ public:
     /// one or several runs which can be used to learn a first policy 
     std::string seed_path;
     std::unique_ptr<csa_mdp::Policy> policy;
-    //TODO add a boolean for choosing if details should be written or not
   };
 
   MREMachine(std::shared_ptr<Config> config);
@@ -87,6 +88,9 @@ public:
                           const Eigen::VectorXd &action,
                           double reward);
 
+  /// Check if detail folder exists and if not, then create it
+  void createDetailFolder() const;
+
 protected:
   std::shared_ptr<Config> config;
   std::shared_ptr<csa_mdp::Problem> problem;
@@ -116,6 +120,9 @@ protected:
   double policy_total_reward;
   // Policy score: average reward per trial
   double best_policy_score;
+
+  /// Path at which details are saved
+  static std::string details_path;
 };
 
 std::string to_string(MREMachine::Mode mode);
