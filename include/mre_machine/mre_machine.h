@@ -40,6 +40,8 @@ public:
     bool save_details;
     /// Are the run content saved?
     bool save_run_logs;
+    /// Is the best policy saved?
+    bool save_best_policy;
 
     std::shared_ptr<csa_mdp::Problem> problem;
     csa_mdp::MRE::Config mre_config;

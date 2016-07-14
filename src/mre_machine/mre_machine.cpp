@@ -21,7 +21,8 @@ using csa_mdp::Policy;
 std::string MREMachine::details_path("details");
 
 MREMachine::Config::Config()
-  : mode(MREMachine::Mode::exploration), save_details(false), save_run_logs(true)
+  : mode(MREMachine::Mode::exploration),
+    save_details(false), save_run_logs(true), save_best_policy(true)
 {
 }
 
@@ -38,6 +39,7 @@ void MREMachine::Config::to_xml(std::ostream &out) const
   rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
   rosban_utils::xml_tools::write<bool>("save_details", save_details, out);
   rosban_utils::xml_tools::write<bool>("save_run_logs", save_run_logs, out);
+  rosban_utils::xml_tools::write<bool>("save_best_policy", save_best_policy, out);
   out << "<problem>";
   problem->write(problem->class_name(), out);
   out << "</problem>";
@@ -68,6 +70,7 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
   rosban_utils::xml_tools::try_read<bool>(node, "save_details", save_details);
   rosban_utils::xml_tools::try_read<bool>(node, "save_run_logs", save_run_logs);
+  rosban_utils::xml_tools::try_read<bool>(node, "save_best_policy", save_best_policy);
   TiXmlNode * problem_node = node->FirstChild("problem");
   if(!problem_node) throw std::runtime_error("Failed to find node 'problem'");
   problem = std::unique_ptr<Problem>(ProblemFactory().build(problem_node));
@@ -240,7 +243,9 @@ void MREMachine::endRun()
   {
     // If current policy is better than the other, then save it
     double policy_score = policy_total_reward / policy_runs_performed;
-    if (mre->hasAvailablePolicy() && policy_score > best_policy_score) {
+    if (config->save_best_policy  &&
+        mre->hasAvailablePolicy() &&
+        policy_score > best_policy_score) {
       createDetailFolder();
       std::ostringstream oss;
       oss << details_path << "/best_";
