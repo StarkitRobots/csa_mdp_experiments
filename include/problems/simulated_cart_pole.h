@@ -4,9 +4,18 @@
 
 
 /// States are:
-/// cart_pos, cart_speed, theta, omega
+/// 0 - cart_pos
+/// 1 - cart_vel
+/// 2 - theta (angular position of pendulum)
+/// 3 - omega (angular speed of pendulum)
+/// 4 - cos(theta)
+/// 5 - sin(theta)
 /// Action is:
 /// torque: (applied on cart)
+///
+/// Two different learning spaces are proposed
+/// - Angular: [cart_pos cart_vel theta omega]
+/// - Cartesian: [cart_pos cart_vel cos(theta) sin(theta) omega]
 class SimulatedCartPole : public BlackBoxProblem
 {
 public:
@@ -14,8 +23,13 @@ public:
   enum class RewardType
   { Binary, Continuous, Pilco };
 
+  enum class LearningSpace
+  { Angular, Cartesian };
+
   /// Default configuration is the pilco configuration
   SimulatedCartPole();
+
+  std::vector<int> getLearningDimensions() const override;
 
   void updateLimits();
 
@@ -62,9 +76,14 @@ private:
 
   /// Which type of reward is used
   RewardType reward_type;
+  /// Which type of learning space is used
+  LearningSpace learning_space;
 
 
   SimulatedCartPole::RewardType loadRewardType(const std::string &type);
+  SimulatedCartPole::LearningSpace loadLearningSpace(const std::string & str);
 };
 
 std::string to_string(SimulatedCartPole::RewardType type);
+std::string to_string(SimulatedCartPole::LearningSpace learning_space);
+

@@ -1,30 +1,43 @@
 #include "problems/simulated_cart_pole.h"
 
 SimulatedCartPole::SimulatedCartPole()
-  : max_pos(1), max_vel(5), max_torque(20), max_axis_vel(20),
-    pole_length(0.3), cart_mass(0.5), pendulum_mass(0.5),
+  : max_pos(1), max_vel(5), max_torque(10), max_axis_vel(20),
+    pole_length(0.5), cart_mass(0.5), pendulum_mass(0.5),
     friction(0.1),
     gravity(9.82),//although this value seems weird, it's the default in pilco
     integration_step(0.001), simulation_step(0.1),
-    reward_type(RewardType::Pilco)
+    reward_type(RewardType::Pilco),
+    learning_space(LearningSpace::Angular)
 {
   updateLimits();
 }
 
 void SimulatedCartPole::updateLimits()
 {
-  Eigen::MatrixXd state_limits(4,2), action_limits(1,2);
+  Eigen::MatrixXd state_limits(6,2), action_limits(1,2);
   state_limits <<
     -max_pos, max_pos,
     -max_vel, max_vel,
     -M_PI, M_PI,
-    -max_axis_vel, max_axis_vel;
+    -max_axis_vel, max_axis_vel,
+    -1, 1,
+    -1, 1;
   action_limits << -max_torque, max_torque;
   setStateLimits(state_limits);
   setActionLimits(action_limits);
 
-  setStateNames({"cart_pos", "cart_vel", "theta", "omega"});
+  setStateNames({"cart_pos", "cart_vel", "theta", "omega", "cos(theta)", "sin(theta)"});
   setActionNames({"cart_cmd"});
+}
+
+std::vector<int> SimulatedCartPole::getLearningDimensions() const
+{
+  switch(learning_space)
+  {
+    case LearningSpace::Angular: return {0,1,2,3};
+    case LearningSpace::Cartesian: return {0,1,4,5,3};
+  }
+  throw std::runtime_error("SimulatedCartPole::getLearningDimensions: unknown learning_space");
 }
 
 bool SimulatedCartPole::isTerminal(const Eigen::VectorXd & state) const
@@ -91,6 +104,14 @@ double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
 Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
                                                 const Eigen::VectorXd & action)
 {
+  // Check if dimensions is appropriate
+  if (state.rows() != 6)
+  {
+    std::ostringstream oss;
+    oss << "SimulatedCartPole::getSuccessor: invalid state dimension: "
+        << state.rows() << " (expecting 6)";
+    throw std::runtime_error(oss.str());
+  }
   // Integrating action with the system dynamics
   double elapsed = 0;
   Eigen::VectorXd current_state = state;
@@ -112,7 +133,7 @@ Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
     double f = friction;
     double g = gravity;
     // Computing gradient
-    Eigen::VectorXd grad = current_state;
+    Eigen::VectorXd grad = Eigen::VectorXd::Zero(6);
     grad(0) = vel;
     grad(1) = ( 2*m*l*omega2*sin_t + 3*m*g*sin_t*cos_t
                 + 4*u - 4*f*vel )/( 4*(M+m)-3*m*cos_t2 );
@@ -121,33 +142,41 @@ Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
                 - 6*(u-f*vel)*cos_t )/( 4*l*(m+M)-3*m*l*cos_t2 );
     // Updating state
     Eigen::VectorXd next_state = current_state + grad * dt;
+    // Normalize theta
+    while (next_state(2) >  M_PI) { next_state(2) -= 2 * M_PI; }
+    while (next_state(2) < -M_PI) { next_state(2) += 2 * M_PI; }
     elapsed += dt;
     current_state = next_state;
   }
+  // Before publishing, update cos(theta) and sin(theta)
+  current_state(4) = cos(current_state(2));
+  current_state(5) = sin(current_state(2));
   return current_state;
 }
 
 Eigen::VectorXd SimulatedCartPole::getStartingState()
 {
-  Eigen::VectorXd state = Eigen::VectorXd::Zero(4);
-  state(3) = M_PI;
+  Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
+  state(4) = cos(state(2));
+  state(5) = sin(state(2));
   return state;
 }
 
 void SimulatedCartPole::to_xml(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<double>("max_pos"           , max_pos               , out);
-  rosban_utils::xml_tools::write<double>("max_vel"           , max_vel               , out);
-  rosban_utils::xml_tools::write<double>("max_torque"        , max_torque            , out);
-  rosban_utils::xml_tools::write<double>("max_axis_vel"      , max_axis_vel          , out);
-  rosban_utils::xml_tools::write<double>("pole_length"       , pole_length           , out);
-  rosban_utils::xml_tools::write<double>("cart_mass"         , cart_mass             , out);
-  rosban_utils::xml_tools::write<double>("pendulum_mass"     , pendulum_mass         , out);
-  rosban_utils::xml_tools::write<double>("friction"          , friction              , out);
-  rosban_utils::xml_tools::write<double>("gravity"           , gravity               , out);
-  rosban_utils::xml_tools::write<double>("integration_step"  , integration_step      , out);
-  rosban_utils::xml_tools::write<double>("simulation_step"   , simulation_step       , out);
-  rosban_utils::xml_tools::write<std::string>("reward_type  ", to_string(reward_type), out);
+  rosban_utils::xml_tools::write<double>("max_pos"            , max_pos                  , out);
+  rosban_utils::xml_tools::write<double>("max_vel"            , max_vel                  , out);
+  rosban_utils::xml_tools::write<double>("max_torque"         , max_torque               , out);
+  rosban_utils::xml_tools::write<double>("max_axis_vel"       , max_axis_vel             , out);
+  rosban_utils::xml_tools::write<double>("pole_length"        , pole_length              , out);
+  rosban_utils::xml_tools::write<double>("cart_mass"          , cart_mass                , out);
+  rosban_utils::xml_tools::write<double>("pendulum_mass"      , pendulum_mass            , out);
+  rosban_utils::xml_tools::write<double>("friction"           , friction                 , out);
+  rosban_utils::xml_tools::write<double>("gravity"            , gravity                  , out);
+  rosban_utils::xml_tools::write<double>("integration_step"   , integration_step         , out);
+  rosban_utils::xml_tools::write<double>("simulation_step"    , simulation_step          , out);
+  rosban_utils::xml_tools::write<std::string>("reward_type"   , to_string(reward_type)   , out);
+  rosban_utils::xml_tools::write<std::string>("learning_space", to_string(learning_space), out);
 }
 
 void SimulatedCartPole::from_xml(TiXmlNode * node)
@@ -168,6 +197,12 @@ void SimulatedCartPole::from_xml(TiXmlNode * node)
   if (reward_type_str != "")
   {
     reward_type =  loadRewardType(reward_type_str);
+  }
+  std::string learning_space_str;
+  rosban_utils::xml_tools::try_read<std::string>(node, "learning_space", learning_space_str);
+  if (learning_space_str != "")
+  {
+    learning_space = loadLearningSpace(learning_space_str);
   }
   updateLimits();
 }
@@ -194,4 +229,28 @@ SimulatedCartPole::RewardType SimulatedCartPole::loadRewardType(const std::strin
   if (type == "continuous") return SimulatedCartPole::RewardType::Continuous;
   if (type == "pilco"     ) return SimulatedCartPole::RewardType::Pilco;
   throw std::runtime_error("Unknown SimulatedCartPole::RewardType: '" + type + "'");
+}
+
+SimulatedCartPole::LearningSpace
+SimulatedCartPole::loadLearningSpace(const std::string & str)
+{
+  if (str == "Angular") {
+    return SimulatedCartPole::LearningSpace::Angular;
+  }
+  if (str == "Cartesian") {
+    return SimulatedCartPole::LearningSpace::Cartesian;
+  }
+  std::cerr << "Failed to load learning space" << std::endl;
+  throw std::runtime_error("SimulatedCartPole::loadLearningSpace: unknown learning space: '"
+                           + str + "'");
+}
+
+std::string to_string(SimulatedCartPole::LearningSpace learning_space)
+{
+  switch(learning_space)
+  {
+    case SimulatedCartPole::LearningSpace::Angular: return "Angular";
+    case SimulatedCartPole::LearningSpace::Cartesian: return "Cartesian";
+  }
+  throw std::runtime_error("to_string(SimulatedCartPole::LearningSpace): unknown learning space");
 }
