@@ -20,19 +20,24 @@ double CartPoleStabilization::g                = 9.8;
 
 
 CartPoleStabilization::CartPoleStabilization()
+  : learning_space(LearningSpace::Angular)
 {
-  Eigen::MatrixXd state_limits = Eigen::MatrixXd(2,2);
+  Eigen::MatrixXd state_limits = Eigen::MatrixXd(4,2);
   state_limits(0,0) = -theta_max;
   state_limits(0,1) =  theta_max;
   state_limits(1,0) = -omega_max;
   state_limits(1,1) =  omega_max;
+  state_limits(2,0) = -1;
+  state_limits(2,1) =  1;
+  state_limits(3,0) = -1;
+  state_limits(3,1) =  1;
   Eigen::MatrixXd action_limits = Eigen::MatrixXd(1,2);
   action_limits(0,0) = -action_max;
   action_limits(0,1) =  action_max;
 
   setStateLimits(state_limits);
   setActionLimits(action_limits);
-  setStateNames({"theta","omega"});
+  setStateNames({"theta","omega","cos(theta)","sin(theta)"});
   setActionNames({"torque"});
 
   generator = rosban_random::getRandomEngine();
@@ -63,14 +68,32 @@ double CartPoleStabilization::getReward(const Eigen::VectorXd &src,
   return - (pos_cost + speed_cost + force_cost);
 }
 
+std::vector<int> CartPoleStabilization::getLearningDimensions() const
+{
+  switch(learning_space)
+  {
+    case LearningSpace::Angular: return {0,1};
+    case LearningSpace::Cartesian: return {2,3,1};
+  }
+  throw std::runtime_error("CartPoleStabilization::getLearningDimensions: unknown learning_space");
+}
+
 Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state,
                                                     const Eigen::VectorXd &action)
 {
+  // Custom check
+  if (state.rows() != 4)
+  {
+    std::ostringstream oss;
+    oss << "CartPoleStabilization::getSuccessor: invalid state dimension: "
+        << state.rows() << " (expecting 4)";
+    throw std::runtime_error(oss.str());
+  }
   // Adding noise to action
   double noisy_action = action(0) + noise_distribution(generator);
   // Integrating action with the system dynamics
   double elapsed = 0;
-  Eigen::Vector2d current_state = state;
+  Eigen::VectorXd current_state = state;
   while (elapsed < simulation_step)
   {
     double dt = std::min(simulation_step - elapsed, integration_step);
@@ -83,9 +106,11 @@ Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state
        - alpha * pendulum_mass * pendulum_length * dt_th2 * sin(2 * th) / 2
        - alpha * cos(th) * noisy_action)
       / (4 * pendulum_length / 3 - alpha * pendulum_mass * pendulum_length * std::pow(cos(th),2));
-    Eigen::Vector2d next_state;
+    Eigen::VectorXd next_state(4);
     next_state(0) = th + dt * dt_th;
     next_state(1) = dt_th + dt * acc;
+    next_state(2) = cos(next_state(0));
+    next_state(3) = sin(next_state(0));
     elapsed += dt;
     current_state = next_state;
   }
@@ -94,14 +119,47 @@ Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state
 
 Eigen::VectorXd CartPoleStabilization::getStartingState()
 {
-  return Eigen::VectorXd::Zero(2);
+  Eigen::VectorXd state = Eigen::VectorXd::Zero(4);
+  state(3) = 1;//sin(0) = 1
+  return state;
 }
 
-void CartPoleStabilization::to_xml(std::ostream & out) const {(void)out;}
-
-void CartPoleStabilization::from_xml(TiXmlNode * node) {(void)node;}
+void CartPoleStabilization::to_xml(std::ostream & out) const
+{
+  rosban_utils::xml_tools::write("learning_space", to_string(learning_space), out);
+}
+void CartPoleStabilization::from_xml(TiXmlNode * node)
+{
+  std::string learning_space_str;
+  rosban_utils::xml_tools::try_read(node, "learning_space", learning_space_str);
+  if (learning_space_str != "") { learning_space = loadLearningSpace(learning_space_str); }
+}
 
 std::string CartPoleStabilization::class_name() const
 {
   return "cart_pole_stabilization";
+}
+
+CartPoleStabilization::LearningSpace
+CartPoleStabilization::loadLearningSpace(const std::string & str)
+{
+  if (str == "Angular") {
+    return CartPoleStabilization::LearningSpace::Angular;
+  }
+  if (str == "Cartesian") {
+    return CartPoleStabilization::LearningSpace::Cartesian;
+  }
+  std::cerr << "Failed to load learning space" << std::endl;
+  throw std::runtime_error("CartPoleStabilization::loadLearningSpace: unknown learning space: '"
+                           + str + "'");
+}
+
+std::string to_string(CartPoleStabilization::LearningSpace learning_space)
+{
+  switch(learning_space)
+  {
+    case CartPoleStabilization::LearningSpace::Angular: return "Angular";
+    case CartPoleStabilization::LearningSpace::Cartesian: return "Cartesian";
+  }
+  throw std::runtime_error("to_string(CartPoleStabilization::LearningSpace): unknown learning space");
 }

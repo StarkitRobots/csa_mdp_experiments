@@ -41,7 +41,12 @@ void ExtendedProblemFactory::registerExtraProblems()
                          return p;
                        });
   registerExtraBuilder("cart_pole_stabilization",
-                       [](TiXmlNode *node) {(void)node;return new CartPoleStabilization();});
+                       [](TiXmlNode *node)
+                       {
+                         Problem * p = new CartPoleStabilization();
+                         p->from_xml(node);
+                         return p;
+                       });
   registerExtraBuilder("inverted_pendulum",
                        [](TiXmlNode *node) {(void)node;return new InvertedPendulum();});
   registerExtraBuilder("double_inverted_pendulum",
