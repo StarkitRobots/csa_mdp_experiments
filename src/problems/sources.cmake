@@ -1,6 +1,7 @@
 set (SOURCES
   approach.cpp
   cart_pole.cpp
+  simulated_cart_pole.cpp
   cart_pole_stabilization.cpp
   double_integrator.cpp
   inverted_pendulum.cpp

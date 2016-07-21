@@ -4,6 +4,7 @@
 #include "problems/polar_approach.h"
 #include "problems/cart_pole.h"
 #include "problems/cart_pole_stabilization.h"
+#include "problems/simulated_cart_pole.h"
 #include "problems/double_integrator.h"
 #include "problems/inverted_pendulum.h"
 #include "problems/double_inverted_pendulum.h"
@@ -29,6 +30,13 @@ void ExtendedProblemFactory::registerExtraProblems()
                        [](TiXmlNode *node)
                        {
                          Problem * p = new CartPole();
+                         p->from_xml(node);
+                         return p;
+                       });
+  registerExtraBuilder("simulated_cart_pole",
+                       [](TiXmlNode *node)
+                       {
+                         Problem * p = new SimulatedCartPole();
                          p->from_xml(node);
                          return p;
                        });
