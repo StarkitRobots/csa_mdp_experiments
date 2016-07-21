@@ -31,6 +31,9 @@ public:
     void to_xml(std::ostream &out) const override;
     void from_xml(TiXmlNode *node) override;
 
+    /// Reset the learning dims to the default according current problem
+    void resetLearningDims();
+
     Mode mode;
     UpdateRule update_rule;
     int nb_runs;
@@ -42,6 +45,9 @@ public:
     bool save_run_logs;
     /// Is the best policy saved?
     bool save_best_policy;
+
+    /// Which dimensions of the state space are used as input for learning
+    std::vector<int> learning_dimensions;
 
     std::shared_ptr<csa_mdp::Problem> problem;
     csa_mdp::MRE::Config mre_config;
@@ -92,6 +98,12 @@ public:
 
   /// Check if detail folder exists and if not, then create it
   void createDetailFolder() const;
+
+  /// Get the learning space from the given full space
+  Eigen::MatrixXd getLearningSpace(const Eigen::MatrixXd & space);
+
+  /// Get the learning state from the given full state
+  Eigen::VectorXd getLearningState(const Eigen::VectorXd & state);
 
 protected:
   std::shared_ptr<Config> config;

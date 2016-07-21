@@ -43,6 +43,7 @@ void MREMachine::Config::to_xml(std::ostream &out) const
   out << "<problem>";
   problem->write(problem->class_name(), out);
   out << "</problem>";
+  rosban_utils::xml_tools::write_vector<int>("learning_dimensions", learning_dimensions, out);
   switch(mode)
   {
     case MREMachine::Mode::evaluation:
@@ -74,6 +75,10 @@ void MREMachine::Config::from_xml(TiXmlNode *node)
   TiXmlNode * problem_node = node->FirstChild("problem");
   if(!problem_node) throw std::runtime_error("Failed to find node 'problem'");
   problem = std::unique_ptr<Problem>(ProblemFactory().build(problem_node));
+  // Once problem is read, set learning dimensions to default
+  learning_dimensions = problem->getLearningDimensions();
+  // Override it if custom config is provided
+  rosban_utils::xml_tools::try_read_vector<int>(node, "learning_dimensions", learning_dimensions);
   switch(mode)
   {
     case MREMachine::Mode::evaluation:
@@ -100,7 +105,7 @@ MREMachine::MREMachine(std::shared_ptr<Config> config_)
   // Generating problem
   problem = config->problem;
   // Applying problem Limits
-  config->mre_config.mrefpf_conf.setStateLimits(problem->getStateLimits());
+  config->mre_config.mrefpf_conf.setStateLimits(getLearningSpace(problem->getStateLimits()));
   config->mre_config.mrefpf_conf.setActionLimits(problem->getActionLimits());
   // Initalizing mre
   if ( config->mode != MREMachine::Mode::evaluation )
@@ -161,10 +166,10 @@ void MREMachine::doStep()
   switch(config->mode)
   {
     case MREMachine::Mode::exploration:
-      cmd = mre->getAction(current_state);
+      cmd = mre->getAction(getLearningState(current_state));
       break;
     case MREMachine::Mode::evaluation:
-      cmd = config->policy->getAction(current_state);
+      cmd = config->policy->getAction(getLearningState(current_state));
       break;
     case MREMachine::Mode::full:
       throw std::runtime_error("MREMachine doest not implement mode 'full' yet");      
@@ -176,9 +181,9 @@ void MREMachine::doStep()
   }
   if (config->mode == MREMachine::Mode::exploration)
   {
-    csa_mdp::Sample new_sample(last_state,
+    csa_mdp::Sample new_sample(getLearningState(last_state),
                                cmd,
-                               current_state,
+                               getLearningState(current_state),
                                current_reward);
     // Add new sample
     mre->feed(new_sample);
@@ -203,7 +208,11 @@ void MREMachine::init()
     std::vector<csa_mdp::Sample> samples = History::getBatch(histories);
     for (const csa_mdp::Sample & s : samples)
     {
-      mre->feed(s);
+      const csa_mdp::Sample learning_sample(getLearningState(s.state),
+                                            s.action,
+                                            getLearningState(s.next_state),
+                                            s.reward);
+      mre->feed(learning_sample);
     }
     mre->updatePolicy();
   }
@@ -343,6 +352,26 @@ void MREMachine::createDetailFolder() const
       exit(EXIT_FAILURE);
     }
   }
+}
+
+Eigen::MatrixXd MREMachine::getLearningSpace(const Eigen::MatrixXd & space)
+{
+  Eigen::MatrixXd learning_space(config->learning_dimensions.size(), 2);
+  for (size_t dim = 0; dim < config->learning_dimensions.size(); dim++)
+  {
+    learning_space.row(dim) = space.row(config->learning_dimensions[dim]);
+  }
+  return learning_space;
+}
+
+Eigen::VectorXd MREMachine::getLearningState(const Eigen::VectorXd & state)
+{
+  Eigen::VectorXd learning_state(config->learning_dimensions.size());
+  for (size_t dim = 0; dim < config->learning_dimensions.size(); dim++)
+  {
+    learning_state(dim) = state(config->learning_dimensions[dim]);
+  }
+  return learning_state;
 }
 
 std::string to_string(MREMachine::Mode mode)
