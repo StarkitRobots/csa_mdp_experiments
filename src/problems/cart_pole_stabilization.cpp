@@ -120,7 +120,8 @@ Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state
 Eigen::VectorXd CartPoleStabilization::getStartingState()
 {
   Eigen::VectorXd state = Eigen::VectorXd::Zero(4);
-  state(3) = 1;//sin(0) = 1
+  state(2) = cos(state(0));
+  state(3) = sin(state(0));
   return state;
 }
 
