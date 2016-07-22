@@ -3,7 +3,7 @@
     <mre_machine>
       <update_rule>square</update_rule>
       <mode>exploration</mode>
-      <nb_runs>820</nb_runs>
+      <nb_runs>325</nb_runs>
       <nb_steps>25</nb_steps>
       <problem>
         <simulated_cart_pole>

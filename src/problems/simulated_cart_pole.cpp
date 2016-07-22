@@ -6,6 +6,7 @@ SimulatedCartPole::SimulatedCartPole()
     friction(0.1),
     gravity(9.82),//although this value seems weird, it's the default in pilco
     integration_step(0.001), simulation_step(0.1),
+    torque_stddev(0.1),
     reward_type(RewardType::Pilco),
     learning_space(LearningSpace::Angular)
 {
@@ -61,7 +62,7 @@ double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
 {
   (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
-    return -200;
+    return -100;
   }
   double cart_pos = dst(0);
   double theta = dst(2);
@@ -112,6 +113,9 @@ Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
         << state.rows() << " (expecting 6)";
     throw std::runtime_error(oss.str());
   }
+  // Apply noise on action
+  std::normal_distribution<double> noise_distribution(0, torque_stddev);
+  double noisy_cmd = action(0) + noise_distribution(random_engine);
   // Integrating action with the system dynamics
   double elapsed = 0;
   Eigen::VectorXd current_state = state;
@@ -129,7 +133,7 @@ Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
     double M = cart_mass;
     double m = pendulum_mass;
     double l = pole_length;
-    double u = action(0);
+    double u = noisy_cmd;
     double f = friction;
     double g = gravity;
     // Computing gradient
@@ -157,6 +161,7 @@ Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
 Eigen::VectorXd SimulatedCartPole::getStartingState()
 {
   Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
+  state(2) = M_PI;
   state(4) = cos(state(2));
   state(5) = sin(state(2));
   return state;
@@ -175,6 +180,7 @@ void SimulatedCartPole::to_xml(std::ostream & out) const
   rosban_utils::xml_tools::write<double>("gravity"            , gravity                  , out);
   rosban_utils::xml_tools::write<double>("integration_step"   , integration_step         , out);
   rosban_utils::xml_tools::write<double>("simulation_step"    , simulation_step          , out);
+  rosban_utils::xml_tools::write<double>("torque_stddev"      , torque_stddev            , out);
   rosban_utils::xml_tools::write<std::string>("reward_type"   , to_string(reward_type)   , out);
   rosban_utils::xml_tools::write<std::string>("learning_space", to_string(learning_space), out);
 }
@@ -192,6 +198,7 @@ void SimulatedCartPole::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node, "gravity"           , gravity           );
   rosban_utils::xml_tools::try_read<double>(node, "integration_step"  , integration_step  );
   rosban_utils::xml_tools::try_read<double>(node, "simulation_step"   , simulation_step   );
+  rosban_utils::xml_tools::try_read<double>(node, "torque_stddev"     , torque_stddev     );
   std::string reward_type_str;
   rosban_utils::xml_tools::try_read<std::string>(node, "reward_type", reward_type_str);
   if (reward_type_str != "")

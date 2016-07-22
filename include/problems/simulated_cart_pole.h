@@ -74,6 +74,9 @@ private:
   /// Duration of a simulation step [s] (1 / controlFrequency) 
   double simulation_step;
 
+  /// Standard deviation of the noise applied on the torque [N]
+  double torque_stddev;
+
   /// Which type of reward is used
   RewardType reward_type;
   /// Which type of learning space is used
