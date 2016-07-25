@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+using csa_mdp::Policy;
 using csa_mdp::PolicyFactory;
 
 void usage()
@@ -26,8 +27,8 @@ int main(int argc, char ** argv)
     usage();
   }
 
-  PolicyFactory::registerExtraBuilder("expert_approach",[](TiXmlNode * node)
-                                      { (void)node; return new ExpertApproach();});
+  PolicyFactory::registerExtraBuilder("expert_approach",
+                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
   ExtendedProblemFactory::registerExtraProblems();
 
   std::string config_path(argv[1]);
@@ -40,15 +41,14 @@ int main(int argc, char ** argv)
   }
 
   MREMachineFactory f;
-  MREMachine * mre_machine = f.buildFromXmlFile("mre_experiment.xml", "mre_experiment");
+  std::shared_ptr<MREMachine> mre_machine;
+  mre_machine = std::move(f.buildFromXmlFile("mre_experiment.xml", "mre_experiment"));
 
-  if (dynamic_cast<MREMachineController *>(mre_machine) != NULL)
+  if (std::dynamic_pointer_cast<MREMachineController>(mre_machine))
   {
     ros::init(argc, argv, "mre_controller");
     ros::NodeHandle nh;
   }
 
   mre_machine->execute();
-
-  delete(mre_machine);
 }

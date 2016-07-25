@@ -23,58 +23,42 @@ void ExtendedProblemFactory::registerExtraProblems()
   performed = true;
   // Registering extra builders
   registerExtraBuilder("approach",
-                       [](TiXmlNode *node) {(void)node;return new Approach();});
+                       [](){return std::unique_ptr<Problem>(new Approach);}, false);
   registerExtraBuilder("polar_approach",
-                       [](TiXmlNode *node) {(void)node;return new PolarApproach();});
-  registerExtraBuilder("cart_pole",
-                       [](TiXmlNode *node)
-                       {
-                         Problem * p = new CartPole();
-                         p->from_xml(node);
-                         return p;
-                       });
+                       [](){return std::unique_ptr<Problem>(new PolarApproach);}, false);
+  registerExtraBuilder("cart_pole", [](){return std::unique_ptr<Problem>(new CartPole);});
   registerExtraBuilder("simulated_cart_pole",
-                       [](TiXmlNode *node)
-                       {
-                         Problem * p = new SimulatedCartPole();
-                         p->from_xml(node);
-                         return p;
-                       });
+                       [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
   registerExtraBuilder("cart_pole_stabilization",
-                       [](TiXmlNode *node)
-                       {
-                         Problem * p = new CartPoleStabilization();
-                         p->from_xml(node);
-                         return p;
-                       });
+                       [](){return std::unique_ptr<Problem>(new CartPoleStabilization);});
   registerExtraBuilder("inverted_pendulum",
-                       [](TiXmlNode *node) {(void)node;return new InvertedPendulum();});
+                       [](){return std::unique_ptr<Problem>(new InvertedPendulum);}, false);
   registerExtraBuilder("double_inverted_pendulum",
-                       [](TiXmlNode *node) {(void)node;return new DoubleInvertedPendulum();});
+                       [](){return std::unique_ptr<Problem>(new DoubleInvertedPendulum);}, false);
   registerExtraBuilder("double_integrator",
-                       [](TiXmlNode *node) {(void)node;return new DoubleIntegrator();});
+                       [](){return std::unique_ptr<Problem>(new DoubleIntegrator);}, false);
 }
 
-ControlProblem * ExtendedProblemFactory::buildControl(const std::string &name)
+std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)
 {
-  Problem * p = build(name);
-  ControlProblem * result = dynamic_cast<ControlProblem*>(p);
+  Problem * p = build(name).release();
+  ControlProblem * result = dynamic_cast<ControlProblem *>(p);
   if (result == nullptr)
   {
-    delete(p);
+    delete(result);
     throw std::runtime_error("Problem '" + name + "' is not a ControlProblem");
   }
-  return result;
+  return std::unique_ptr<ControlProblem>(result);
 }
 
-BlackBoxProblem * ExtendedProblemFactory::buildBlackBox(const std::string &name)
+std::unique_ptr<BlackBoxProblem> ExtendedProblemFactory::buildBlackBox(const std::string &name)
 {
-  Problem * p = build(name);
-  BlackBoxProblem * result = dynamic_cast<BlackBoxProblem*>(p);
+  Problem * p = build(name).release();
+  BlackBoxProblem * result = dynamic_cast<BlackBoxProblem *>(p);
   if (result == nullptr)
   {
-    delete(p);
+    delete(result);
     throw std::runtime_error("Problem '" + name + "' is not a BlackBoxProblem");
   }
-  return result;
+  return std::unique_ptr<BlackBoxProblem>(result);
 }

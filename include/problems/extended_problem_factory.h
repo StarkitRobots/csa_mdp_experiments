@@ -11,9 +11,9 @@ public:
   ExtendedProblemFactory();
 
   /// Throws an exception if it fails to create a problem
-  ControlProblem * buildControl(const std::string &name);
+  std::unique_ptr<ControlProblem> buildControl(const std::string &name);
   /// Throws an exception if it fails to create a problem
-  BlackBoxProblem * buildBlackBox(const std::string &name);
+  std::unique_ptr<BlackBoxProblem> buildBlackBox(const std::string &name);
 
   /// Needs to be called to allow using additionnal Problems
   static void registerExtraProblems();

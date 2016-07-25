@@ -23,7 +23,7 @@ std::string LearningMachine::details_path("details");
 LearningMachine::LearningMachine()
   : run(1), step(0), discount(0.98),
     policy_id(1), policy_runs_required(1), policy_runs_performed(0), policy_total_reward(0),
-    best_policy_score(std::numeric_limits<double>::lowest()),
+    best_policy_score(std::numeric_limits<double>::lowest()), update_rule(UpdateRule::square),
     save_details(false), save_run_logs(true), save_best_policy(true)
 {
 }
@@ -37,28 +37,35 @@ void LearningMachine::setProblem(std::unique_ptr<csa_mdp::Problem> new_problem)
 {
   problem = std::move(new_problem);
   learning_dimensions = problem->getLearningDimensions();
-  propagateLimits();
+  propagate();
 }
 
 void LearningMachine::setLearner(std::unique_ptr<csa_mdp::Learner> new_learner)
 {
   learner = std::move(new_learner);
-  propagateLimits();
+  propagate();
 }
 
 void LearningMachine::setLearningDimensions(const std::vector<int> & new_learning_dimensions)
 {
   learning_dimensions = new_learning_dimensions;
-  propagateLimits();
+  propagate();
 }
 
-void LearningMachine::propagateLimits()
+void LearningMachine::setDiscount(double new_discount)
+{
+  discount = new_discount;
+  propagate();
+}
+
+void LearningMachine::propagate()
 {
   // Only propagate Limits is 
   if (problem && learner)
   {
     learner->setStateLimits(getLearningSpace(problem->getStateLimits()));
     learner->setActionLimits(problem->getActionLimits());
+    learner->setDiscount(discount);
   }
 }
 
@@ -108,13 +115,14 @@ void LearningMachine::doStep()
 
 void LearningMachine::init()
 {
+  learner->setStart();
   // First of all open/reset streams if necessary
   closeActiveStreams();
   openStreams();
   // Write Headers
   if (save_run_logs) { writeRunLogHeader(run_logs); }
-  time_logs << "run,type,time" << std::endl;
-  reward_logs << "run,policy,reward,disc_reward" << std::endl;
+  time_logs << "policy,run,type,time" << std::endl;
+  reward_logs << "run,policy,reward,disc_reward,elapsed_time" << std::endl;
   // Preload some experiment
   if (seed_path != "")
   {
@@ -152,7 +160,7 @@ void LearningMachine::prepareRun()
 void LearningMachine::endRun()
 {
   policy_runs_performed++;
-  policy_total_reward += trajectory_reward;
+  policy_total_reward += trajectory_disc_reward;
   // If the maximal step has not been reached, it mean we reached a final state
   int u_dim = problem->getActionLimits().rows();
   if (save_run_logs) {
@@ -161,7 +169,8 @@ void LearningMachine::endRun()
   reward_logs << run << ","
               << policy_id << ","
               << trajectory_reward << ","
-              << trajectory_disc_reward << std::endl;
+              << trajectory_disc_reward << ","
+              << learner->getLearningTime() << std::endl;
   // If it is the last run of the policy, perform some operations
   if (policy_runs_performed >= policy_runs_required)
   {
@@ -190,11 +199,11 @@ void LearningMachine::endRun()
         std::string prefix = oss.str();
         learner->saveStatus(prefix);
       }
-      //TODO handle time information (map<string,double> ?)
-      //writeTimeLog("qValueTS", mre->getQValueTrainingSetTime());
-      //writeTimeLog("qValueET", mre->getQValueExtraTreesTime());
-      //writeTimeLog("policyTS", mre->getPolicyTrainingSetTime());
-      //writeTimeLog("policyET", mre->getPolicyExtraTreesTime());
+      // Write time entries
+      for (const auto & entry : learner->getTimeRepartition())
+      {
+        writeTimeLog(entry.first, entry.second);
+      }
       // Set properties for the next policy
       policy_id++;
       policy_total_reward = 0;
@@ -244,7 +253,7 @@ void LearningMachine::writeRunLogHeader(std::ostream &out)
 
 void LearningMachine::writeTimeLog(const std::string &type, double time)
 {
-  time_logs << run << "," << type << "," << time << std::endl;
+  time_logs << policy_id << "," << run << "," << type << "," << time << std::endl;
 }
 
 void LearningMachine::writeRunLog(std::ostream &out, int run, int step,
@@ -357,6 +366,7 @@ void LearningMachine::from_xml(TiXmlNode *node)
   nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
   rosban_utils::xml_tools::try_read<double>(node, "discount", discount);
+  setDiscount(discount);
   rosban_utils::xml_tools::try_read<bool>(node, "save_details", save_details);
   rosban_utils::xml_tools::try_read<bool>(node, "save_run_logs", save_run_logs);
   rosban_utils::xml_tools::try_read<bool>(node, "save_best_policy", save_best_policy);

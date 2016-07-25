@@ -21,14 +21,16 @@ public:
   LearningMachine();
   virtual ~LearningMachine();
 
-  /// Also reset the learning dimensions to problem default and propagate Limits
+  /// Also reset the learning dimensions to problem default and propagate
   virtual void setProblem(std::unique_ptr<csa_mdp::Problem> problem);
-  /// Also propagate limits
+  /// Also propagate
   void setLearner(std::unique_ptr<csa_mdp::Learner> learner);
-  /// Also propagate limits
+  /// Also propagate
   void setLearningDimensions(const std::vector<int> & learning_dimensions);
-  /// Inform the learner of current limits on the problem if both are set
-  void propagateLimits();
+  // Also propagate
+  void setDiscount(double new_discount);
+  /// Inform the learner of current limits and discount
+  void propagate();
 
   /// If these function return false, the process ends as quickly as possible 
   virtual bool alive();

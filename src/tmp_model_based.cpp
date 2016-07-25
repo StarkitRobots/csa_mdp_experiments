@@ -4,13 +4,14 @@
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 
+using csa_mdp::Policy;
 using csa_mdp::PolicyFactory;
 
 int main()
 {
   // Registering extra features from csa_mdp
-  PolicyFactory::registerExtraBuilder("expert_approach",[](TiXmlNode * node)
-                                      { (void)node; return new ExpertApproach();});
+  PolicyFactory::registerExtraBuilder("expert_approach",
+                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
   ExtendedProblemFactory::registerExtraProblems();
 
   // Loading the learning Machine
