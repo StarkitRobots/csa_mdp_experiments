@@ -15,6 +15,8 @@ public:
   void init() override;
 
   Eigen::VectorXd getRawAction(const Eigen::VectorXd &state) override;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd &state,
+                               std::default_random_engine * external_engine) const override;
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;

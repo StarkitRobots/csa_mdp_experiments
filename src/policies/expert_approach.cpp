@@ -40,6 +40,8 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
       ball_x = cos(state(1)) * state(0);
       ball_y = sin(state(1)) * state(0);
       break;
+    default:
+      throw std::logic_error("Unknown type for ExpertApproach");
   }
   double ball_azimuth = atan2(state(1),state(0));
   double ball_distance = std::sqrt(ball_x * ball_x + ball_y * ball_y);
@@ -102,6 +104,14 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
   Eigen::VectorXd delta_cmd = wished_cmd - state.segment(3,3);
 
   return delta_cmd;
+}
+
+Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
+                                             std::default_random_engine * external_engine) const
+{
+  (void) state;
+  (void) external_engine;
+  throw std::logic_error("Impossible to retrieve an action from an expert approach without modifications (due to state memory)");
 }
 
 void ExpertApproach::to_xml(std::ostream & out) const
