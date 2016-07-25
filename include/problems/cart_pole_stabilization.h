@@ -41,6 +41,7 @@ public:
                    const Eigen::VectorXd & action,
                    const Eigen::VectorXd & dst) override;
 
+  // tries to match the state with the learning space if necessary
   Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
                                const Eigen::VectorXd & action) override;
 
@@ -49,6 +50,19 @@ public:
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
+
+protected:
+  // Entry is dimension 4, output is dimension 4
+  Eigen::VectorXd getFullSuccessor(const Eigen::VectorXd & state,
+                                   const Eigen::VectorXd & action);
+
+  // Entry is dimension 2, output is dimension 2
+  Eigen::VectorXd getAngularSuccessor(const Eigen::VectorXd & state,
+                                      const Eigen::VectorXd & action);
+
+  // Entry is dimension 3, output is dimension 3
+  Eigen::VectorXd getCartesianSuccessor(const Eigen::VectorXd & state,
+                                        const Eigen::VectorXd & action);
 
 private:
   std::default_random_engine generator;

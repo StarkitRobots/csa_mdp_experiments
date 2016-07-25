@@ -333,7 +333,9 @@ void LearningMachine::from_xml(TiXmlNode *node)
 {
   // First: read problem
   TiXmlNode * problem_node = node->FirstChild("problem");
-  if(!problem_node) throw std::runtime_error("Failed to find node 'problem'");
+  if(!problem_node) {
+    throw std::runtime_error("Failed to find node 'problem' in '" + node->ValueStr() + "'");
+  }
   setProblem(std::unique_ptr<Problem>(ProblemFactory().build(problem_node)));
   // Override learning dimensions if custom config is provided
   std::vector<int> new_learning_dims;
@@ -341,7 +343,9 @@ void LearningMachine::from_xml(TiXmlNode *node)
   if (new_learning_dims.size() > 0) setLearningDimensions(new_learning_dims);
   // Then: read learner
   TiXmlNode * learner_node = node->FirstChild("learner");
-  if(!learner_node) throw std::runtime_error("Failed to find node 'learner'");
+  if(!learner_node) {
+    throw std::runtime_error("Failed to find node 'learner' in '" + node->ValueStr() + "'");
+  }
   setLearner(std::unique_ptr<Learner>(LearnerFactory().build(learner_node)));
   // Then... read everything else
   std::string update_rule_str;

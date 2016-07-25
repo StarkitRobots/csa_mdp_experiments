@@ -9,7 +9,7 @@
 #include <memory>
 
 /// Base class for running experiments
-class LearningMachine : rosban_utils::Serializable
+class LearningMachine : public rosban_utils::Serializable
 {
 public:
   /// What is the frequency of update?
@@ -22,7 +22,7 @@ public:
   virtual ~LearningMachine();
 
   /// Also reset the learning dimensions to problem default and propagate Limits
-  void setProblem(std::unique_ptr<csa_mdp::Problem> problem);
+  virtual void setProblem(std::unique_ptr<csa_mdp::Problem> problem);
   /// Also propagate limits
   void setLearner(std::unique_ptr<csa_mdp::Learner> learner);
   /// Also propagate limits

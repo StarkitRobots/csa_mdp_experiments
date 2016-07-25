@@ -1,3 +1,5 @@
+#pragma once
+
 #include "mre_machine/mre_machine.h"
 
 class MREMachineBlackBox : public MREMachine

@@ -82,13 +82,30 @@ Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state
                                                     const Eigen::VectorXd &action)
 {
   // Custom check
-  if (state.rows() != 4)
+  if (state.rows() == 4)
   {
+    return getFullSuccessor(state, action);
+  }
+  else if (learning_space == LearningSpace::Angular) {
+    if (state.rows() == 2) return getAngularSuccessor(state, action); 
     std::ostringstream oss;
     oss << "CartPoleStabilization::getSuccessor: invalid state dimension: "
-        << state.rows() << " (expecting 4)";
+        << state.rows() << " (expecting 2 or 4 in Angular learning space)";
     throw std::runtime_error(oss.str());
   }
+  else if (learning_space == LearningSpace::Cartesian) {
+    if (state.rows() == 3) return getCartesianSuccessor(state, action); 
+    std::ostringstream oss;
+    oss << "CartPoleStabilization::getSuccessor: invalid state dimension: "
+        << state.rows() << " (expecting 3 or 4 in Angular learning space)";
+    throw std::runtime_error(oss.str());
+  }
+  throw std::logic_error("CartPoleStabilization::getSuccessor: Unknown learning space");
+}
+
+Eigen::VectorXd CartPoleStabilization::getFullSuccessor(const Eigen::VectorXd &state,
+                                                        const Eigen::VectorXd &action)
+{
   // Adding noise to action
   double noisy_action = action(0) + noise_distribution(generator);
   // Integrating action with the system dynamics
@@ -115,6 +132,30 @@ Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state
     current_state = next_state;
   }
   return current_state;
+}
+
+Eigen::VectorXd CartPoleStabilization::getAngularSuccessor(const Eigen::VectorXd &state,
+                                                           const Eigen::VectorXd &action)
+{
+  Eigen::VectorXd full_state(4);
+  full_state.segment(0,2) = state;
+  full_state(2) = cos(state(0));
+  full_state(3) = sin(state(0));
+  return getFullSuccessor(full_state, action).segment(0,2);
+}
+
+Eigen::VectorXd CartPoleStabilization::getCartesianSuccessor(const Eigen::VectorXd &state,
+                                                             const Eigen::VectorXd &action)
+{
+  Eigen::VectorXd full_state(4);
+  full_state(0) = state(0);
+  full_state(1) = atan2(state(3), state(2));
+  full_state.segment(2,2) = state.segment(1,2);
+  Eigen::VectorXd full_successor = getFullSuccessor(full_state, action);
+  Eigen::VectorXd partial_successor(3);
+  partial_successor(0) = full_successor(0);
+  partial_successor.segment(1,2) = full_successor.segment(2,2);
+  return partial_successor;
 }
 
 Eigen::VectorXd CartPoleStabilization::getStartingState()

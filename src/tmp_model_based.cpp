@@ -1,9 +1,22 @@
-#include "rosban_csa_mdp/solvers/model_based_learner.h"
+#include "learning_machine/learning_machine_blackbox.h"
+#include "problems/extended_problem_factory.h"
+#include "policies/expert_approach.h"
 
-using csa_mdp::ModelBasedLearner;
+#include "rosban_csa_mdp/core/policy_factory.h"
+
+using csa_mdp::PolicyFactory;
 
 int main()
 {
-  ModelBasedLearner learner;
-  learner.internalUpdate();
+  // Registering extra features from csa_mdp
+  PolicyFactory::registerExtraBuilder("expert_approach",[](TiXmlNode * node)
+                                      { (void)node; return new ExpertApproach();});
+  ExtendedProblemFactory::registerExtraProblems();
+
+  // Loading the learning Machine
+  LearningMachineBlackBox lmb;
+  lmb.load_file();
+
+  // Runnig the process
+  lmb.execute();
 }
