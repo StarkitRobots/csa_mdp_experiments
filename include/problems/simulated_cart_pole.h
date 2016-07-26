@@ -48,6 +48,20 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
+protected:
+  // Entry is dimension 6, output is dimension 6
+  Eigen::VectorXd getFullSuccessor(const Eigen::VectorXd & state,
+                                   const Eigen::VectorXd & action);
+
+  // Entry is dimension 4, output is dimension 4
+  Eigen::VectorXd getAngularSuccessor(const Eigen::VectorXd & state,
+                                      const Eigen::VectorXd & action);
+
+  // Entry is dimension 5, output is dimension 5
+  Eigen::VectorXd getCartesianSuccessor(const Eigen::VectorXd & state,
+                                        const Eigen::VectorXd & action);
+
+
 private:
   /// maximal distance from center to cart [m]
   double max_pos;

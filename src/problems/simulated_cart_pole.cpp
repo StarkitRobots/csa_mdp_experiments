@@ -105,14 +105,31 @@ double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
 Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
                                                 const Eigen::VectorXd & action)
 {
-  // Check if dimensions is appropriate
-  if (state.rows() != 6)
+  // Check if dimensions are appropriate
+  if (state.rows() == 6)
   {
+    return getFullSuccessor(state, action);
+  }
+  else if (learning_space == LearningSpace::Angular) {
+    if (state.rows() == 4) return getAngularSuccessor(state, action);
     std::ostringstream oss;
     oss << "SimulatedCartPole::getSuccessor: invalid state dimension: "
-        << state.rows() << " (expecting 6)";
+        << state.rows() << " (expecting 4 or 6 in Angular learning space)";
     throw std::runtime_error(oss.str());
   }
+  else if (learning_space == LearningSpace::Cartesian) {
+    if (state.rows() == 5) return getCartesianSuccessor(state, action);
+    std::ostringstream oss;
+    oss << "SimulatedCartPole::getSuccessor: invalid state dimension: "
+        << state.rows() << " (expecting 5 or 6 in Angular learning space)";
+    throw std::runtime_error(oss.str());
+  }
+  throw std::logic_error("SimulatedCartPole::getSuccessor: Unknown learning space");
+}
+
+Eigen::VectorXd SimulatedCartPole::getFullSuccessor(const Eigen::VectorXd & state,
+                                                    const Eigen::VectorXd & action)
+{
   // Apply noise on action
   std::normal_distribution<double> noise_distribution(0, torque_stddev);
   double noisy_cmd = action(0) + noise_distribution(random_engine);
@@ -156,6 +173,32 @@ Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
   current_state(4) = cos(current_state(2));
   current_state(5) = sin(current_state(2));
   return current_state;
+}
+
+Eigen::VectorXd SimulatedCartPole::getAngularSuccessor(const Eigen::VectorXd &state,
+                                                       const Eigen::VectorXd &action)
+{
+  Eigen::VectorXd full_state(6);
+  full_state.segment(0,4) = state;
+  full_state(4) = cos(state(2));
+  full_state(5) = sin(state(2));
+  return getFullSuccessor(full_state, action).segment(0,4);
+}
+
+Eigen::VectorXd SimulatedCartPole::getCartesianSuccessor(const Eigen::VectorXd &state,
+                                                         const Eigen::VectorXd &action)
+{
+  Eigen::VectorXd full_state(6);
+  full_state.segment(0,2) = state.segment(0,2);//cart_pos, cart_vel
+  full_state(2) = atan2(state(3), state(2));//theta
+  full_state(3) = state(4);//omega
+  full_state.segment(4,2) = state.segment(2,2);//cos(theta), sin(theta)
+  Eigen::VectorXd full_successor = getFullSuccessor(full_state, action);
+  Eigen::VectorXd partial_successor(5);
+  partial_successor.segment(0,2) = full_successor.segment(0,2);
+  partial_successor.segment(2,2) = full_successor.segment(4,2);
+  partial_successor(4) = full_successor(3);
+  return partial_successor;
 }
 
 Eigen::VectorXd SimulatedCartPole::getStartingState()
