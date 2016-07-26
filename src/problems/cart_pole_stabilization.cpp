@@ -148,13 +148,13 @@ Eigen::VectorXd CartPoleStabilization::getCartesianSuccessor(const Eigen::Vector
                                                              const Eigen::VectorXd &action)
 {
   Eigen::VectorXd full_state(4);
-  full_state(0) = state(0);
-  full_state(1) = atan2(state(3), state(2));
-  full_state.segment(2,2) = state.segment(1,2);
+  full_state(0) = atan2(state(3), state(2));
+  full_state(1) = state(2);
+  full_state.segment(2,2) = state.segment(0,2);
   Eigen::VectorXd full_successor = getFullSuccessor(full_state, action);
   Eigen::VectorXd partial_successor(3);
-  partial_successor(0) = full_successor(0);
-  partial_successor.segment(1,2) = full_successor.segment(2,2);
+  partial_successor.segment(0,2) = full_successor.segment(2,2);
+  partial_successor(2) = full_successor(1);
   return partial_successor;
 }
 
