@@ -53,7 +53,7 @@ include_directories(
 # Directories containing sources files
 set(DIRECTORIES
   src/learning_machine
-  src/mre_machine
+#  src/mre_machine #Mostly replaced by learning machine but not entirely yet
   src/policies
   src/problems
   src/interface
@@ -86,8 +86,9 @@ add_executable(learn_from_logs src/learn_from_logs.cpp)
 target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 
 # Generic MRE experiments (evaluation / exploration)
-add_executable(mre_experiment src/mre_experiment.cpp)
-target_link_libraries(mre_experiment ${catkin_LIBRARIES} csa_mdp_experiments)
+# Mostly replaced by learning machine but not entirely yet
+#add_executable(mre_experiment src/mre_experiment.cpp)
+#target_link_libraries(mre_experiment ${catkin_LIBRARIES} csa_mdp_experiments)
 
 # Temporary experiment
 add_executable(learning_machine src/learning_machine.cpp)

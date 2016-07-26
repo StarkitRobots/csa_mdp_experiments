@@ -24,8 +24,8 @@ LearningMachine::LearningMachine()
   : run(1), step(0), discount(0.98), nb_threads(1),
     policy_id(1), policy_runs_required(1), policy_runs_performed(0), policy_total_reward(0),
     best_policy_score(std::numeric_limits<double>::lowest()),
-    time_budget(std::numeric_limits<double>::max()),
     update_rule(UpdateRule::square),
+    time_budget(std::numeric_limits<double>::max()),
     save_details(false), save_run_logs(true), save_best_policy(true)
 {
 }
@@ -62,11 +62,13 @@ void LearningMachine::setDiscount(double new_discount)
 
 void LearningMachine::propagate()
 {
-  // Only propagate Limits is 
+  // Only propagate if both problem and learner have been set
   if (problem && learner)
   {
     learner->setStateLimits(getLearningSpace(problem->getStateLimits()));
     learner->setActionLimits(problem->getActionLimits());
+    learner->setTerminalFunction([this](const Eigen::VectorXd & state)
+                                 {return this->problem->isTerminal(state);});
     learner->setDiscount(discount);
     learner->setNbThreads(nb_threads);
   }
