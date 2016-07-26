@@ -12,6 +12,7 @@
 class LearningMachine : public rosban_utils::Serializable
 {
 public:
+  //TODO replace update rule by two int runs_by_policy and runs_by_policy_growth
   /// What is the frequency of update?
   /// - each  : Update after every run
   /// - square: The number of run before each update is the number of update 
@@ -103,6 +104,8 @@ protected:
 
   /// The discount gain used
   double discount;
+  /// The number of threads allowed
+  int nb_threads;
 
   /// The current policy number
   int policy_id;
@@ -121,6 +124,9 @@ protected:
   int nb_runs;
   /// Maximal number of steps per run
   int nb_steps;
+  /// How many time can the learning machine use? [s]
+  /// (default is unlimited)
+  double time_budget;
 
   /// Are the policy / q_value saved after each policy update?
   bool save_details;

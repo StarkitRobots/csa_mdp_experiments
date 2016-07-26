@@ -21,9 +21,11 @@ using csa_mdp::Policy;
 std::string LearningMachine::details_path("details");
 
 LearningMachine::LearningMachine()
-  : run(1), step(0), discount(0.98),
+  : run(1), step(0), discount(0.98), nb_threads(1),
     policy_id(1), policy_runs_required(1), policy_runs_performed(0), policy_total_reward(0),
-    best_policy_score(std::numeric_limits<double>::lowest()), update_rule(UpdateRule::square),
+    best_policy_score(std::numeric_limits<double>::lowest()),
+    time_budget(std::numeric_limits<double>::max()),
+    update_rule(UpdateRule::square),
     save_details(false), save_run_logs(true), save_best_policy(true)
 {
 }
@@ -66,6 +68,7 @@ void LearningMachine::propagate()
     learner->setStateLimits(getLearningSpace(problem->getStateLimits()));
     learner->setActionLimits(problem->getActionLimits());
     learner->setDiscount(discount);
+    learner->setNbThreads(nb_threads);
   }
 }
 
@@ -146,7 +149,7 @@ void LearningMachine::init()
 
 bool LearningMachine::alive()
 {
-  return true;
+  return learner->getLearningTime() < time_budget;
 }
 
 void LearningMachine::prepareRun()
@@ -331,7 +334,9 @@ void LearningMachine::to_xml(std::ostream &out) const
   rosban_utils::xml_tools::write<std::string>("update_rule", to_string(update_rule), out);
   rosban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
   rosban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
+  rosban_utils::xml_tools::write<int>("nb_threads", nb_threads, out);
   rosban_utils::xml_tools::write<double>("discount", discount, out);
+  rosban_utils::xml_tools::write<double>("time_budget", time_budget, out);
   rosban_utils::xml_tools::write<bool>("save_details", save_details, out);
   rosban_utils::xml_tools::write<bool>("save_run_logs", save_run_logs, out);
   rosban_utils::xml_tools::write<bool>("save_best_policy", save_best_policy, out);
@@ -365,8 +370,10 @@ void LearningMachine::from_xml(TiXmlNode *node)
   }
   nb_runs  = rosban_utils::xml_tools::read<int>(node, "nb_runs");
   nb_steps = rosban_utils::xml_tools::read<int>(node, "nb_steps");
+  rosban_utils::xml_tools::try_read<int>   (node, "nb_threads", nb_threads);
   rosban_utils::xml_tools::try_read<double>(node, "discount", discount);
   setDiscount(discount);
+  rosban_utils::xml_tools::try_read<double>(node, "time_budget", time_budget);
   rosban_utils::xml_tools::try_read<bool>(node, "save_details", save_details);
   rosban_utils::xml_tools::try_read<bool>(node, "save_run_logs", save_run_logs);
   rosban_utils::xml_tools::try_read<bool>(node, "save_best_policy", save_best_policy);
