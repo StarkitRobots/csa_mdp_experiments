@@ -13,9 +13,10 @@
 /// Action is:
 /// torque: (applied on cart)
 ///
-/// Two different learning spaces are proposed
+/// Three different learning spaces are proposed
 /// - Angular: [cart_pos cart_vel theta omega]
 /// - Cartesian: [cart_pos cart_vel cos(theta) sin(theta) omega]
+/// - Full: [cart_pos cart_vel theta omega cos(theta) sin(theta)]
 class SimulatedCartPole : public BlackBoxProblem
 {
 public:
@@ -24,7 +25,7 @@ public:
   { Binary, Continuous, Pilco };
 
   enum class LearningSpace
-  { Angular, Cartesian };
+  { Angular, Cartesian, Full };
 
   /// Default configuration is the pilco configuration
   SimulatedCartPole();
@@ -60,6 +61,17 @@ protected:
   // Entry is dimension 5, output is dimension 5
   Eigen::VectorXd getCartesianSuccessor(const Eigen::VectorXd & state,
                                         const Eigen::VectorXd & action);
+
+  /// Detect the learning space or throw an exception
+  LearningSpace detectSpace(const Eigen::VectorXd & state) const;
+
+  /// Detect the learning space and convert
+  Eigen::VectorXd whateverToFull(const Eigen::VectorXd & state) const;
+
+  /// Convert a state in angular space to a state in full space
+  Eigen::VectorXd angularToFull(const Eigen::VectorXd & state) const;
+  /// Convert a state in cartesian space to a state in full space
+  Eigen::VectorXd cartesianToFull(const Eigen::VectorXd & state) const;
 
 
 private:
