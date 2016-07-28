@@ -57,8 +57,8 @@ bool SimulatedCartPole::isTerminal(const Eigen::VectorXd & state) const
 }
 
 double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
-                           const Eigen::VectorXd &action,
-                           const Eigen::VectorXd &dst)
+                                    const Eigen::VectorXd &action,
+                                    const Eigen::VectorXd &dst)
 {
   (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
