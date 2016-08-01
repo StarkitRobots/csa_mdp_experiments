@@ -46,9 +46,10 @@ CartPoleStabilization::CartPoleStabilization()
 
 bool CartPoleStabilization::isTerminal(const Eigen::VectorXd& state) const
 {
+  Eigen::VectorXd state_full = whateverToFull(state);
   for (int i = 0; i < 2; i++)
   {
-    if (state(i) < getStateLimits()(i,0) || state(i) > getStateLimits()(i,1))
+    if (state_full(i) < getStateLimits()(i,0) || state_full(i) > getStateLimits()(i,1))
       return true;
   }
   return false;
@@ -58,12 +59,13 @@ double CartPoleStabilization::getReward(const Eigen::VectorXd &src,
                                         const Eigen::VectorXd &action,
                                         const Eigen::VectorXd &result)
 {
+  Eigen::VectorXd result_full = whateverToFull(result);
   (void)src;//Unused
-  if (isTerminal(result)) {
+  if (isTerminal(result_full)) {
     return -1000;
   }
-  double pos_cost   = std::pow(result(0) / theta_max , 2);
-  double speed_cost = std::pow(result(1)             , 2);
+  double pos_cost   = std::pow(result_full(0) / theta_max , 2);
+  double speed_cost = std::pow(result_full(1)             , 2);
   double force_cost = std::pow(action(0) / action_max, 2);
   return - (pos_cost + speed_cost + force_cost);
 }
@@ -81,26 +83,13 @@ std::vector<int> CartPoleStabilization::getLearningDimensions() const
 Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state,
                                                     const Eigen::VectorXd &action)
 {
-  // Custom check
-  if (state.rows() == 4)
+  switch (detectSpace(state))
   {
-    return getFullSuccessor(state, action);
+    case LearningSpace::Full: return getFullSuccessor(state, action);
+    case LearningSpace::Angular: return getAngularSuccessor(state, action);
+    case LearningSpace::Cartesian: return getCartesianSuccessor(state, action);
   }
-  else if (learning_space == LearningSpace::Angular) {
-    if (state.rows() == 2) return getAngularSuccessor(state, action); 
-    std::ostringstream oss;
-    oss << "CartPoleStabilization::getSuccessor: invalid state dimension: "
-        << state.rows() << " (expecting 2 or 4 in Angular learning space)";
-    throw std::runtime_error(oss.str());
-  }
-  else if (learning_space == LearningSpace::Cartesian) {
-    if (state.rows() == 3) return getCartesianSuccessor(state, action); 
-    std::ostringstream oss;
-    oss << "CartPoleStabilization::getSuccessor: invalid state dimension: "
-        << state.rows() << " (expecting 3 or 4 in Angular learning space)";
-    throw std::runtime_error(oss.str());
-  }
-  throw std::logic_error("CartPoleStabilization::getSuccessor: Unknown learning space");
+  throw std::logic_error("CartPoleStabilization::getSuccessor: Unhandled learning space");
 }
 
 Eigen::VectorXd CartPoleStabilization::getFullSuccessor(const Eigen::VectorXd &state,
@@ -137,26 +126,64 @@ Eigen::VectorXd CartPoleStabilization::getFullSuccessor(const Eigen::VectorXd &s
 Eigen::VectorXd CartPoleStabilization::getAngularSuccessor(const Eigen::VectorXd &state,
                                                            const Eigen::VectorXd &action)
 {
-  Eigen::VectorXd full_state(4);
-  full_state.segment(0,2) = state;
-  full_state(2) = cos(state(0));
-  full_state(3) = sin(state(0));
-  return getFullSuccessor(full_state, action).segment(0,2);
+  return getFullSuccessor(angularToFull(state), action).segment(0,2);
 }
 
 Eigen::VectorXd CartPoleStabilization::getCartesianSuccessor(const Eigen::VectorXd &state,
                                                              const Eigen::VectorXd &action)
 {
-  Eigen::VectorXd full_state(4);
-  full_state(0) = atan2(state(3), state(2));
-  full_state(1) = state(2);
-  full_state.segment(2,2) = state.segment(0,2);
-  Eigen::VectorXd full_successor = getFullSuccessor(full_state, action);
+  Eigen::VectorXd full_successor = getFullSuccessor(cartesianToFull(state), action);
   Eigen::VectorXd partial_successor(3);
   partial_successor.segment(0,2) = full_successor.segment(2,2);
   partial_successor(2) = full_successor(1);
   return partial_successor;
 }
+
+CartPoleStabilization::LearningSpace
+CartPoleStabilization::detectSpace(const Eigen::VectorXd & state) const
+{
+  // Check if dimensions are appropriate
+  switch(state.rows())
+  {
+    case 2: return LearningSpace::Angular;
+    case 3: return LearningSpace::Cartesian;
+    case 4: return LearningSpace::Full;
+    default:
+    {
+      std::ostringstream oss;
+      oss << "CartPoleStabilization::detectSpace: Unexpected dim for state: " << state.rows();
+      throw std::logic_error(oss.str());
+    }
+  }  
+}
+
+Eigen::VectorXd CartPoleStabilization::whateverToFull(const Eigen::VectorXd & state) const
+{
+  switch(detectSpace(state)) {
+    case LearningSpace::Angular: return angularToFull(state);
+    case LearningSpace::Cartesian: return cartesianToFull(state);
+    case LearningSpace::Full: return state;
+  }
+}
+
+Eigen::VectorXd CartPoleStabilization::angularToFull(const Eigen::VectorXd & state) const
+{
+  Eigen::VectorXd full_state(4);
+  full_state.segment(0,2) = state;
+  full_state(2) = cos(state(2));
+  full_state(3) = sin(state(2));
+  return full_state;
+}
+
+Eigen::VectorXd CartPoleStabilization::cartesianToFull(const Eigen::VectorXd & state) const
+{
+  Eigen::VectorXd full_state(4);
+  full_state(0) = atan2(state(3), state(2));//theta
+  full_state(1) = state(2);//omega
+  full_state.segment(2,2) = state.segment(0,2);//cos(theta), sin(theta)
+  return full_state;
+}
+
 
 Eigen::VectorXd CartPoleStabilization::getStartingState()
 {

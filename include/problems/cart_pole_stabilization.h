@@ -8,28 +8,26 @@
 #include <random>
 #include <vector>
 
-/**
- * The description of this problem is given in the article:
- * "Binary Action Search for Learning Continuous-Action Control Policies"
- * (Pazis & Lagoudakis 2009)
- * The discount rate used in the article is 0.95
- *
- * The overall state space is the following
- * 0 - theta (angular position)
- * 1 - omega (angular speed)
- * 2 - cos(theta)
- * 3 - sin(theta)
- *
- * Two different learning spaces are proposed
- * - Angular: [theta omega]
- * - Cartesian: [cos(theta) sin(theta) omega]
- */
-
+/// The description of this problem is given in the article:
+/// "Binary Action Search for Learning Continuous-Action Control Policies"
+/// (Pazis & Lagoudakis 2009)
+/// The discount rate used in the article is 0.95
+/// 
+/// The overall state space is the following
+/// 0 - theta (angular position)
+/// 1 - omega (angular speed)
+/// 2 - cos(theta)
+/// 3 - sin(theta)
+/// 
+/// Two different learning spaces are proposed
+/// - Angular: [theta omega]
+/// - Cartesian: [cos(theta) sin(theta) omega]
+/// - Full: [theta omega cos(theta) sin(theta)
 class CartPoleStabilization : public BlackBoxProblem {
 public:
   /// cf above
   enum class LearningSpace
-  { Angular, Cartesian };
+  { Angular, Cartesian, Full };
 
   CartPoleStabilization();
 
@@ -63,6 +61,17 @@ protected:
   // Entry is dimension 3, output is dimension 3
   Eigen::VectorXd getCartesianSuccessor(const Eigen::VectorXd & state,
                                         const Eigen::VectorXd & action);
+
+  /// Detect the learning space or throw an exception
+  LearningSpace detectSpace(const Eigen::VectorXd & state) const;
+
+  /// Detect the learning space and convert
+  Eigen::VectorXd whateverToFull(const Eigen::VectorXd & state) const;
+
+  /// Convert a state in angular space to a state in full space
+  Eigen::VectorXd angularToFull(const Eigen::VectorXd & state) const;
+  /// Convert a state in cartesian space to a state in full space
+  Eigen::VectorXd cartesianToFull(const Eigen::VectorXd & state) const;
 
 private:
   std::default_random_engine generator;
