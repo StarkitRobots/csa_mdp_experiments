@@ -193,17 +193,17 @@ void LearningMachine::endRun()
       std::cout << "Found a new 'best policy' at policy_id: " << policy_id
                 << " with a score of: " << policy_score << std::endl;
     }
+    // Save the current status
+    if (save_details)
+    {
+      std::ostringstream oss;
+      oss << details_path << "/update_" << policy_id << "_";
+      std::string prefix = oss.str();
+      learner->saveStatus(prefix);
+    }
     // Update internal structure only if there is still some runs to go
     if (run < nb_runs) {
       learner->internalUpdate();
-      // Save q_value and nb_steps
-      if (save_details)
-      {
-        std::ostringstream oss;
-        oss << details_path << "/update_" << policy_id << "_";
-        std::string prefix = oss.str();
-        learner->saveStatus(prefix);
-      }
       // Write time entries
       for (const auto & entry : learner->getTimeRepartition())
       {
