@@ -1,0 +1,15 @@
+<LearningMachine>
+  <problem>polar_approach</problem>
+  <learner>
+    <FakeLearner>
+      <policy>expert_approach</policy>
+    </FakeLearner>
+  </learner>
+  <save_run_logs>false</save_run_logs>
+  <save_details>false</save_details>
+  <nb_threads>3</nb_threads>
+  <nb_runs>10000</nb_runs>
+  <nb_steps>50</nb_steps>
+  <time_budget>600</time_budget>
+  <discount>0.98</discount>
+</LearningMachine>

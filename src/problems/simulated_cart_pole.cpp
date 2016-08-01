@@ -113,6 +113,7 @@ Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
     case LearningSpace::Cartesian: return getCartesianSuccessor(state, action);
     case LearningSpace::Full: return getFullSuccessor(state, action);
   }
+  throw std::logic_error("SimulatedCartPole::getSuccessor: unknown space");
 }
 
 Eigen::VectorXd SimulatedCartPole::getFullSuccessor(const Eigen::VectorXd & state,
@@ -204,6 +205,7 @@ Eigen::VectorXd SimulatedCartPole::whateverToFull(const Eigen::VectorXd & state)
     case LearningSpace::Cartesian: return cartesianToFull(state);
     case LearningSpace::Full: return state;
   }
+  throw std::logic_error("SimulatedCartPole::whateverToFull: unknown space");
 }
 
 Eigen::VectorXd SimulatedCartPole::angularToFull(const Eigen::VectorXd & state) const
