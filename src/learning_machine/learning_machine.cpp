@@ -131,6 +131,7 @@ void LearningMachine::init()
   // Preload some experiment
   if (seed_path != "")
   {
+    std::cout << "Loading experiments from the seed at '" << seed_path << "'" << std::endl;
     std::vector<History> histories = History::readCSV(seed_path,
                                                       problem->getStateLimits().rows(),
                                                       problem->getActionLimits().rows());
@@ -143,7 +144,9 @@ void LearningMachine::init()
                                             s.reward);
       learner->feed(learning_sample);
     }
+    std::cout << "\tExperiments loaded" << std::endl;
     learner->internalUpdate();
+    std::cout << "\tPreliminary update done" << std::endl;
   }
   // If saving details, then create folder
   if (save_details) { createDetailFolder(); }
