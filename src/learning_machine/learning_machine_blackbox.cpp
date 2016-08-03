@@ -35,3 +35,8 @@ void LearningMachineBlackBox::setProblem(std::unique_ptr<csa_mdp::Problem> new_p
     throw std::logic_error("Trying to run a LearningMachineBlackBox on a NOT blackbox problem");
   }
 }
+
+std::string LearningMachineBlackBox::class_name() const
+{
+  return "LearningMachineBlackBox";
+}

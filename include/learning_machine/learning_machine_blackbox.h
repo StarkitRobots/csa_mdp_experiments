@@ -13,6 +13,8 @@ public:
   virtual void applyAction(const Eigen::VectorXd &action) override;
   
   virtual void setProblem(std::unique_ptr<csa_mdp::Problem> problem) override;
+
+  virtual std::string class_name() const override;
 protected:
   /// Access to another type of problem
   std::shared_ptr<BlackBoxProblem> bb_problem;

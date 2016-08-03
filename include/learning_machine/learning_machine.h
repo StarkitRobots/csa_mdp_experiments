@@ -58,11 +58,12 @@ public:
   /// This method should include a sleep if required
   virtual void applyAction(const Eigen::VectorXd &action) = 0;
 
-  /// Close all the opened streams
-  void closeActiveStreams();
-
   /// Open the streams with respect to the configuration
-  void openStreams();
+  virtual void openStreams();
+
+  /// Close all the opened streams
+  virtual void closeActiveStreams();
+
 
   void writeRunLogHeader(std::ostream &out);
 
