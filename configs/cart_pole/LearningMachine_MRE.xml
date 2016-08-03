@@ -1,0 +1,34 @@
+<LearningMachine>
+  <LearningMachineController>
+    <problem>cart_pole</problem>
+    <learner>
+      <MRE>
+        <mrefpf_conf>
+          <nb_threads>3</nb_threads>
+          <horizon>5</horizon>
+          <discount>0.98</discount>
+          <max_action_tiles>200</max_action_tiles>
+          <reward_max>0</reward_max>
+        </mrefpf_conf>
+      </MRE>
+    </learner>
+    <control>
+      <robot>cart_pole</robot>
+      <frequency>25</frequency>
+      <linear_sensors>
+        <v>cart_joint</v>
+      </linear_sensors>
+      <angular_sensors>
+        <v>axis1</v>
+      </angular_sensors>
+      <effectors>
+        <v>cart</v>
+      </effectors>
+    </control>
+    <nb_threads>3</nb_threads>
+    <update_rule>square</update_rule>
+    <nb_runs>55</nb_runs>
+    <nb_steps>25</nb_steps>
+    <time_budget>60</time_budget>
+  </LearningMachineController>
+</LearningMachine>
