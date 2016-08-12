@@ -24,7 +24,7 @@ bool InvertedPendulum::isTerminal(const Eigen::VectorXd & state) const
 
 double InvertedPendulum::getReward(const Eigen::VectorXd &state,
                                    const Eigen::VectorXd &action,
-                                   const Eigen::VectorXd &dst)
+                                   const Eigen::VectorXd &dst) const
 {
   (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
@@ -41,7 +41,8 @@ double InvertedPendulum::getReward(const Eigen::VectorXd &state,
 }
 
 Eigen::VectorXd InvertedPendulum::getSuccessor(const Eigen::VectorXd & state,
-                                               const Eigen::VectorXd & action)
+                                               const Eigen::VectorXd & action,
+                                               std::default_random_engine * engine) const
 {
   (void) state;
   (void) action;

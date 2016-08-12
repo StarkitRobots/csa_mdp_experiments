@@ -31,10 +31,11 @@ public:
 
   double getReward(const Eigen::VectorXd & state,
                    const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) override;
+                   const Eigen::VectorXd & dst) const override;
 
   Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action) override;
+                               const Eigen::VectorXd & action,
+                               std::default_random_engine * engine) const override;
 
   Eigen::VectorXd getStartingState() override;
 
@@ -122,8 +123,4 @@ protected:
   /// In reality, there is a huge difference between the order given to the walk
   /// system and its result
   static double walk_gain;
-
-  std::uniform_real_distribution<double> step_x_noise_distrib;
-  std::uniform_real_distribution<double> step_y_noise_distrib;
-  std::uniform_real_distribution<double> step_theta_noise_distrib;
 };

@@ -16,8 +16,6 @@ public:
   };
 
   Version version;
-  std::default_random_engine generator;
-  std::uniform_real_distribution<double> noise_distribution;
 
   DoubleIntegrator(Version version = Version::SantaMaria1998);
 
@@ -25,10 +23,11 @@ public:
 
   double getReward(const Eigen::VectorXd & state,
                    const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) override;
+                   const Eigen::VectorXd & dst) const override;
 
   Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action) override;
+                               const Eigen::VectorXd & action,
+                               std::default_random_engine * engine) const override;
 
   Eigen::VectorXd getStartingState() override;
 

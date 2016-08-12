@@ -39,9 +39,6 @@ CartPoleStabilization::CartPoleStabilization()
   setActionLimits(action_limits);
   setStateNames({"theta","omega","cos(theta)","sin(theta)"});
   setActionNames({"torque"});
-
-  generator = rosban_random::getRandomEngine();
-  noise_distribution = std::uniform_real_distribution<double>(-noise_max, noise_max);
 }
 
 bool CartPoleStabilization::isTerminal(const Eigen::VectorXd& state) const
@@ -57,7 +54,7 @@ bool CartPoleStabilization::isTerminal(const Eigen::VectorXd& state) const
 
 double CartPoleStabilization::getReward(const Eigen::VectorXd &src,
                                         const Eigen::VectorXd &action,
-                                        const Eigen::VectorXd &result)
+                                        const Eigen::VectorXd &result) const
 {
   Eigen::VectorXd result_full = whateverToFull(result);
   (void)src;//Unused
@@ -76,27 +73,31 @@ std::vector<int> CartPoleStabilization::getLearningDimensions() const
   {
     case LearningSpace::Angular: return {0,1};
     case LearningSpace::Cartesian: return {2,3,1};
+    case LearningSpace::Full: return {0,1,2,3};
   }
   throw std::runtime_error("CartPoleStabilization::getLearningDimensions: unknown learning_space");
 }
 
 Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state,
-                                                    const Eigen::VectorXd &action)
+                                                    const Eigen::VectorXd &action,
+                                                    std::default_random_engine * engine) const
 {
   switch (detectSpace(state))
   {
-    case LearningSpace::Full: return getFullSuccessor(state, action);
-    case LearningSpace::Angular: return getAngularSuccessor(state, action);
-    case LearningSpace::Cartesian: return getCartesianSuccessor(state, action);
+    case LearningSpace::Full: return getFullSuccessor(state, action, engine);
+    case LearningSpace::Angular: return getAngularSuccessor(state, action, engine);
+    case LearningSpace::Cartesian: return getCartesianSuccessor(state, action, engine);
   }
   throw std::logic_error("CartPoleStabilization::getSuccessor: Unhandled learning space");
 }
 
 Eigen::VectorXd CartPoleStabilization::getFullSuccessor(const Eigen::VectorXd &state,
-                                                        const Eigen::VectorXd &action)
+                                                        const Eigen::VectorXd &action,
+                                                        std::default_random_engine * engine) const
 {
+  std::uniform_real_distribution<double> noise_distribution(-noise_max, noise_max);
   // Adding noise to action
-  double noisy_action = action(0) + noise_distribution(generator);
+  double noisy_action = action(0) + noise_distribution(*engine);
   // Integrating action with the system dynamics
   double elapsed = 0;
   Eigen::VectorXd current_state = state;
@@ -123,16 +124,20 @@ Eigen::VectorXd CartPoleStabilization::getFullSuccessor(const Eigen::VectorXd &s
   return current_state;
 }
 
-Eigen::VectorXd CartPoleStabilization::getAngularSuccessor(const Eigen::VectorXd &state,
-                                                           const Eigen::VectorXd &action)
+Eigen::VectorXd
+CartPoleStabilization::getAngularSuccessor(const Eigen::VectorXd &state,
+                                           const Eigen::VectorXd &action,
+                                           std::default_random_engine * engine) const
 {
-  return getFullSuccessor(angularToFull(state), action).segment(0,2);
+  return getFullSuccessor(angularToFull(state), action, engine).segment(0,2);
 }
 
-Eigen::VectorXd CartPoleStabilization::getCartesianSuccessor(const Eigen::VectorXd &state,
-                                                             const Eigen::VectorXd &action)
+Eigen::VectorXd
+CartPoleStabilization::getCartesianSuccessor(const Eigen::VectorXd &state,
+                                             const Eigen::VectorXd &action,
+                                             std::default_random_engine * engine) const
 {
-  Eigen::VectorXd full_successor = getFullSuccessor(cartesianToFull(state), action);
+  Eigen::VectorXd full_successor = getFullSuccessor(cartesianToFull(state), action, engine);
   Eigen::VectorXd partial_successor(3);
   partial_successor.segment(0,2) = full_successor.segment(2,2);
   partial_successor(2) = full_successor(1);
@@ -218,6 +223,9 @@ CartPoleStabilization::loadLearningSpace(const std::string & str)
   if (str == "Cartesian") {
     return CartPoleStabilization::LearningSpace::Cartesian;
   }
+  if (str == "Full") {
+    return CartPoleStabilization::LearningSpace::Full;
+  }
   std::cerr << "Failed to load learning space" << std::endl;
   throw std::runtime_error("CartPoleStabilization::loadLearningSpace: unknown learning space: '"
                            + str + "'");
@@ -229,6 +237,7 @@ std::string to_string(CartPoleStabilization::LearningSpace learning_space)
   {
     case CartPoleStabilization::LearningSpace::Angular: return "Angular";
     case CartPoleStabilization::LearningSpace::Cartesian: return "Cartesian";
+    case CartPoleStabilization::LearningSpace::Full: return "Full";
   }
   throw std::runtime_error("to_string(CartPoleStabilization::LearningSpace): unknown learning space");
 }

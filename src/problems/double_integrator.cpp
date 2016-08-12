@@ -18,9 +18,6 @@ DoubleIntegrator::DoubleIntegrator(Version version_)
       // No bound provided in the article
       state_limits << -5, 5, -5, 5;
       action_limits << -1.5, 1.5;
-      // Preparing random
-      generator = rosban_random::getRandomEngine();
-      noise_distribution = std::uniform_real_distribution<double>(-0.1, 0.1);
       break;
   }
   setStateLimits(state_limits);
@@ -40,7 +37,7 @@ bool DoubleIntegrator::isTerminal(const Eigen::VectorXd & state) const
 
 double DoubleIntegrator::getReward(const Eigen::VectorXd & state,
                                    const Eigen::VectorXd & action,
-                                   const Eigen::VectorXd & dst)
+                                   const Eigen::VectorXd & dst) const
 {
   if (isTerminal(dst)) {
     return -50;
@@ -51,15 +48,21 @@ double DoubleIntegrator::getReward(const Eigen::VectorXd & state,
 }
 
 Eigen::VectorXd DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
-                                               const Eigen::VectorXd & action)
+                                               const Eigen::VectorXd & action,
+                                               std::default_random_engine * engine) const
 {
+  std::uniform_real_distribution<double> noise_distribution;
+  if (version == Weinstein2012)
+  {
+      noise_distribution = std::uniform_real_distribution<double>(-0.1, 0.1);
+  }
   double integrationStep = 0.05;
   double simulationStep = 0.5;
   double elapsed = 0;
   double acc = action(0);
   if (version == Version::Weinstein2012)
   {
-    acc += noise_distribution(generator);
+    acc += noise_distribution(*engine);
   }
   Eigen::VectorXd currentState = state;
   while (elapsed < simulationStep)

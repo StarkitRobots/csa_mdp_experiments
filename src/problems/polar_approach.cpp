@@ -69,13 +69,6 @@ PolarApproach::PolarApproach()
 
   setStateNames({"ball_dist", "ball_dir", "target_angle", "step_x", "step_y", "step_theta"});
   setActionNames({"d_step_x","d_step_y","d_step_theta"});
-
-  step_x_noise_distrib     = std::uniform_real_distribution<double>(-step_x_noise,
-                                                                    step_x_noise);
-  step_y_noise_distrib     = std::uniform_real_distribution<double>(-step_y_noise,
-                                                                    step_y_noise);
-  step_theta_noise_distrib = std::uniform_real_distribution<double>(-step_theta_noise,
-                                                                    step_theta_noise);
 }
 
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
@@ -85,7 +78,7 @@ bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
 
 double  PolarApproach::getReward(const Eigen::VectorXd & state,
                                  const Eigen::VectorXd & action,
-                                 const Eigen::VectorXd & dst)
+                                 const Eigen::VectorXd & dst) const
 {
   (void)state;(void)action;
   if (isKickable(dst)  ) return kick_reward;
@@ -97,8 +90,16 @@ double  PolarApproach::getReward(const Eigen::VectorXd & state,
 }
 
 Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
-                                            const Eigen::VectorXd & action)
+                                            const Eigen::VectorXd & action,
+                                            std::default_random_engine * engine) const
 {
+  /// Initialize noise distributions
+  std::uniform_real_distribution<double> step_x_noise_distrib    (-step_x_noise,
+                                                                  step_x_noise);
+  std::uniform_real_distribution<double> step_y_noise_distrib    (-step_y_noise,
+                                                                  step_y_noise);
+  std::uniform_real_distribution<double> step_theta_noise_distrib(-step_theta_noise,
+                                                                  step_theta_noise);
   // Get the step which will be applied
   Eigen::VectorXd next_cmd(3);
   for (int dim = 0; dim < 3; dim++)
@@ -113,9 +114,9 @@ Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
   }
   // Apply a linear modification (from theory to 'reality') and noise
   Eigen::VectorXd real_move(3);
-  real_move(0) = next_cmd(0) * walk_gain + step_x_noise_distrib(random_engine);
-  real_move(1) = next_cmd(1) * walk_gain + step_y_noise_distrib(random_engine);
-  real_move(2) = next_cmd(2) + step_theta_noise_distrib(random_engine);// No walk gain for theta
+  real_move(0) = next_cmd(0) * walk_gain + step_x_noise_distrib(*engine);
+  real_move(1) = next_cmd(1) * walk_gain + step_y_noise_distrib(*engine);
+  real_move(2) = next_cmd(2) + step_theta_noise_distrib(*engine);// No walk gain for theta
   // Apply the real move
   Eigen::VectorXd next_state = state;
   // Apply rotation first

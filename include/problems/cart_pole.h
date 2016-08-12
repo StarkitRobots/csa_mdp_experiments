@@ -22,10 +22,11 @@ public:
 
   double getReward(const Eigen::VectorXd & state,
                    const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) override;
+                   const Eigen::VectorXd & dst) const override;
 
   Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action) override;
+                               const Eigen::VectorXd & action,
+                               std::default_random_engine * engine) const override;
 
   bool isValidStart(const Eigen::VectorXd &state) const override;
 

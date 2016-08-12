@@ -60,7 +60,7 @@ bool SimulatedCartPole::isTerminal(const Eigen::VectorXd & state) const
 
 double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
                                     const Eigen::VectorXd &action,
-                                    const Eigen::VectorXd &dst)
+                                    const Eigen::VectorXd &dst) const
 {
   (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
@@ -106,22 +106,24 @@ double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
 }
 
 Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
-                                                const Eigen::VectorXd & action)
+                                                const Eigen::VectorXd & action,
+                                                std::default_random_engine * engine) const
 {
   switch(detectSpace(state)) {
-    case LearningSpace::Angular: return getAngularSuccessor(state, action);
-    case LearningSpace::Cartesian: return getCartesianSuccessor(state, action);
-    case LearningSpace::Full: return getFullSuccessor(state, action);
+    case LearningSpace::Angular: return getAngularSuccessor(state, action, engine);
+    case LearningSpace::Cartesian: return getCartesianSuccessor(state, action, engine);
+    case LearningSpace::Full: return getFullSuccessor(state, action, engine);
   }
   throw std::logic_error("SimulatedCartPole::getSuccessor: unknown space");
 }
 
 Eigen::VectorXd SimulatedCartPole::getFullSuccessor(const Eigen::VectorXd & state,
-                                                    const Eigen::VectorXd & action)
+                                                    const Eigen::VectorXd & action,
+                                                    std::default_random_engine * engine) const
 {
   // Apply noise on action
   std::normal_distribution<double> noise_distribution(0, torque_stddev);
-  double noisy_cmd = action(0) + noise_distribution(random_engine);
+  double noisy_cmd = action(0) + noise_distribution(*engine);
   // Integrating action with the system dynamics
   double elapsed = 0;
   Eigen::VectorXd current_state = state;
@@ -165,15 +167,17 @@ Eigen::VectorXd SimulatedCartPole::getFullSuccessor(const Eigen::VectorXd & stat
 }
 
 Eigen::VectorXd SimulatedCartPole::getAngularSuccessor(const Eigen::VectorXd &state,
-                                                       const Eigen::VectorXd &action)
+                                                       const Eigen::VectorXd &action,
+                                                       std::default_random_engine * engine) const
 {
-  return getFullSuccessor(angularToFull(state), action).segment(0,4);
+  return getFullSuccessor(angularToFull(state), action, engine).segment(0,4);
 }
 
 Eigen::VectorXd SimulatedCartPole::getCartesianSuccessor(const Eigen::VectorXd &state,
-                                                         const Eigen::VectorXd &action)
+                                                         const Eigen::VectorXd &action,
+                                                         std::default_random_engine * engine) const
 {
-  Eigen::VectorXd full_successor = getFullSuccessor(cartesianToFull(state), action);
+  Eigen::VectorXd full_successor = getFullSuccessor(cartesianToFull(state), action, engine);
   Eigen::VectorXd partial_successor(5);
   partial_successor.segment(0,2) = full_successor.segment(0,2);
   partial_successor.segment(2,2) = full_successor.segment(4,2);

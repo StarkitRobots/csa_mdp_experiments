@@ -37,11 +37,12 @@ public:
 
   double getReward(const Eigen::VectorXd & state,
                    const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) override;
+                   const Eigen::VectorXd & dst) const override;
 
   // tries to match the state with the learning space if necessary
   Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action) override;
+                               const Eigen::VectorXd & action,
+                               std::default_random_engine * engine) const override;
 
   Eigen::VectorXd getStartingState() override;
 
@@ -52,15 +53,18 @@ public:
 protected:
   // Entry is dimension 4, output is dimension 4
   Eigen::VectorXd getFullSuccessor(const Eigen::VectorXd & state,
-                                   const Eigen::VectorXd & action);
+                                   const Eigen::VectorXd & action,
+                                   std::default_random_engine * engine) const;
 
   // Entry is dimension 2, output is dimension 2
   Eigen::VectorXd getAngularSuccessor(const Eigen::VectorXd & state,
-                                      const Eigen::VectorXd & action);
+                                      const Eigen::VectorXd & action,
+                                      std::default_random_engine * engine) const;
 
   // Entry is dimension 3, output is dimension 3
   Eigen::VectorXd getCartesianSuccessor(const Eigen::VectorXd & state,
-                                        const Eigen::VectorXd & action);
+                                        const Eigen::VectorXd & action,
+                                        std::default_random_engine * engine) const;
 
   /// Detect the learning space or throw an exception
   LearningSpace detectSpace(const Eigen::VectorXd & state) const;
@@ -74,9 +78,6 @@ protected:
   Eigen::VectorXd cartesianToFull(const Eigen::VectorXd & state) const;
 
 private:
-  std::default_random_engine generator;
-  std::uniform_real_distribution<double> noise_distribution;
-
   LearningSpace learning_space;
   
   //TODO transform those parameters in member variables, accessible through xml
