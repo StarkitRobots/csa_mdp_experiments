@@ -95,6 +95,7 @@ Eigen::VectorXd CartPole::getSuccessor(const Eigen::VectorXd & state,
 {
   (void) state;
   (void) action;
+  (void) engine;
   throw std::runtime_error("Not implemented");
 }
 
