@@ -169,6 +169,7 @@ Eigen::VectorXd CartPoleStabilization::whateverToFull(const Eigen::VectorXd & st
     case LearningSpace::Cartesian: return cartesianToFull(state);
     case LearningSpace::Full: return state;
   }
+  throw std::runtime_error("CartPoleStabilization::whateverToFull: unknown space");
 }
 
 Eigen::VectorXd CartPoleStabilization::angularToFull(const Eigen::VectorXd & state) const
