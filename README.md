@@ -31,19 +31,22 @@ silent errors.
 
 This repository contains code allowing to produce two different binaries
 
-- mre_experiment
+- learning_machine
 - learn_from_logs
 
 Both takes a path as parameter and receive various parameters under the form of
 an xml file. Various examples can be found in the folders `configs`.
 
-## mre_experiment
+## learning_machine
 
 This program reads its configuration in `mre_experiment.xml`. It might be used for both,
 exploring a problem space using Multi-Resolution Exploration and evaluating a policy.
 Custom policies such as `Random`or `ExpertApproach` might also be used with this program.
 
-Usage: `rosrun csa_mdp_experiments mre_experiment <path>`
+Usage: `rosrun csa_mdp_experiments learning_machine`
+
+Launching this program requires to have a configFile named `LearningMachine.xml` in the
+current folder
 
 ## learn_from_logs
 
@@ -54,6 +57,8 @@ and finally produce one policy per dimension
 Usage: `rosrun csa_mdp_experiments learn_from_logs <path>`
 
 ## Usual structure
+
+* THIS PART IS HIGHLY OUTDATED *
 
 Each program will read its parameter from an xml file and produce different files during
 execution such as `run_logs.csv`, `rewards_logs.csv` or `time_logs.csv`. Therefore,
