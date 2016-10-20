@@ -8,6 +8,7 @@
 #include "problems/double_integrator.h"
 #include "problems/inverted_pendulum.h"
 #include "problems/double_inverted_pendulum.h"
+#include "problems/kick_optimizer.h"
 
 using csa_mdp::Problem;
 
@@ -37,6 +38,8 @@ void ExtendedProblemFactory::registerExtraProblems()
                        [](){return std::unique_ptr<Problem>(new DoubleInvertedPendulum);}, false);
   registerExtraBuilder("double_integrator",
                        [](){return std::unique_ptr<Problem>(new DoubleIntegrator);}, false);
+  registerExtraBuilder("kick_optimizer",
+                       [](){return std::unique_ptr<Problem>(new KickOptimizer);}, false);
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)

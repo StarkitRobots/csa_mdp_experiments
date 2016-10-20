@@ -8,4 +8,5 @@ set (SOURCES
   double_inverted_pendulum.cpp
   extended_problem_factory.cpp
   polar_approach.cpp
+  kick_optimizer.cpp
 )
