@@ -191,7 +191,7 @@ void LearningMachine::endRun()
       std::ostringstream oss;
       oss << details_path << "/best_";
       std::string prefix = oss.str();
-      learner->savePolicy(prefix);
+      learner->saveStatus(prefix);
       best_policy_score = policy_score;
       std::cout << "Found a new 'best policy' at policy_id: " << policy_id
                 << " with a score of: " << policy_score << std::endl;
