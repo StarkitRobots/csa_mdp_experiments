@@ -157,8 +157,8 @@ Eigen::VectorXd OnePlayerKick::getStartingState()
 {
   Eigen::MatrixXd limits(3,2);
   limits <<
-    -field_length /2, field_length/2,
-    -field_width/2, field_width/2,
+    -field_length/2 + kick_initial_noise, field_length/2 - kick_initial_noise,
+    -field_width/2 + kick_initial_noise, field_width/2 - kick_initial_noise,
     -M_PI, M_PI; 
   std::vector<Eigen::VectorXd> random_positions;
   random_positions = rosban_random::getUniformSamples(limits, 3, &random_engine);
