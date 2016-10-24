@@ -1,5 +1,7 @@
 #include "problems/one_player_kick.h"
 
+#include "rosban_csa_mdp/core/policy_factory.h"
+
 #include "rosban_random/tools.h"
 
 OnePlayerKick::OnePlayerKick()
@@ -11,6 +13,7 @@ OnePlayerKick::OnePlayerKick()
     kick_initial_noise(0.5),
     kick_reward(-5),
     goal_reward(0),
+    approach_step_reward(-1),
     failure_reward(-100),
     field_width(6),
     field_length(9),
@@ -19,11 +22,29 @@ OnePlayerKick::OnePlayerKick()
     goal_area_size_y(5),
     goalkeeper_success_rate(0.5)
 {
+  /// Ball can be a lot further than in usual polar_approach
+  polar_approach.setMaxDist(field_width + field_length);//Extra margin is not an issue
+  /// Updating limits
+  Eigen::MatrixXd state_limits(5,2), action_limits(2,2);
+  state_limits <<
+    -field_length / 2, field_length / 2,
+    -field_width / 2, field_width / 2,
+    -field_length / 2, field_length / 2,
+    -field_width / 2, field_width / 2,
+    - M_PI, M_PI;
+  action_limits <<
+    - M_PI, M_PI,
+    kick_power_min, kick_power_max;
+  setStateLimits(state_limits);
+  setActionLimits(action_limits);
+
+  setStateNames({"ball_x", "ball_y", "robot_x", "robot_y", "robot_theta"});
+  setActionNames({"kick_direction", "kick_power"});
 }
 
 bool OnePlayerKick::isTerminal(const Eigen::VectorXd & state) const
 {
-  return std::fabs(state(0)) > field_width / 2;
+  return std::fabs(state(0)) > field_length / 2;
 }
 
 double OnePlayerKick::getReward(const Eigen::VectorXd & state,
@@ -54,14 +75,14 @@ Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
   // Checking state dimension
   if (state.rows() != 5) {
     std::ostringstream oss;
-    oss << "OnePlayerKick::getSuccessor: invalid dimension for state "
+    oss << "OnePlayerKick::getSuccessor: invalid dimension for state: "
         << state.rows() << " (expected 5)";
     throw std::logic_error(oss.str());
   }
   // Checking action dimension
   if (action.rows() != 2) {
     std::ostringstream oss;
-    oss << "OnePlayerKick::getSuccessor: invalid dimension for action "
+    oss << "OnePlayerKick::getSuccessor: invalid dimension for action: "
         << action.rows() << " (expected 2)";
     throw std::logic_error(oss.str());
   }
@@ -141,16 +162,23 @@ Eigen::VectorXd OnePlayerKick::getStartingState()
     -M_PI, M_PI; 
   std::vector<Eigen::VectorXd> random_positions;
   random_positions = rosban_random::getUniformSamples(limits, 3, &random_engine);
-  Eigen::VectorXd state(8);
+  Eigen::VectorXd state(5);
   state.segment(0,2) = random_positions[0].segment(0,2);// Ball pos
-  state.segment(2,3) = random_positions[1];// P1 pos
-  state.segment(5,3) = random_positions[2];// P2 pos
+  state.segment(2,3) = random_positions[1];// Player pos
   return state;
 }
 
 double OnePlayerKick::getApproachReward(const Eigen::VectorXd & state,
                                         const Eigen::VectorXd & action) const
 {
+  // Check that approach_cost function has properly been loaded
+  if (!approach_policy)
+    throw std::logic_error("OnePlayerKick::getApproachReward: approach_policy has not been set");
+  // Warning: using a generated random engine, while it should be provided, however, since this
+  //          function is called by 'getReward' which is const, it is not possible to use the on
+  //          provided by the class and it is not possible to use an external one,
+  //          Signature of the function 'getReward' should be modified.
+  std::default_random_engine engine = rosban_random::getRandomEngine();
   // Computing basic properties
   double ball_x_field = state(0);
   double ball_y_field = state(1);
@@ -166,12 +194,19 @@ double OnePlayerKick::getApproachReward(const Eigen::VectorXd & state,
   double ball_dir_robot = ball_dir_field - player_theta;
   double kick_theta_robot = kick_theta_field - player_theta;
   // Building the input for the approach problem (initial speed is 0)
-  Eigen::VectorXd input = Eigen::VectorXd::Zero(6);
-  input(0) = ball_dist;
-  input(1) = ball_dir_robot;
-  input(2) = kick_theta_robot;
-  // Getting output
-  return approach_cost->predict(input, 0);
+  Eigen::VectorXd sub_state = Eigen::VectorXd::Zero(6);
+  sub_state(0) = ball_dist;
+  sub_state(1) = ball_dir_robot;
+  sub_state(2) = kick_theta_robot;
+  // Simulating steps until destination has been reached
+  int nb_steps = 0;
+  while (!polar_approach.isKickable(sub_state) && !polar_approach.isOutOfSpace(sub_state))
+  {
+    Eigen::VectorXd action = approach_policy->getAction(sub_state);
+    sub_state = polar_approach.getSuccessor(sub_state, action, &engine);
+    nb_steps++;
+  }
+  return nb_steps * approach_step_reward;
 }
 
 void OnePlayerKick::to_xml(std::ostream & out) const
@@ -182,13 +217,18 @@ void OnePlayerKick::to_xml(std::ostream & out) const
 
 void OnePlayerKick::from_xml(TiXmlNode * node)
 {
-  (void) node;
-  throw std::logic_error("OnePlayerKick::from_xml: unimplemented");
+  std::cout << "Reading  policy" << std::endl;
+  approach_policy = csa_mdp::PolicyFactory().read(node, "policy");
+  if (!approach_policy)
+  {
+    throw std::logic_error("OnePlayerKick::from_xml: failed to load approach policy");
+  }
+  approach_policy->setActionLimits(polar_approach.getActionLimits());
 }
 
 std::string OnePlayerKick::class_name() const
 {
-  return "OnePlayerKick";
+  return "one_player_kick";
 }
 
 void OnePlayerKick::initialBallNoise(double ball_x, double ball_y,
@@ -247,5 +287,6 @@ bool OnePlayerKick::isGoal(double src_x, double src_y, double dst_x, double dst_
 bool OnePlayerKick::isGoalArea(double player_x, double player_y) const
 {
   bool xOk = player_x > (field_length/2 - goal_area_size_x) && player_x < field_length/2;
-  bool yOk = player_y < (field_width - goal_area_size_y) / 2;
+  bool yOk = std::fabs(player_y) < (field_width - goal_area_size_y) / 2;
+  return xOk && yOk;
 }

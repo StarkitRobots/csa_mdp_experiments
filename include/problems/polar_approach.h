@@ -55,11 +55,17 @@ public:
   static double getBallX(const Eigen::VectorXd & state);
   static double getBallY(const Eigen::VectorXd & state);
 
+  /// Ensure that limits are consistent with the parameters
+  void updateLimits();
+  /// Update maximal distance at which the ball is accepted
+  void setMaxDist(double dist);
+
 protected:
+  // TODO: Use all parameters as members and implement from_xml + use dirty flag
 
   // STATE LIMITS
   /// The maximal distance to the ball along one of the axis
-  static double max_dist;
+  double max_dist;
   /// The minimal order of step_x [m/step]
   static double min_step_x;
   /// The maximal order for step_x [m/step]

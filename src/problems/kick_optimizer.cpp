@@ -145,5 +145,5 @@ void KickOptimizer::from_xml(TiXmlNode * node)
 
 std::string KickOptimizer::class_name() const
 {
-  return "KickOptimizer";
+  return "kick_optimizer";
 }

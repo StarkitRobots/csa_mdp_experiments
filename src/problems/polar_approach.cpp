@@ -2,7 +2,6 @@
 
 
 // State limits
-double PolarApproach::max_dist       =  1   ;
 double PolarApproach::min_step_x     = -0.02;
 double PolarApproach::max_step_x     =  0.04;
 double PolarApproach::max_step_y     =  0.03;
@@ -51,6 +50,15 @@ static double normalizeAngle(double value)
 
 
 PolarApproach::PolarApproach()
+  : max_dist(1.0)
+{
+  updateLimits();
+
+  setStateNames({"ball_dist", "ball_dir", "target_angle", "step_x", "step_y", "step_theta"});
+  setActionNames({"d_step_x","d_step_y","d_step_theta"});
+}
+
+void PolarApproach::updateLimits()
 {
   Eigen::MatrixXd state_limits(6,2), action_limits(3,2);
   state_limits <<
@@ -66,9 +74,12 @@ PolarApproach::PolarApproach()
     -max_step_theta_diff, max_step_theta_diff;
   setStateLimits(state_limits);
   setActionLimits(action_limits);
+}
 
-  setStateNames({"ball_dist", "ball_dir", "target_angle", "step_x", "step_y", "step_theta"});
-  setActionNames({"d_step_x","d_step_y","d_step_theta"});
+void PolarApproach::setMaxDist(double dist)
+{
+  max_dist = dist;
+  updateLimits();
 }
 
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const

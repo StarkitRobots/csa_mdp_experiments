@@ -55,5 +55,5 @@ void MixedApproach::from_xml(TiXmlNode * node)
 
 std::string MixedApproach::class_name() const
 {
-  return "MixedApproach";
+  return "mixed_approach";
 }

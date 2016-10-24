@@ -1,8 +1,9 @@
 #pragma once
 
 #include "problems/blackbox_problem.h"
+#include "problems/polar_approach.h"
 
-#include "rosban_fa/function_approximator.h"
+#include "rosban_csa_mdp/core/policy.h"
 
 #include <memory>
 
@@ -19,9 +20,9 @@
 /// The state space is the following:
 /// 0. ball_x
 /// 1. ball_y
-/// 2. player1_x
-/// 3. player1_y
-/// 4. player1_theta
+/// 2. robot_x
+/// 3. robot_y
+/// 4. robot_theta
 ///
 /// The action space is the following
 /// 0. kick_direction in [-pi, pi] (according to the coordinate)
@@ -128,14 +129,21 @@ private:
   /// Amplitude of the initial noise on the ball position [m]
   double kick_initial_noise;
 
+  /// #TRANSITION FUNCTION
+  /// The problem used to simulate the transitions
+  PolarApproach polar_approach;
+  /// The policy used for the approach problem
+  /// S: (ball_dist, ball_dir, target_angle, last_step_x, last_step_y, last_step_theta)
+  /// A: (dstep_x, dstep_y, dstep_theta)
+  std::unique_ptr<csa_mdp::Policy> approach_policy;
+
   /// #REWARD FUNCTION
-  /// The reward of an approach:
-  /// (ball_dist, ball_dir, target_angle, last_step_x, last_step_y, last_step_theta) -> reward
-  std::unique_ptr<rosban_fa::FunctionApproximator> approach_cost;
   /// The reward of a kick
   double kick_reward;
   /// Goal reward
   double goal_reward;
+  /// Approach step reward
+  double approach_step_reward;
   /// Failure reward (ball out of field or goalkeeper collision)
   double failure_reward;
 

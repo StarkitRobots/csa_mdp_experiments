@@ -9,6 +9,7 @@
 #include "problems/inverted_pendulum.h"
 #include "problems/double_inverted_pendulum.h"
 #include "problems/kick_optimizer.h"
+#include "problems/one_player_kick.h"
 
 using csa_mdp::Problem;
 
@@ -26,7 +27,7 @@ void ExtendedProblemFactory::registerExtraProblems()
   registerExtraBuilder("approach",
                        [](){return std::unique_ptr<Problem>(new Approach);}, false);
   registerExtraBuilder("polar_approach",
-                       [](){return std::unique_ptr<Problem>(new PolarApproach);}, false);
+                       [](){return std::unique_ptr<Problem>(new PolarApproach);});
   registerExtraBuilder("cart_pole", [](){return std::unique_ptr<Problem>(new CartPole);});
   registerExtraBuilder("simulated_cart_pole",
                        [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
@@ -40,6 +41,8 @@ void ExtendedProblemFactory::registerExtraProblems()
                        [](){return std::unique_ptr<Problem>(new DoubleIntegrator);}, false);
   registerExtraBuilder("kick_optimizer",
                        [](){return std::unique_ptr<Problem>(new KickOptimizer);}, false);
+  registerExtraBuilder("one_player_kick",
+                       [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)
