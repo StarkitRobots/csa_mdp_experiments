@@ -14,7 +14,7 @@ OnePlayerKick::OnePlayerKick()
     kick_reward(-5),
     goal_reward(0),
     approach_step_reward(-1),
-    failure_reward(-100),
+    failure_reward(-500),
     field_width(6),
     field_length(9),
     goal_width(2.1),
@@ -237,7 +237,7 @@ void OnePlayerKick::initialBallNoise(double ball_x, double ball_y,
 {
   std::uniform_real_distribution<double> noise_distrib(0, kick_initial_noise);
   double dist = 2 * kick_initial_noise;
-  double dx, dy;
+  double dx(0), dy(0);
   while (dist > kick_initial_noise)
   {
     dx = noise_distrib(*engine);
