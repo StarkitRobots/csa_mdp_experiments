@@ -6,11 +6,11 @@
 
 OnePlayerKick::OnePlayerKick()
   : kick_power_min(0.2),
-    kick_power_max(2.0),
+    kick_power_max(3.0),
     kick_dist_rel_noise(0.1),
     kick_direction_noise(0.3),
     kick_range(0.1),
-    kick_initial_noise(0.5),
+    kick_initial_noise(0.25),
     kick_reward(-5),
     goal_reward(0),
     approach_step_reward(-1),
