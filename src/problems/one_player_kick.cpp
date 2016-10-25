@@ -4,6 +4,8 @@
 
 #include "rosban_random/tools.h"
 
+static bool debug_failures = false;
+
 OnePlayerKick::OnePlayerKick()
   : kick_power_min(0.2),
     kick_power_max(3.0),
@@ -128,6 +130,11 @@ Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
     {
       dst(0) = -field_length;
       dst(1) = 0;
+      if (debug_failures)
+      {
+        std::cout << "---------------------------------------------" << std::endl;
+        std::cout << "Failed to score a goal, ball inside goal area" << std::endl;
+      }
       return dst;
     }
   }
@@ -148,6 +155,20 @@ Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
     }
     else {
       dst(0) = -field_length;
+      // DEBUG
+      if (debug_failures)
+      {
+        std::cout << "---------------------------" << std::endl;
+        std::cout << "Failed to score a goal:" << std::endl;
+        std::cout << "\tball_x: " << ball_x << std::endl;
+        std::cout << "\tball_y: " << ball_y << std::endl;
+        std::cout << "\tball_real_x: " << ball_real_x << std::endl;
+        std::cout << "\tball_real_y: " << ball_real_y << std::endl;
+        std::cout << "\tball_final_x: " << ball_final_x << std::endl;
+        std::cout << "\tball_final_y: " << ball_final_y << std::endl;
+        std::cout << "\tkick_power: " << kick_power << std::endl;
+        std::cout << "\tkick_theta: " << kick_theta << std::endl;
+      }
     }
   }  
   return dst;
@@ -217,7 +238,6 @@ void OnePlayerKick::to_xml(std::ostream & out) const
 
 void OnePlayerKick::from_xml(TiXmlNode * node)
 {
-  std::cout << "Reading  policy" << std::endl;
   approach_policy = csa_mdp::PolicyFactory().read(node, "policy");
   if (!approach_policy)
   {
@@ -272,14 +292,25 @@ void OnePlayerKick::applyKick(double ball_real_x, double ball_real_y,
 bool OnePlayerKick::isGoal(double src_x, double src_y, double dst_x, double dst_y) const
 {
   double dx = dst_x - src_x;
+  if (debug_failures)
+  {
+    std::cout << "dx: " << dx << std::endl;
+  }
   // Impossible to score a goal by kicking backward or if ball did not cross the line
   if (dx <= 0 || dst_x < field_length / 2) return false;
   // Finding equation a*x +b;
-  double dy = dst_y - src_x;
+  double dy = dst_y - src_y;
   double a = dy / dx;
   double b = src_y - a * src_x;
   // Finding intersection with goal line
   double intercept_y = a * field_length / 2 + b;
+  if (debug_failures)
+  {
+    std::cout << "dy: " << dy << std::endl;
+    std::cout << "a : " << a << std::endl;
+    std::cout << "b : " << b << std::endl;
+    std::cout << "y : " << intercept_y << std::endl;
+  }
   // Is intersection inside the goal
   return std::fabs(intercept_y) < goal_width / 2;
 }

@@ -2,6 +2,7 @@
 #include "problems/extended_problem_factory.h"
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
+#include "policies/opk_expert_approach.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 
@@ -20,6 +21,8 @@ int main()
                                       []() {return std::unique_ptr<Policy>(new ExpertApproach);});
   PolicyFactory::registerExtraBuilder("mixed_approach",
                                       []() {return std::unique_ptr<Policy>(new MixedApproach);});
+  PolicyFactory::registerExtraBuilder("opk_expert_approach",
+                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
   ExtendedProblemFactory::registerExtraProblems();
 
   // Loading the learning Machine
