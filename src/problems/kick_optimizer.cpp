@@ -135,12 +135,14 @@ double KickOptimizer::getApproachReward(const Eigen::VectorXd & state,
 
 void KickOptimizer::to_xml(std::ostream & out) const
 {
+  (void) out;
   //TODO
 }
 
 void KickOptimizer::from_xml(TiXmlNode * node)
 {
   //TODO
+  (void) node;
 }
 
 std::string KickOptimizer::class_name() const
