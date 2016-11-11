@@ -23,20 +23,10 @@ else()
 endif(rosban_control_FOUND)
 
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES csa_mdp_experiments
-#  CATKIN_DEPENDS rosban_control
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES csa_mdp_experiments
+  CATKIN_DEPENDS rosban_csa_mdp
 )
 
 ###########
