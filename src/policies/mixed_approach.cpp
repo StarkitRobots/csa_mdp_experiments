@@ -6,7 +6,7 @@
 
 MixedApproach::MixedApproach()
   : far_dist_min(1.0),
-    far_theta_p(-0.5),
+    far_theta_p(-0.2),
     far_max_speed(0.04)
 {
   engine = rosban_random::getRandomEngine();

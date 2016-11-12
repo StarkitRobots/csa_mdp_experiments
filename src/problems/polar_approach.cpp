@@ -4,35 +4,35 @@
 // State limits
 double PolarApproach::min_step_x     = -0.02;
 double PolarApproach::max_step_x     =  0.04;
-double PolarApproach::max_step_y     =  0.03;
-double PolarApproach::max_step_theta =  0.4 ;
+double PolarApproach::max_step_y     =  0.02;
+double PolarApproach::max_step_theta =  0.3 ;
 // Action limits
-double PolarApproach::max_step_x_diff     = 0.03;
-double PolarApproach::max_step_y_diff     = 0.03;
-double PolarApproach::max_step_theta_diff = 0.4;
+double PolarApproach::max_step_x_diff     = 0.02;
+double PolarApproach::max_step_y_diff     = 0.01;
+double PolarApproach::max_step_theta_diff = 0.15;
 // Step noise
-double PolarApproach::step_x_noise     = 0.01;
-double PolarApproach::step_y_noise     = 0.01;
-double PolarApproach::step_theta_noise = 0.02;
+double PolarApproach::step_x_noise     = 0.02;
+double PolarApproach::step_y_noise     = 0.02;
+double PolarApproach::step_theta_noise = 5 * M_PI / 180;
 // Kick
-double PolarApproach::kick_x_min     = 0.05   ;
-double PolarApproach::kick_x_max     = 0.25   ;
+double PolarApproach::kick_x_min     = 0.15   ;
+double PolarApproach::kick_x_max     = 0.30   ;
 double PolarApproach::kick_y_tol     = 0.10   ;
-double PolarApproach::kick_theta_tol = M_PI/12;
-double PolarApproach::kick_reward = 0;
+double PolarApproach::kick_theta_tol = 10 * M_PI/180;
+double PolarApproach::kick_reward    = 0;
 // Viewing the ball
 double PolarApproach::viewing_angle  = 2*M_PI/3;
-double PolarApproach::no_view_reward = -0.01   ;
+double PolarApproach::no_view_reward = 0       ;
 // Collision
-double PolarApproach::collision_x      =  0.05;
+double PolarApproach::collision_x      =  0.15;
 double PolarApproach::collision_y      =  0.25;
-double PolarApproach::collision_reward = -3;
+double PolarApproach::collision_reward = -5;
 // Misc
 double PolarApproach::out_of_space_reward = -100;
 double PolarApproach::step_reward         = -1;
 double PolarApproach::init_min_dist = 0.4;
 double PolarApproach::init_max_dist = 0.95;
-double PolarApproach::walk_gain = 3;
+double PolarApproach::walk_gain = 2;
 
 // TODO: externalize
 static double normalizeAngle(double value)
@@ -127,7 +127,7 @@ Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
   Eigen::VectorXd real_move(3);
   real_move(0) = next_cmd(0) * walk_gain + step_x_noise_distrib(*engine);
   real_move(1) = next_cmd(1) * walk_gain + step_y_noise_distrib(*engine);
-  real_move(2) = next_cmd(2) + step_theta_noise_distrib(*engine);// No walk gain for theta
+  real_move(2) = next_cmd(2) * walk_gain + step_theta_noise_distrib(*engine);
   // Apply the real move
   Eigen::VectorXd next_state = state;
   // Apply rotation first
