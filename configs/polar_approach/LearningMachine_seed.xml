@@ -3,7 +3,11 @@
     <problem>polar_approach</problem>
     <learner>
       <FakeLearner>
-        <policy>expert_approach</policy>
+        <policy>
+          <expert_approach>
+            <type>polar</type>
+          </expert_approach>
+        </policy>
       </FakeLearner>
     </learner>
     <save_run_logs>true</save_run_logs>
