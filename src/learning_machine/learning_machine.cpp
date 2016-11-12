@@ -227,6 +227,7 @@ void LearningMachine::endRun()
       }
     }
   }
+  learner->endRun();
 }
 
 void LearningMachine::closeActiveStreams()
