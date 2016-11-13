@@ -26,7 +26,7 @@ double PolarApproach::no_view_reward = 0       ;
 // Collision
 double PolarApproach::collision_x      =  0.15;
 double PolarApproach::collision_y      =  0.25;
-double PolarApproach::collision_reward = -5;
+double PolarApproach::collision_reward = -3;
 // Misc
 double PolarApproach::out_of_space_reward = -100;
 double PolarApproach::step_reward         = -1;
