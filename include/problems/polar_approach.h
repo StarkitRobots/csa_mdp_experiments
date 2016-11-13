@@ -107,8 +107,10 @@ protected:
   static double no_view_reward;
 
   // BALL COLLISION
-  /// The distance at which the ball start colliding along x axis
-  static double collision_x;
+  /// The distance at which the ball start colliding along x axis (front of the robot)
+  static double collision_x_front;
+  /// The distance at which the ball start colliding along x axis (back of the robot)
+  static double collision_x_back;
   /// The distance at which the ball start colliding along y axis
   static double collision_y;
   /// The reward received when colliding with the ball

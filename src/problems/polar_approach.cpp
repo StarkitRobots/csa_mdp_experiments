@@ -18,17 +18,18 @@ double PolarApproach::step_y_noise     = 0.02;
 double PolarApproach::step_theta_noise = 5 * M_PI / 180;
 // Kick
 double PolarApproach::kick_x_min     = 0.15   ;
-double PolarApproach::kick_x_max     = 0.30   ;
-double PolarApproach::kick_y_tol     = 0.10   ;
+double PolarApproach::kick_x_max     = 0.25   ;
+double PolarApproach::kick_y_tol     = 0.06   ;
 double PolarApproach::kick_theta_tol = 10 * M_PI/180;
 double PolarApproach::kick_reward    = 0;
 // Viewing the ball
 double PolarApproach::viewing_angle  = 2*M_PI/3;
 double PolarApproach::no_view_reward = 0       ;
 // Collision
-double PolarApproach::collision_x      =  0.15;
-double PolarApproach::collision_y      =  0.25;
-double PolarApproach::collision_reward = -5;
+double PolarApproach::collision_x_front =  0.15;
+double PolarApproach::collision_x_back  =  0.20;
+double PolarApproach::collision_y       =  0.25;
+double PolarApproach::collision_reward  = -5;
 // Misc
 double PolarApproach::out_of_space_reward = -100;
 double PolarApproach::step_reward         = -1;
@@ -183,7 +184,7 @@ bool PolarApproach::isColliding(const Eigen::VectorXd & state) const
 {
   double ball_x = getBallX(state);
   double ball_y = getBallY(state);
-  bool x_ko = std::fabs(ball_x) < collision_x;
+  bool x_ko = ball_x > - collision_x_back && ball_x < collision_x_front;
   bool y_ko = std::fabs(ball_y) < collision_y;
   return x_ko && y_ko;
 }
