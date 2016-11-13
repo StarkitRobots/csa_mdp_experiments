@@ -58,6 +58,10 @@ public:
   static double getBallX(const Eigen::VectorXd & state);
   static double getBallY(const Eigen::VectorXd & state);
 
+  /// Return the predicted motion for the given walk orders (without noise)
+  /// This method uses odometry coefficients if it has been initialized
+  Eigen::VectorXd predictMotion(const Eigen::VectorXd & walk_orders) const;
+
   /// Ensure that limits are consistent with the parameters
   void updateLimits();
   /// Update maximal distance at which the ball is accepted
@@ -65,6 +69,13 @@ public:
 
 protected:
   // TODO: Use all parameters as members and implement from_xml + use dirty flag
+
+  // PREDICTIVE ODOMETRY
+  // structure is the following
+  // offset_x, dx(dx), dx(dy), dx(dz)
+  // offset_y, dy(dx), dy(dy), dy(dz)
+  // offset_z, dz(dx), dz(dy), dz(dz)
+  Eigen::MatrixXd odometry_coefficients;
 
   // STATE LIMITS
   /// The maximal distance to the ball along one of the axis
@@ -130,10 +141,6 @@ protected:
   /// Maximal distance at the beginning
   /// (not max_dist to ensure the robot does not loose during the first steps)
   static double init_max_dist;
-
-  /// In reality, there is a huge difference between the order given to the walk
-  /// system and its result
-  static double walk_gain;
 };
 
 }

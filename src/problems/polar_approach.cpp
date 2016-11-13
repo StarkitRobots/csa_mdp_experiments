@@ -1,5 +1,7 @@
 #include "problems/polar_approach.h"
 
+#include "rosban_utils/xml_tools.h"
+
 namespace csa_mdp
 {
 
@@ -35,7 +37,6 @@ double PolarApproach::out_of_space_reward = -100;
 double PolarApproach::step_reward         = -1;
 double PolarApproach::init_min_dist = 0.4;
 double PolarApproach::init_max_dist = 0.95;
-double PolarApproach::walk_gain = 2;
 
 // TODO: externalize
 static double normalizeAngle(double value)
@@ -126,11 +127,13 @@ Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
     double max_cmd = limits(dim + 3, 1);
     next_cmd(dim) = std::min(max_cmd, std::max(min_cmd, next_cmd(dim)));
   }
-  // Apply a linear modification (from theory to 'reality') and noise
+  // Apply a linear modification (from theory to 'reality')
+  Eigen::VectorXd predicted_move = predictMotion(next_cmd);
+  // Apply noise to get the real move
   Eigen::VectorXd real_move(3);
-  real_move(0) = next_cmd(0) * walk_gain + step_x_noise_distrib(*engine);
-  real_move(1) = next_cmd(1) * walk_gain + step_y_noise_distrib(*engine);
-  real_move(2) = next_cmd(2) * walk_gain + step_theta_noise_distrib(*engine);
+  real_move(0) = predicted_move(0) + step_x_noise_distrib(*engine);
+  real_move(1) = predicted_move(1) + step_y_noise_distrib(*engine);
+  real_move(2) = predicted_move(2) + step_theta_noise_distrib(*engine);
   // Apply the real move
   Eigen::VectorXd next_state = state;
   // Apply rotation first
@@ -210,7 +213,27 @@ bool PolarApproach::seeBall(const Eigen::VectorXd & state) const
 
 void PolarApproach::to_xml(std::ostream & out) const {(void)out;}
 
-void PolarApproach::from_xml(TiXmlNode * node) {(void)node;}
+void PolarApproach::from_xml(TiXmlNode * node)
+{
+  std::vector<double> odometry_coefficients_read;
+  rosban_utils::xml_tools::try_read_vector<double>(node,
+                                                   "odometry_coefficients",
+                                                   odometry_coefficients_read);
+
+  // If coefficients have been properly read, use them
+  if (odometry_coefficients_read.size() == 12)
+  {
+    odometry_coefficients = Eigen::Map<Eigen::MatrixXd>(odometry_coefficients_read.data(), 3, 4);
+  }
+  else if (odometry_coefficients_read.size() != 0)
+  {
+    std::ostringstream oss;
+    oss << "PolarApproach::from_xml: "
+        << "invalid number of coefficients for 'odometry_coefficients'. "
+        << "read: " << odometry_coefficients_read.size() << " expecting 12.";
+    throw std::runtime_error(oss.str());
+  }
+}
 
 std::string PolarApproach::class_name() const
 {
@@ -225,6 +248,24 @@ double PolarApproach::getBallX(const Eigen::VectorXd & state)
 double PolarApproach::getBallY(const Eigen::VectorXd & state)
 {
   return sin(state(1)) * state(0);
+}
+
+Eigen::VectorXd PolarApproach::predictMotion(const Eigen::VectorXd & walk_orders) const
+{
+  // In theory, robot makes 2 steps
+  Eigen::VectorXd theoric_move = 2 * walk_orders;
+  // If no odometry has been loaded, return walk orders
+  if (odometry_coefficients.rows() <= 0)
+  {
+    return theoric_move;
+  }
+
+  // [1, walk_x, walk_y, walk_theta]
+  Eigen::VectorXd augmented_state(4);
+  augmented_state(0) = 1;
+  augmented_state.segment(1,3) = theoric_move;
+  // Apply odometry on augmented state
+  return odometry_coefficients * augmented_state;
 }
 
 }
