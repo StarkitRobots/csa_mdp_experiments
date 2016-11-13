@@ -8,6 +8,9 @@
 #include <fstream>
 #include <memory>
 
+namespace csa_mdp
+{
+
 /// Base class for running experiments
 class LearningMachine : public rosban_utils::Serializable
 {
@@ -155,3 +158,5 @@ protected:
 };
 
 std::string to_string(LearningMachine::UpdateRule rule);
+
+}

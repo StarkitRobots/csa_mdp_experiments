@@ -6,6 +6,9 @@
 #include <control_bridge.hpp>
 #include <joint_listener.hpp>
 
+namespace csa_mdp
+{
+
 class LearningMachineController : public LearningMachine
 {
 public:
@@ -45,3 +48,5 @@ private:
   /// Access to another type of problem
   std::shared_ptr<ControlProblem> ctrl_problem;
 };
+
+}

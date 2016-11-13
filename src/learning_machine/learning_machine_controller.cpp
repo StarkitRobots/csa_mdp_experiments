@@ -4,6 +4,9 @@
 
 #include "problems/control_problem.h"
 
+namespace csa_mdp
+{
+
 LearningMachineController::LearningMachineController()
   : broken_connection(false)
 {
@@ -141,4 +144,6 @@ void LearningMachineController::from_xml(TiXmlNode *node)
 {
   LearningMachine::from_xml(node);
   control_config.read(node, "control");
+}
+
 }

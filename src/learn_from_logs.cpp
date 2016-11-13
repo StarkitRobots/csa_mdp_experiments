@@ -7,10 +7,7 @@
 
 #include <unistd.h>
 
-using csa_mdp::History;
-using csa_mdp::Problem;
-using csa_mdp::ProblemFactory;
-using csa_mdp::FPF;
+using namespace csa_mdp;
 
 class Config : public rosban_utils::Serializable
 {

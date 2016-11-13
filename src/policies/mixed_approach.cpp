@@ -4,6 +4,9 @@
 
 #include "rosban_random/tools.h"
 
+namespace csa_mdp
+{
+
 MixedApproach::MixedApproach()
   : far_dist_min(1.0),
     far_theta_p(-0.2),
@@ -56,4 +59,6 @@ void MixedApproach::from_xml(TiXmlNode * node)
 std::string MixedApproach::class_name() const
 {
   return "mixed_approach";
+}
+
 }

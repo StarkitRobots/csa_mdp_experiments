@@ -8,6 +8,9 @@
 #include <random>
 #include <vector>
 
+namespace csa_mdp
+{
+
 /// This problem consists of approaching a ball with a humanoid robot. The robot
 /// in a 2 dimensional map and every dimension is expressed in the robot
 /// referential. Since the robot needs to shoot toward a given target, it needs
@@ -55,6 +58,10 @@ public:
   static double getBallX(const Eigen::VectorXd & state);
   static double getBallY(const Eigen::VectorXd & state);
 
+  /// Return the predicted motion for the given walk orders (without noise)
+  /// This method uses odometry coefficients if it has been initialized
+  Eigen::VectorXd predictMotion(const Eigen::VectorXd & walk_orders) const;
+
   /// Ensure that limits are consistent with the parameters
   void updateLimits();
   /// Update maximal distance at which the ball is accepted
@@ -62,6 +69,13 @@ public:
 
 protected:
   // TODO: Use all parameters as members and implement from_xml + use dirty flag
+
+  // PREDICTIVE ODOMETRY
+  // structure is the following
+  // offset_x, dx(dx), dx(dy), dx(dz)
+  // offset_y, dy(dx), dy(dy), dy(dz)
+  // offset_z, dz(dx), dz(dy), dz(dz)
+  Eigen::MatrixXd odometry_coefficients;
 
   // STATE LIMITS
   /// The maximal distance to the ball along one of the axis
@@ -104,8 +118,10 @@ protected:
   static double no_view_reward;
 
   // BALL COLLISION
-  /// The distance at which the ball start colliding along x axis
-  static double collision_x;
+  /// The distance at which the ball start colliding along x axis (front of the robot)
+  static double collision_x_front;
+  /// The distance at which the ball start colliding along x axis (back of the robot)
+  static double collision_x_back;
   /// The distance at which the ball start colliding along y axis
   static double collision_y;
   /// The reward received when colliding with the ball
@@ -125,8 +141,6 @@ protected:
   /// Maximal distance at the beginning
   /// (not max_dist to ensure the robot does not loose during the first steps)
   static double init_max_dist;
-
-  /// In reality, there is a huge difference between the order given to the walk
-  /// system and its result
-  static double walk_gain;
 };
+
+}

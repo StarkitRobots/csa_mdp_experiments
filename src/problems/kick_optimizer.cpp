@@ -2,6 +2,9 @@
 
 #include "rosban_random/tools.h"
 
+namespace csa_mdp
+{
+
 KickOptimizer::KickOptimizer()
   : kick_power_min(0.2),
     kick_power_max(2.0),
@@ -148,4 +151,6 @@ void KickOptimizer::from_xml(TiXmlNode * node)
 std::string KickOptimizer::class_name() const
 {
   return "kick_optimizer";
+}
+
 }

@@ -1,5 +1,8 @@
 #include "policies/opk_expert_approach.h"
 
+namespace csa_mdp
+{
+
 OPKExpertApproach::OPKExpertApproach()
   : kick_power(3.0),
     field_length(9.0)
@@ -52,4 +55,6 @@ void OPKExpertApproach::from_xml(TiXmlNode * node)
 {
   rosban_utils::xml_tools::try_read<double>(node, "kick_power", kick_power);
   rosban_utils::xml_tools::try_read<double>(node, "field_length", field_length);
+}
+
 }

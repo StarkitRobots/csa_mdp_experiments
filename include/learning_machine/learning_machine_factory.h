@@ -4,8 +4,13 @@
 
 #include "rosban_utils/factory.h"
 
+namespace csa_mdp
+{
+
 class LearningMachineFactory : public rosban_utils::Factory<LearningMachine>
 {
 public:
   LearningMachineFactory();
 };
+
+}

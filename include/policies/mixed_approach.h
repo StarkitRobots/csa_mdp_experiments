@@ -4,6 +4,9 @@
 
 #include <memory>
 
+namespace csa_mdp
+{
+
 class MixedApproach : public csa_mdp::Policy
 {
 public:
@@ -36,3 +39,5 @@ private:
   /// Random engine for when necessary
   std::default_random_engine engine;
 };
+
+}

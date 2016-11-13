@@ -8,6 +8,9 @@
 #include <random>
 #include <vector>
 
+namespace csa_mdp
+{
+
 /// The description of this problem is given in the article:
 /// "Binary Action Search for Learning Continuous-Action Control Policies"
 /// (Pazis & Lagoudakis 2009)
@@ -99,3 +102,5 @@ private:
 };
 
 std::string to_string(CartPoleStabilization::LearningSpace learning_space);
+
+}

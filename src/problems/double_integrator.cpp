@@ -4,6 +4,9 @@
 
 #include <iostream>
 
+namespace csa_mdp
+{
+
 DoubleIntegrator::DoubleIntegrator(Version version_)
   : version(version_)
 {
@@ -92,4 +95,6 @@ void DoubleIntegrator::from_xml(TiXmlNode * node) {(void)node;}
 std::string DoubleIntegrator::class_name() const
 {
   return "double_integrator";
+}
+
 }

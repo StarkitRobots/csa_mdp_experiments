@@ -1,5 +1,8 @@
 #include "problems/cart_pole.h"
 
+namespace csa_mdp
+{
+
 CartPole::CartPole()
   : max_pos(1), max_vel(5), max_torque(20), max_axis_vel(20),
     start_cart_pos_tol(0.05),
@@ -180,4 +183,6 @@ CartPole::RewardType loadRewardType(const std::string &type)
   if (type == "continuous") return CartPole::RewardType::Continuous;
   if (type == "pilco"     ) return CartPole::RewardType::Pilco;
   throw std::runtime_error("Unknown CartPole::RewardType: '" + type + "'");
+}
+
 }

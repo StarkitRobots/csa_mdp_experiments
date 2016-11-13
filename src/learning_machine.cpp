@@ -11,8 +11,7 @@
 #include <ros/ros.h>
 #endif
 
-using csa_mdp::Policy;
-using csa_mdp::PolicyFactory;
+using namespace csa_mdp;
 
 int main()
 {

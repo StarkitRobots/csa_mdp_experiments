@@ -6,6 +6,9 @@
 
 #include <memory>
 
+namespace csa_mdp
+{
+
 /// This problem consist of choosing the best kick direction and power to
 /// reduce the time spent before scoring a goal for a humanoid robot. Each time
 /// step consists of: an approach toward the kick position and then a kick with
@@ -98,3 +101,5 @@ private:
   /// Goal area: size along y-axis [m]
   double goal_area_size_y;
 };
+
+}

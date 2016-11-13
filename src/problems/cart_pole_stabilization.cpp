@@ -2,6 +2,9 @@
 
 #include "rosban_random/tools.h"
 
+namespace csa_mdp
+{
+
 // Above this threshold, trial is a failure
 double CartPoleStabilization::theta_max = M_PI / 2;//[rad]
 // While this limit is not directly given in the article, this value
@@ -241,4 +244,6 @@ std::string to_string(CartPoleStabilization::LearningSpace learning_space)
     case CartPoleStabilization::LearningSpace::Full: return "Full";
   }
   throw std::runtime_error("to_string(CartPoleStabilization::LearningSpace): unknown learning space");
+}
+
 }

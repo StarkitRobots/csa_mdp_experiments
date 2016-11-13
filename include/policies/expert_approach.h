@@ -2,6 +2,9 @@
 
 #include "rosban_csa_mdp/core/policy.h"
 
+namespace csa_mdp
+{
+
 class ExpertApproach : public csa_mdp::Policy
 {
 public:
@@ -63,3 +66,5 @@ private:
 
 std::string to_string(ExpertApproach::State state);
 std::string to_string(ExpertApproach::Type state);
+
+}

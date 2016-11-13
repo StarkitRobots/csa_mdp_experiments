@@ -3,6 +3,9 @@
 
 #include "problems/blackbox_problem.h"
 
+namespace csa_mdp
+{
+
 class LearningMachineBlackBox : public LearningMachine
 {
 public:
@@ -19,3 +22,5 @@ protected:
   /// Access to another type of problem
   std::shared_ptr<BlackBoxProblem> bb_problem;
 };
+
+}

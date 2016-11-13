@@ -1,5 +1,8 @@
 #include "learning_machine/learning_machine_blackbox.h"
 
+namespace csa_mdp
+{
+
 LearningMachineBlackBox::LearningMachineBlackBox()
   : LearningMachine()
 {
@@ -39,4 +42,6 @@ void LearningMachineBlackBox::setProblem(std::unique_ptr<csa_mdp::Problem> new_p
 std::string LearningMachineBlackBox::class_name() const
 {
   return "LearningMachineBlackBox";
+}
+
 }

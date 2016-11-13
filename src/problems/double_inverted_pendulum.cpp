@@ -1,5 +1,8 @@
 #include "problems/double_inverted_pendulum.h"
 
+namespace csa_mdp
+{
+
 std::vector<double> DoubleInvertedPendulum::max_torque = {2,1};
 std::vector<double> DoubleInvertedPendulum::max_axis_vel = {20,40};
 double DoubleInvertedPendulum::start_pos_tol = M_PI / 180;// 1 deg of tol
@@ -91,4 +94,6 @@ void DoubleInvertedPendulum::from_xml(TiXmlNode * node) {(void)node;}
 std::string DoubleInvertedPendulum::class_name() const
 {
   return "double_inverted_pendulum";
+}
+
 }
