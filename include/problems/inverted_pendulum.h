@@ -2,6 +2,8 @@
 
 #include <random>
 
+namespace csa_mdp
+{
 
 /// States are:
 /// theta, omega
@@ -39,3 +41,5 @@ public:
   // maximal velocity at start trajectory [rad/s]
   static double start_vel_tol;
 };
+
+}

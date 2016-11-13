@@ -1,5 +1,8 @@
 #include "problems/simulated_cart_pole.h"
 
+namespace csa_mdp
+{
+
 SimulatedCartPole::SimulatedCartPole()
   : max_pos(1), max_vel(5), max_torque(10), max_axis_vel(20),
     pole_length(0.5), cart_mass(0.5), pendulum_mass(0.5),
@@ -337,4 +340,6 @@ std::string to_string(SimulatedCartPole::LearningSpace learning_space)
     case SimulatedCartPole::LearningSpace::Full: return "Full";
   }
   throw std::runtime_error("to_string(SimulatedCartPole::LearningSpace): unknown learning space");
+}
+
 }

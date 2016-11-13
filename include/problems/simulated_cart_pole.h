@@ -2,6 +2,8 @@
 
 #include <random>
 
+namespace csa_mdp
+{
 
 /// States are:
 /// 0 - cart_pos
@@ -120,3 +122,4 @@ private:
 std::string to_string(SimulatedCartPole::RewardType type);
 std::string to_string(SimulatedCartPole::LearningSpace learning_space);
 
+}

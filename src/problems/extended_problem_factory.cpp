@@ -11,7 +11,8 @@
 #include "problems/kick_optimizer.h"
 #include "problems/one_player_kick.h"
 
-using csa_mdp::Problem;
+namespace csa_mdp
+{
 
 ExtendedProblemFactory::ExtendedProblemFactory()
 {
@@ -67,4 +68,6 @@ std::unique_ptr<BlackBoxProblem> ExtendedProblemFactory::buildBlackBox(const std
     throw std::runtime_error("Problem '" + name + "' is not a BlackBoxProblem");
   }
   return std::unique_ptr<BlackBoxProblem>(result);
+}
+
 }

@@ -2,6 +2,9 @@
 
 #include "rosban_csa_mdp/core/policy.h"
 
+namespace csa_mdp
+{
+
 /// An expert approach for the problem one_player_kick
 ///
 /// This approach always aim at the goal with a specified power
@@ -26,3 +29,5 @@ private:
   /// Length of the field
   double field_length;
 };
+
+}

@@ -1,5 +1,7 @@
 #include "problems/polar_approach.h"
 
+namespace csa_mdp
+{
 
 // State limits
 double PolarApproach::min_step_x     = -0.02;
@@ -224,3 +226,4 @@ double PolarApproach::getBallY(const Eigen::VectorXd & state)
   return sin(state(1)) * state(0);
 }
 
+}

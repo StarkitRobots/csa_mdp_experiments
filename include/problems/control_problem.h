@@ -1,6 +1,9 @@
 #pragma once
 #include "rosban_csa_mdp/core/problem.h"
 
+namespace csa_mdp
+{
+
 class ControlProblem : public csa_mdp::Problem
 {
 public:
@@ -17,3 +20,5 @@ public:
       return Eigen::VectorXd::Zero(getActionLimits().rows());
     }
 };
+
+}

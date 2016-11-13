@@ -8,6 +8,9 @@
 #include <random>
 #include <vector>
 
+namespace csa_mdp
+{
+
 /// This problem consists of approaching a ball with a humanoid robot. The robot
 /// in a 2 dimensional map and every dimension is expressed in the robot
 /// referential. Since the robot needs to shoot toward a given target, it needs
@@ -130,3 +133,5 @@ protected:
   /// system and its result
   static double walk_gain;
 };
+
+}

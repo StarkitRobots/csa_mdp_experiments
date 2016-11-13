@@ -5,6 +5,9 @@
 
 #include "rosban_csa_mdp/core/problem_factory.h"
 
+namespace csa_mdp
+{
+
 class ExtendedProblemFactory : public csa_mdp::ProblemFactory
 {
 public:
@@ -18,3 +21,5 @@ public:
   /// Needs to be called to allow using additionnal Problems
   static void registerExtraProblems();
 };
+
+}

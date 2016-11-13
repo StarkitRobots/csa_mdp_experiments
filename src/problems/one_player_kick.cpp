@@ -6,6 +6,9 @@
 
 static bool debug_failures = false;
 
+namespace csa_mdp
+{
+
 OnePlayerKick::OnePlayerKick()
   : kick_power_min(0.2),
     kick_power_max(3.0),
@@ -320,4 +323,6 @@ bool OnePlayerKick::isGoalArea(double player_x, double player_y) const
   bool xOk = player_x > (field_length/2 - goal_area_size_x) && player_x < field_length/2;
   bool yOk = std::fabs(player_y) < (field_width - goal_area_size_y) / 2;
   return xOk && yOk;
+}
+
 }

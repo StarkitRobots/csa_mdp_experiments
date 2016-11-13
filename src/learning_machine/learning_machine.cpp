@@ -18,6 +18,9 @@ using rosban_utils::Benchmark;
 
 using csa_mdp::Policy;
 
+namespace csa_mdp
+{
+
 std::string LearningMachine::details_path("details");
 
 LearningMachine::LearningMachine()
@@ -407,4 +410,6 @@ LearningMachine::UpdateRule LearningMachine::loadUpdateRule(const std::string &r
     return LearningMachine::UpdateRule::square;
   }
   throw std::runtime_error("Unknown LearningMachine::UpdateRule: '" + rule + "'");
+}
+
 }

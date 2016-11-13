@@ -6,6 +6,9 @@
 #include "learning_machine/learning_machine_controller.h"
 #endif
 
+namespace csa_mdp
+{
+
 LearningMachineFactory::LearningMachineFactory()
 {
   registerBuilder("LearningMachineBlackBox",
@@ -14,4 +17,6 @@ LearningMachineFactory::LearningMachineFactory()
   registerBuilder("LearningMachineController",
                   [](){return std::unique_ptr<LearningMachine>(new LearningMachineController);});
 #endif
+}
+
 }

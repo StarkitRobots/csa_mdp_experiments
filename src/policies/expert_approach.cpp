@@ -1,5 +1,8 @@
 #include "policies/expert_approach.h"
 
+namespace csa_mdp
+{
+
 ExpertApproach::ExpertApproach()
   : type(Type::cartesian),
     current_state(State::far),
@@ -157,4 +160,6 @@ std::string to_string(ExpertApproach::Type type)
     case ExpertApproach::Type::polar: return "polar";
   }
   throw std::runtime_error("Invalid ExpertApproach::Type in to_string");
+}
+
 }

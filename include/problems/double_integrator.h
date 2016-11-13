@@ -4,6 +4,9 @@
 
 #include <random>
 
+namespace csa_mdp
+{
+
 class DoubleIntegrator : public BlackBoxProblem
 {
 public:
@@ -35,3 +38,5 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 };
+
+}

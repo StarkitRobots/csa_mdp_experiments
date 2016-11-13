@@ -2,6 +2,8 @@
 
 #include <random>
 
+namespace csa_mdp
+{
 
 /// States are:
 /// cart_pos, cart_speed, theta, omega
@@ -63,3 +65,5 @@ private:
 
 std::string to_string(CartPole::RewardType type);
 CartPole::RewardType loadRewardType(const std::string &type);
+
+}

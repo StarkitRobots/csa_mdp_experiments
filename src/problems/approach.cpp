@@ -1,5 +1,7 @@
 #include "problems/approach.h"
 
+namespace csa_mdp
+{
 
 // State limits
 double Approach::max_dist       =  1   ;
@@ -203,4 +205,6 @@ void Approach::from_xml(TiXmlNode * node) {(void)node;}
 std::string Approach::class_name() const
 {
   return "approach";
+}
+
 }
