@@ -1,0 +1,37 @@
+<LearningMachine>
+  <LearningMachineBlackBox>
+    <problem>
+      <polar_approach>
+        <odometry_coefficients>
+          <v>0.0093</v>
+          <v>-0.0026</v>
+          <v>0.0002</v>
+          <v>1.30</v>
+          <v>-0.075</v>
+          <v>-0.35</v>
+          <v>-0.17</v>
+          <v>1.47</v>
+          <v>0.05</v>
+          <v>0.001</v>
+          <v>0.101</v>
+          <v>0.909</v>
+        </odometry_coefficients>
+      </polar_approach>
+    </problem>
+    <learner>
+      <FakeLearner>
+        <policy>
+          <expert_approach>
+            <type>polar</type>
+          </expert_approach>
+        </policy>
+      </FakeLearner>
+    </learner>
+    <save_run_logs>true</save_run_logs>
+    <save_details>false</save_details>
+    <nb_threads>3</nb_threads>
+    <nb_runs>10</nb_runs>
+    <nb_steps>50</nb_steps>
+    <discount>0.98</discount>
+  </LearningMachineBlackBox>
+</LearningMachine>
