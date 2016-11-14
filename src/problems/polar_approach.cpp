@@ -2,6 +2,8 @@
 
 #include "rosban_utils/xml_tools.h"
 
+#include <cmath>
+
 namespace csa_mdp
 {
 
@@ -38,20 +40,15 @@ double PolarApproach::step_reward         = -1;
 double PolarApproach::init_min_dist = 0.4;
 double PolarApproach::init_max_dist = 0.95;
 
-// TODO: externalize
-static double normalizeAngle(double value)
+/**
+ * Return the given angle in radian 
+ * bounded between -PI and PI
+ */
+static double normalizeAngle(double angle)
 {
-  while (value > M_PI)
-  {
-    value -= 2 * M_PI;
-  }
-  while (value < -M_PI)
-  {
-    value += 2 * M_PI;
-  }
-  return value;
+  return angle - 2.0*M_PI*std::floor(
+    (angle + M_PI)/(2.0*M_PI));
 }
-
 
 PolarApproach::PolarApproach()
   : max_dist(1.0)
