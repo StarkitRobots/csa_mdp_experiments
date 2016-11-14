@@ -125,8 +125,13 @@ Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
   Eigen::VectorXd next_cmd(3);
   for (int dim = 0; dim < 3; dim++)
   {
+    // Ensuring that acceleration is in the bounds
+    const Eigen::MatrixXd & action_limits = getActionLimits();
+    double min_acc = action_limits(dim, 0);
+    double max_acc = action_limits(dim, 1);
+    double bounded_action = std::min(max_acc, std::max(min_acc, action(dim)));
     // Action applies a delta on step
-    next_cmd(dim) = action(dim) + state(dim + 3);
+    next_cmd(dim) = bounded_action + state(dim + 3);
     // Ensuring that final action is inside of the bounds
     const Eigen::MatrixXd & limits = getStateLimits();
     double min_cmd = limits(dim + 3, 0);
