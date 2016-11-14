@@ -67,6 +67,9 @@ public:
   /// Update maximal distance at which the ball is accepted
   void setMaxDist(double dist);
 
+  /// Update motion odometry model
+  void setOdometry(const Eigen::MatrixXd& model);
+
 protected:
   // TODO: Use all parameters as members and implement from_xml + use dirty flag
 
