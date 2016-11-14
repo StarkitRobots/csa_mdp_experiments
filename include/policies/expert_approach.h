@@ -17,6 +17,9 @@ public:
 
   void init() override;
 
+  Eigen::VectorXd getConfig() const;
+  void setConfig(Type newType, const Eigen::VectorXd& params);
+
   Eigen::VectorXd getRawAction(const Eigen::VectorXd &state) override;
   Eigen::VectorXd getRawAction(const Eigen::VectorXd &state,
                                std::default_random_engine * external_engine) const override;

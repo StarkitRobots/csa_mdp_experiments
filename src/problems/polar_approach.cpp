@@ -82,6 +82,15 @@ void PolarApproach::setMaxDist(double dist)
   max_dist = dist;
   updateLimits();
 }
+  
+void PolarApproach::setOdometry(const Eigen::MatrixXd& model)
+{
+  if (model.rows() != 3 && model.cols() != 4) {
+    throw std::logic_error(
+      "PolarApproach::setOdometry Invalid format");
+  }
+  odometry_coefficients = model;
+}
 
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
 {

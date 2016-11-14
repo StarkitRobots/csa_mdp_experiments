@@ -29,6 +29,52 @@ void ExpertApproach::init()
 {
   current_state = State::far;
 }
+  
+Eigen::VectorXd ExpertApproach::getConfig() const
+{
+  Eigen::VectorXd params(15);
+  params <<
+    max_rotate_radius,
+    min_far_radius,
+    radius,
+    step_p,
+    far_theta_p,
+    rotate_theta_p,
+    rotate_lateral_p,
+    near_theta_p,
+    near_lateral_p,
+    stop_y_near,
+    max_y_near,
+    wished_x,
+    wished_y,
+    target_theta_tol,
+    ball_theta_tol;
+  return params;
+}
+void ExpertApproach::setConfig(Type newType, const Eigen::VectorXd& params)
+{
+  if (params.size() != 15) {
+    throw std::logic_error(
+      "ExpertApproach::setConfig Invalid parameters size");
+  }
+  type = newType;
+  max_rotate_radius = params(0);
+  min_far_radius = params(1);
+  radius = params(2);
+  step_p = params(3);
+  far_theta_p = params(4);
+  rotate_theta_p = params(5);
+  rotate_lateral_p = params(6);
+  near_theta_p = params(7);
+  near_lateral_p = params(8);
+  stop_y_near = params(9);
+  max_y_near = params(10);
+  wished_x = params(11);
+  wished_y = params(12);
+  target_theta_tol = params(13);
+  ball_theta_tol = params(14);
+
+}
 
 Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
 {
