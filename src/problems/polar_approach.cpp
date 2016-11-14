@@ -168,9 +168,7 @@ Eigen::VectorXd PolarApproach::getStartingState()
   Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
   // Creating the distribution
   std::uniform_real_distribution<double> dist_distrib(init_min_dist, init_max_dist);
-  // Ball is always in sight at the beginning of an experiment
-  std::uniform_real_distribution<double> angle_distrib(-viewing_angle,
-                                                       viewing_angle);
+  std::uniform_real_distribution<double> angle_distrib(-M_PI, M_PI);
   // Generating random values
   double dist = dist_distrib(random_engine);
   double ball_theta = angle_distrib(random_engine);
