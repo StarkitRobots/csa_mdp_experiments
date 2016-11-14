@@ -53,13 +53,17 @@
             <nb_additional_steps>0</nb_additional_steps>
           </BasicOptimizer>
         </action_optimizer>
-        <policy_trainer>PWLForestTrainer</policy_trainer>
+        <policy_trainer>
+          <PWLForestTrainer>
+            <aggregation_method>AutoCut</aggregation_method>
+          </PWLForestTrainer>
+        </policy_trainer>
       </ModelBasedLearner>
     </learner>
     <seed_path>../seed/run_logs.csv</seed_path>
     <save_run_logs>false</save_run_logs>
     <nb_threads>40</nb_threads>
-    <nb_runs>5500</nb_runs>
+    <nb_runs>5050</nb_runs>
     <nb_steps>50</nb_steps>
     <time_budget>1800</time_budget>
   </LearningMachineBlackBox>
