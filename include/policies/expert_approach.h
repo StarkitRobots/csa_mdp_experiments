@@ -37,7 +37,11 @@ private:
 
   State current_state;
 
+  // Maximal step forward authorized
   double step_max;
+
+  // Number of parameters which can modified (do not include step_max)
+  static const int nb_parameters;
 
   // Radius
   /// Above this distance, go to far from rotate or near

@@ -3,6 +3,8 @@
 namespace csa_mdp
 {
 
+const int ExpertApproach::nb_parameters = 15;
+
 ExpertApproach::ExpertApproach()
   : type(Type::cartesian),
     current_state(State::far),
@@ -32,7 +34,7 @@ void ExpertApproach::init()
   
 Eigen::VectorXd ExpertApproach::getConfig() const
 {
-  Eigen::VectorXd params(15);
+  Eigen::VectorXd params(nb_parameters);
   params <<
     max_rotate_radius,
     min_far_radius,
@@ -53,7 +55,7 @@ Eigen::VectorXd ExpertApproach::getConfig() const
 }
 void ExpertApproach::setConfig(Type newType, const Eigen::VectorXd& params)
 {
-  if (params.size() != 15) {
+  if (params.size() != nb_parameters) {
     throw std::logic_error(
       "ExpertApproach::setConfig Invalid parameters size");
   }
@@ -174,6 +176,22 @@ void ExpertApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<std::string>(node, "type", type_str);
   if (type_str != "") {
     type = loadType(type_str);
+  }
+  // Reading vector list of parameters
+  std::vector<double> params_read;
+  rosban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);
+  // If number of coefficients is appropriate, update config
+  if (params_read.size() == nb_parameters)
+  {
+    Eigen::VectorXd new_params = Eigen::Map<Eigen::VectorXd>(params_read.data(), nb_parameters);
+    setConfig(type, new_params);
+  }
+  // Else throw an explicit error
+  else {
+    std::ostringstream oss;
+    oss << "ExpertApproach::from_xml: invalid number of parameters in node 'params': "
+        << "read: " << params_read.size() << ", expecting: " << nb_parameters;
+    throw std::runtime_error(oss.str());
   }
 }
 
