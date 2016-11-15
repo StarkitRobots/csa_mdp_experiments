@@ -186,8 +186,8 @@ void ExpertApproach::from_xml(TiXmlNode * node)
     Eigen::VectorXd new_params = Eigen::Map<Eigen::VectorXd>(params_read.data(), nb_parameters);
     setConfig(type, new_params);
   }
-  // Else throw an explicit error
-  else {
+  // Else throw an explicit error if number of parameters was not 0
+  else if (params_read.size() != 0) {
     std::ostringstream oss;
     oss << "ExpertApproach::from_xml: invalid number of parameters in node 'params': "
         << "read: " << params_read.size() << ", expecting: " << nb_parameters;

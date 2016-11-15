@@ -34,7 +34,7 @@ PolarApproach::PolarApproach()
     step_theta_noise(5 * M_PI / 180),
     // Kick
     kick_x_min(0.15),
-    kick_x_max(0.25),
+    kick_x_max(0.30),
     kick_y_tol(0.06),
     kick_theta_tol(10 * M_PI/180),
     kick_reward(0),
@@ -250,7 +250,24 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"max_step_x_diff", max_step_x_diff);
   rosban_utils::xml_tools::try_read<double>(node,"max_step_y_diff", max_step_y_diff);
   rosban_utils::xml_tools::try_read<double>(node,"max_step_theta_diff", max_step_theta_diff);
-  //TODO all the other parameters
+  rosban_utils::xml_tools::try_read<double>(node,"step_x_noise", step_x_noise);
+  rosban_utils::xml_tools::try_read<double>(node,"step_y_noise", step_y_noise);
+  rosban_utils::xml_tools::try_read<double>(node,"step_theta_noise", step_theta_noise);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_x_min", kick_x_min);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_x_max", kick_x_max);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_y_tol", kick_y_tol);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_theta_tol", kick_theta_tol);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_reward", kick_reward);
+  rosban_utils::xml_tools::try_read<double>(node,"viewing_angle", viewing_angle);
+  rosban_utils::xml_tools::try_read<double>(node,"no_view_reward", no_view_reward);
+  rosban_utils::xml_tools::try_read<double>(node,"collision_x_front", collision_x_front);
+  rosban_utils::xml_tools::try_read<double>(node,"collision_x_back", collision_x_back);
+  rosban_utils::xml_tools::try_read<double>(node,"collision_y", collision_y);
+  rosban_utils::xml_tools::try_read<double>(node,"collision_reward", collision_reward);
+  rosban_utils::xml_tools::try_read<double>(node,"out_of_space_reward", out_of_space_reward);
+  rosban_utils::xml_tools::try_read<double>(node,"step_reward", step_reward);
+  rosban_utils::xml_tools::try_read<double>(node,"init_min_dist", init_min_dist);
+  rosban_utils::xml_tools::try_read<double>(node,"init_max_dist", init_max_dist);
 }
 
 std::string PolarApproach::class_name() const
