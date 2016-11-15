@@ -84,66 +84,66 @@ protected:
   /// The maximal distance to the ball along one of the axis
   double max_dist;
   /// The minimal order of step_x [m/step]
-  static double min_step_x;
+  double min_step_x;
   /// The maximal order for step_x [m/step]
-  static double max_step_x;
+  double max_step_x;
   /// The maximal lateral step [m/step]
-  static double max_step_y;
+  double max_step_y;
   /// The maximal rotation by step [rad/step]
-  static double max_step_theta;
+  double max_step_theta;
 
   // ACTION_LIMITS
-  static double max_step_x_diff;
-  static double max_step_y_diff;
-  static double max_step_theta_diff;
+  double max_step_x_diff;
+  double max_step_y_diff;
+  double max_step_theta_diff;
 
   // NOISE
-  static double step_x_noise;
-  static double step_y_noise;
-  static double step_theta_noise;
+  double step_x_noise;
+  double step_y_noise;
+  double step_theta_noise;
 
   // TARGET PROPERTIES
   /// Minimal distance along x to kick
-  static double kick_x_min;
+  double kick_x_min;
   /// Maximal distance along x to kick
-  static double kick_x_max;
+  double kick_x_max;
   /// Ball tolerance along y axis for shooting
-  static double kick_y_tol;
+  double kick_y_tol;
   /// The maximal angle allowed for kicking
-  static double kick_theta_tol;
+  double kick_theta_tol;
   /// Reward received when reaching kick position
-  static double kick_reward;
+  double kick_reward;
 
   // BALL VIEW
   /// Ball is seen in [-viewing_angle, viewing_angle]
-  static double viewing_angle;
+  double viewing_angle;
   /// The reward received when not seeing the ball.
-  static double no_view_reward;
+  double no_view_reward;
 
   // BALL COLLISION
   /// The distance at which the ball start colliding along x axis (front of the robot)
-  static double collision_x_front;
+  double collision_x_front;
   /// The distance at which the ball start colliding along x axis (back of the robot)
-  static double collision_x_back;
+  double collision_x_back;
   /// The distance at which the ball start colliding along y axis
-  static double collision_y;
+  double collision_y;
   /// The reward received when colliding with the ball
-  static double collision_reward;
+  double collision_reward;
 
   // OUT OF SPACE
   /// The reward received when getting out of space
-  static double out_of_space_reward;
+  double out_of_space_reward;
 
   // Step reward
   /// This reward is received at each non-terminal step
-  static double step_reward;
+  double step_reward;
 
   /// Minimal distance at the beginning
-  static double init_min_dist;
+  double init_min_dist;
 
   /// Maximal distance at the beginning
   /// (not max_dist to ensure the robot does not loose during the first steps)
-  static double init_max_dist;
+  double init_max_dist;
 };
 
 }

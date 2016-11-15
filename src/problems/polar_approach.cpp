@@ -7,39 +7,6 @@
 namespace csa_mdp
 {
 
-// State limits
-double PolarApproach::min_step_x     = -0.02;
-double PolarApproach::max_step_x     =  0.04;
-double PolarApproach::max_step_y     =  0.02;
-double PolarApproach::max_step_theta =  0.3 ;
-// Action limits
-double PolarApproach::max_step_x_diff     = 0.02;
-double PolarApproach::max_step_y_diff     = 0.01;
-double PolarApproach::max_step_theta_diff = 0.15;
-// Step noise
-double PolarApproach::step_x_noise     = 0.02;
-double PolarApproach::step_y_noise     = 0.02;
-double PolarApproach::step_theta_noise = 5 * M_PI / 180;
-// Kick
-double PolarApproach::kick_x_min     = 0.15   ;
-double PolarApproach::kick_x_max     = 0.25   ;
-double PolarApproach::kick_y_tol     = 0.06   ;
-double PolarApproach::kick_theta_tol = 10 * M_PI/180;
-double PolarApproach::kick_reward    = 0;
-// Viewing the ball
-double PolarApproach::viewing_angle  = 2*M_PI/3;
-double PolarApproach::no_view_reward = 0       ;
-// Collision
-double PolarApproach::collision_x_front =  0.15;
-double PolarApproach::collision_x_back  =  0.20;
-double PolarApproach::collision_y       =  0.25;
-double PolarApproach::collision_reward  = -3;
-// Misc
-double PolarApproach::out_of_space_reward = -100;
-double PolarApproach::step_reward         = -1;
-double PolarApproach::init_min_dist = 0.4;
-double PolarApproach::init_max_dist = 0.95;
-
 /**
  * Return the given angle in radian 
  * bounded between -PI and PI
@@ -51,7 +18,39 @@ static double normalizeAngle(double angle)
 }
 
 PolarApproach::PolarApproach()
-  : max_dist(1.0)
+  : max_dist(1.0),
+    // State limits
+    min_step_x(-0.02),
+    max_step_x(0.04),
+    max_step_y(0.02),
+    max_step_theta(0.3),
+    // Action limits
+    max_step_x_diff(0.02),
+    max_step_y_diff(0.01),
+    max_step_theta_diff(0.15),
+    // Step noise
+    step_x_noise(0.02),
+    step_y_noise(0.02),
+    step_theta_noise(5 * M_PI / 180),
+    // Kick
+    kick_x_min(0.15),
+    kick_x_max(0.25),
+    kick_y_tol(0.06),
+    kick_theta_tol(10 * M_PI/180),
+    kick_reward(0),
+    // Viewing the ball
+    viewing_angle(2*M_PI/3),
+    no_view_reward(0),
+    // Collision
+    collision_x_front(0.15),
+    collision_x_back(0.20),
+    collision_y( 0.25),
+    collision_reward(-3),
+    // Misc
+    out_of_space_reward(-100),
+    step_reward(-1),
+    init_min_dist(0.4),
+    init_max_dist(0.95)
 {
   updateLimits();
 
@@ -242,6 +241,16 @@ void PolarApproach::from_xml(TiXmlNode * node)
         << "read: " << odometry_coefficients_read.size() << " expecting 12.";
     throw std::runtime_error(oss.str());
   }
+  // Read internal properties
+  rosban_utils::xml_tools::try_read<double>(node,"max_dist", max_dist);
+  rosban_utils::xml_tools::try_read<double>(node,"min_step_x", min_step_x);
+  rosban_utils::xml_tools::try_read<double>(node,"max_step_x", max_step_x);
+  rosban_utils::xml_tools::try_read<double>(node,"max_step_y", max_step_y);
+  rosban_utils::xml_tools::try_read<double>(node,"max_step_theta", max_step_theta);
+  rosban_utils::xml_tools::try_read<double>(node,"max_step_x_diff", max_step_x_diff);
+  rosban_utils::xml_tools::try_read<double>(node,"max_step_y_diff", max_step_y_diff);
+  rosban_utils::xml_tools::try_read<double>(node,"max_step_theta_diff", max_step_theta_diff);
+  //TODO all the other parameters
 }
 
 std::string PolarApproach::class_name() const
