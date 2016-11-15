@@ -53,9 +53,6 @@ PolarApproach::PolarApproach()
     init_max_dist(0.95)
 {
   updateLimits();
-
-  setStateNames({"ball_dist", "ball_dir", "target_angle", "step_x", "step_y", "step_theta"});
-  setActionNames({"d_step_x","d_step_y","d_step_theta"});
 }
 
 void PolarApproach::updateLimits()
@@ -74,6 +71,10 @@ void PolarApproach::updateLimits()
     -max_step_theta_diff, max_step_theta_diff;
   setStateLimits(state_limits);
   setActionLimits(action_limits);
+
+  // Also ensure names are valid
+  setStateNames({"ball_dist", "ball_dir", "target_angle", "step_x", "step_y", "step_theta"});
+  setActionNames({"d_step_x","d_step_y","d_step_theta"});
 }
 
 void PolarApproach::setMaxDist(double dist)
@@ -268,6 +269,9 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"step_reward", step_reward);
   rosban_utils::xml_tools::try_read<double>(node,"init_min_dist", init_min_dist);
   rosban_utils::xml_tools::try_read<double>(node,"init_max_dist", init_max_dist);
+
+  // Update limits according to the new parameters
+  updateLimits();
 }
 
 std::string PolarApproach::class_name() const
