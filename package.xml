@@ -12,15 +12,11 @@
   <author email="medrimonia@gmail.com">medrimonia</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rosban_control</build_depend>
-  <build_depend>rosban_csa_mdp</build_depend>
+
+  <build_depend>rosban_control</build_depend> <!-- optional git@bitbucket.org:rhoban/rosban_control.git -->
+  <build_depend>rosban_csa_mdp</build_depend> <!-- git@bitbucket.org:rhoban/rosban_csa_mdp.git -->
+
   <run_depend>rosban_control</run_depend>
   <run_depend>rosban_csa_mdp</run_depend>
 
-
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-
-  </export>
 </package>
