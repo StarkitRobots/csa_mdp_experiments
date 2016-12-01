@@ -236,6 +236,7 @@ Eigen::VectorXd SimulatedCartPole::cartesianToFull(const Eigen::VectorXd & state
 
 Eigen::VectorXd SimulatedCartPole::getStartingState(std::default_random_engine * engine) const
 {
+  (void)engine;
   Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
   state(2) = M_PI;
   state(4) = cos(state(2));
