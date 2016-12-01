@@ -81,3 +81,7 @@ target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 # Generic machine to execute experiment, parameters are given through xml file
 add_executable(learning_machine src/learning_machine.cpp)
 target_link_libraries(learning_machine ${catkin_LIBRARIES} csa_mdp_experiments)
+
+# Work In progress
+add_executable(black_box_learning src/black_box_learning.cpp)
+target_link_libraries(black_box_learning ${catkin_LIBRARIES} csa_mdp_experiments)
