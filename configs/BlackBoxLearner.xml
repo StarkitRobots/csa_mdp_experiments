@@ -1,0 +1,36 @@
+<BlackBoxLearner>
+  <BlackBoxLearner>
+    <problem>polar_approach</problem>
+    <value_approximator>
+      <ExtraTreesApproximator>
+        <nb_samples>10000</nb_samples>
+        <predictor>
+          <MonteCarloPredictor>
+            <nb_steps>50</nb_steps>
+            <nb_predictions>20</nb_predictions>
+          </MonteCarloPredictor>
+        </predictor>
+        <trainer>PWCForestTrainer</trainer>
+      </ExtraTreesApproximator>
+    </value_approximator>
+    <policy_trainer>
+      <AdaptativeTree>
+        <nb_generations>5</nb_generations>
+        <nb_samples>200</nb_samples>
+        <evaluation_trials>5</evaluation_trials>
+        <model_optimizer>
+          <CMAESOptimizer>
+            <nb_iterations>50</nb_iterations>
+            <nb_evaluations>100</nb_evaluations>
+            <nb_restarts>2</nb_restarts>
+          </CMAESOptimizer>
+        </model_optimizer>
+      </AdaptativeTree>
+    </policy_trainer>
+    <nb_threads>3</nb_threads>
+    <trial_length>50</trial_length>
+    <nb_evaluation_trials>10000</nb_evaluation_trials>
+    <time_budget>10800</time_budget>
+    <discount>0.98</discount>
+  </BlackBoxLearner>
+</BlackBoxLearner>
