@@ -1,7 +1,7 @@
 #pragma once
 
 #include "problems/control_problem.h"
-#include "problems/blackbox_problem.h"
+#include "rosban_csa_mdp/core/black_box_problem.h"
 
 #include "rosban_csa_mdp/core/problem_factory.h"
 

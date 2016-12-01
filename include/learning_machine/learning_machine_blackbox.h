@@ -1,7 +1,7 @@
 #pragma once
 #include "learning_machine/learning_machine.h"
 
-#include "problems/blackbox_problem.h"
+#include "rosban_csa_mdp/core/black_box_problem.h"
 
 namespace csa_mdp
 {

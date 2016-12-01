@@ -1,6 +1,6 @@
 #pragma once
 
-#include "problems/blackbox_problem.h"
+#include "rosban_csa_mdp/core/black_box_problem.h"
 #include "problems/polar_approach.h"
 
 #include "rosban_csa_mdp/core/policy.h"
