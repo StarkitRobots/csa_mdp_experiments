@@ -194,7 +194,7 @@ Eigen::VectorXd CartPoleStabilization::cartesianToFull(const Eigen::VectorXd & s
 }
 
 
-Eigen::VectorXd CartPoleStabilization::getStartingState()
+Eigen::VectorXd CartPoleStabilization::getStartingState(std::default_random_engine * engine) const
 {
   Eigen::VectorXd state = Eigen::VectorXd::Zero(4);
   state(2) = cos(state(0));

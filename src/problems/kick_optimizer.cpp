@@ -92,7 +92,7 @@ Eigen::VectorXd KickOptimizer::getSuccessor(const Eigen::VectorXd & state,
   return dst;
 }
 
-Eigen::VectorXd KickOptimizer::getStartingState()
+Eigen::VectorXd KickOptimizer::getStartingState(std::default_random_engine * engine) const
 {
   Eigen::MatrixXd limits(3,2);
   limits <<
@@ -100,7 +100,7 @@ Eigen::VectorXd KickOptimizer::getStartingState()
     -field_width/2, field_width/2,
     -M_PI, M_PI; 
   std::vector<Eigen::VectorXd> random_positions;
-  random_positions = rosban_random::getUniformSamples(limits, 3, &random_engine);
+  random_positions = rosban_random::getUniformSamples(limits, 3, engine);
   Eigen::VectorXd state(8);
   state.segment(0,2) = random_positions[0].segment(0,2);// Ball pos
   state.segment(2,3) = random_positions[1];// P1 pos

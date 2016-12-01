@@ -40,7 +40,7 @@ public:
                                const Eigen::VectorXd & action,
                                std::default_random_engine * engine) const override;
 
-  Eigen::VectorXd getStartingState() override;
+  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
   /// Is the ball kickable
   bool isKickable(const Eigen::VectorXd & state) const;

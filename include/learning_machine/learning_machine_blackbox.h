@@ -3,6 +3,8 @@
 
 #include "rosban_csa_mdp/core/black_box_problem.h"
 
+#include <random>
+
 namespace csa_mdp
 {
 
@@ -21,6 +23,8 @@ public:
 protected:
   /// Access to another type of problem
   std::shared_ptr<BlackBoxProblem> bb_problem;
+  /// Random generator
+  std::default_random_engine engine;
 };
 
 }

@@ -130,7 +130,7 @@ Eigen::VectorXd Approach::getSuccessor(const Eigen::VectorXd & state,
   return next_state;
 }
 
-Eigen::VectorXd Approach::getStartingState()
+Eigen::VectorXd Approach::getStartingState(std::default_random_engine * engine) const
 {
   Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
   // Creating the distribution
@@ -139,9 +139,9 @@ Eigen::VectorXd Approach::getStartingState()
   std::uniform_real_distribution<double> angle_distrib(-viewing_angle,
                                                        viewing_angle);
   // Generating random values
-  double dist = dist_distrib(random_engine);
-  double ball_theta = angle_distrib(random_engine);
-  double target_theta = angle_distrib(random_engine);
+  double dist = dist_distrib(*engine);
+  double ball_theta = angle_distrib(*engine);
+  double target_theta = angle_distrib(*engine);
   // Updating state
   state(0) = cos(ball_theta) * dist;
   state(1) = sin(ball_theta) * dist;

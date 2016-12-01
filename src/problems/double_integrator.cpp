@@ -81,8 +81,9 @@ Eigen::VectorXd DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
   return currentState;
 }
 
-Eigen::VectorXd DoubleIntegrator::getStartingState()
+Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine * engine) const
 {
+  (void) engine;
   Eigen::VectorXd state(2);
   state << 1, 0;
   return state;

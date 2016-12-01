@@ -55,7 +55,7 @@ public:
   /// At starting state:
   /// Player 1 and Player 2 are placed randomly on the field
   /// Ball is placed randomly
-  Eigen::VectorXd getStartingState() override;
+  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
   /// Return the expected reward for the given kicker during approach
   /// toward kicking the ball with target angle

@@ -1,11 +1,14 @@
 #include "learning_machine/learning_machine_blackbox.h"
 
+#include "rosban_random/tools.h"
+
 namespace csa_mdp
 {
 
 LearningMachineBlackBox::LearningMachineBlackBox()
   : LearningMachine()
 {
+  engine = rosban_random::getRandomEngine();
 }
 
 LearningMachineBlackBox::~LearningMachineBlackBox()
@@ -18,7 +21,7 @@ void LearningMachineBlackBox::prepareRun()
   if (casted == nullptr) {
     throw std::logic_error("Trying to run a LearningMachineBlackBox on a NOT blackbox problem");
   }
-  current_state = casted->getStartingState();
+  current_state = casted->getStartingState(&engine);
 }
 
 void LearningMachineBlackBox::applyAction(const Eigen::VectorXd &action)

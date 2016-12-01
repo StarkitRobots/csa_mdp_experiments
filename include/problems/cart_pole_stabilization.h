@@ -47,7 +47,7 @@ public:
                                const Eigen::VectorXd & action,
                                std::default_random_engine * engine) const override;
 
-  Eigen::VectorXd getStartingState() override;
+  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;

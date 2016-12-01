@@ -177,7 +177,7 @@ Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
   return dst;
 }
 
-Eigen::VectorXd OnePlayerKick::getStartingState()
+Eigen::VectorXd OnePlayerKick::getStartingState(std::default_random_engine * engine) const
 {
   Eigen::MatrixXd limits(3,2);
   limits <<
@@ -185,7 +185,7 @@ Eigen::VectorXd OnePlayerKick::getStartingState()
     -field_width/2 + kick_initial_noise, field_width/2 - kick_initial_noise,
     -M_PI, M_PI; 
   std::vector<Eigen::VectorXd> random_positions;
-  random_positions = rosban_random::getUniformSamples(limits, 3, &random_engine);
+  random_positions = rosban_random::getUniformSamples(limits, 3, engine);
   Eigen::VectorXd state(5);
   state.segment(0,2) = random_positions[0].segment(0,2);// Ball pos
   state.segment(2,3) = random_positions[1];// Player pos
