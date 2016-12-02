@@ -7,7 +7,7 @@ const int ExpertApproach::nb_parameters = 15;
 
 ExpertApproach::ExpertApproach()
   : type(Type::cartesian),
-    current_state(State::far),
+    memory_state(State::far),
     step_max(0.04),
     max_rotate_radius(1),
     min_far_radius(0.75),
@@ -29,7 +29,7 @@ ExpertApproach::ExpertApproach()
 
 void ExpertApproach::init()
 {
-  current_state = State::far;
+  memory_state = State::far;
 }
   
 Eigen::VectorXd ExpertApproach::getConfig() const
@@ -78,8 +78,14 @@ void ExpertApproach::setConfig(Type newType, const Eigen::VectorXd& params)
 
 }
 
-Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
+Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state) {
+  return getRawAction(state, &memory_state);
+}
+
+Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
+                                             State * final_state) const
 {
+  State current_state = memory_state;
   // Properties
   double ball_x, ball_y;
   switch(type) {
@@ -154,15 +160,18 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state)
 
   Eigen::VectorXd delta_cmd = wished_cmd - state.segment(3,3);
 
+  if (final_state != nullptr) {
+    *final_state = current_state;
+  }
+
   return delta_cmd;
 }
 
 Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
                                              std::default_random_engine * external_engine) const
 {
-  (void) state;
   (void) external_engine;
-  throw std::logic_error("Impossible to retrieve an action from an expert approach without modifications (due to state memory)");
+  return getRawAction(state, (State *)nullptr);
 }
 
 void ExpertApproach::to_xml(std::ostream & out) const

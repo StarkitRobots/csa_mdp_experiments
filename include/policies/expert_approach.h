@@ -20,7 +20,13 @@ public:
   Eigen::VectorXd getConfig() const;
   void setConfig(Type newType, const Eigen::VectorXd& params);
 
+  /// Get raw action and update memory_state
   Eigen::VectorXd getRawAction(const Eigen::VectorXd &state) override;
+  /// Get raw action but do not update memory_state, state after action is
+  /// written in 'final_state' (if it is not nullptr)
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd &state,
+                               State * final_state) const;
+  /// Get raw action but do not update memory_state
   Eigen::VectorXd getRawAction(const Eigen::VectorXd &state,
                                std::default_random_engine * external_engine) const override;
 
@@ -35,7 +41,7 @@ private:
 
   Type type;
 
-  State current_state;
+  State memory_state;
 
   // Maximal step forward authorized
   double step_max;

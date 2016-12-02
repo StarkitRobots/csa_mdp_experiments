@@ -1,13 +1,24 @@
 #include "rosban_csa_mdp/solvers/black_box_learner_factory.h"
 
+#include "policies/expert_approach.h"
+#include "policies/mixed_approach.h"
+#include "policies/opk_expert_approach.h"
 #include "problems/extended_problem_factory.h"
+
+#include "rosban_csa_mdp/core/policy_factory.h"
 
 #include "rosban_random/tools.h"
 
 using namespace csa_mdp;
 
-int main()
-{
+int main() {
+  PolicyFactory::registerExtraBuilder("expert_approach",
+                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
+  PolicyFactory::registerExtraBuilder("mixed_approach",
+                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
+  PolicyFactory::registerExtraBuilder("opk_expert_approach",
+                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
+
   ExtendedProblemFactory::registerExtraProblems();
 
   std::shared_ptr<BlackBoxLearner> bbl;
