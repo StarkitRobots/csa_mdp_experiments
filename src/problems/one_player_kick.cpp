@@ -3,6 +3,9 @@
 #include "rosban_csa_mdp/core/policy_factory.h"
 
 #include "rosban_random/tools.h"
+#include "rosban_utils/xml_tools.h"
+
+using namespace rosban_utils;
 
 static bool debug_failures = false;
 
@@ -241,6 +244,22 @@ void OnePlayerKick::to_xml(std::ostream & out) const
 
 void OnePlayerKick::from_xml(TiXmlNode * node)
 {
+  xml_tools::try_read<double>(node, "kick_power_min"         , kick_power_min         );
+  xml_tools::try_read<double>(node, "kick_power_max"         , kick_power_max         );
+  xml_tools::try_read<double>(node, "kick_dist_rel_noise"    , kick_dist_rel_noise    );
+  xml_tools::try_read<double>(node, "kick_direction_noise"   , kick_direction_noise   );
+  xml_tools::try_read<double>(node, "kick_range"             , kick_range             );
+  xml_tools::try_read<double>(node, "kick_initial_noise"     , kick_initial_noise     );
+  xml_tools::try_read<double>(node, "kick_reward"            , kick_reward            );
+  xml_tools::try_read<double>(node, "goal_reward"            , goal_reward            );
+  xml_tools::try_read<double>(node, "approach_step_reward"   , approach_step_reward   );
+  xml_tools::try_read<double>(node, "failure_reward"         , failure_reward         );
+  xml_tools::try_read<double>(node, "field_width"            , field_width            );
+  xml_tools::try_read<double>(node, "field_length"           , field_length           );
+  xml_tools::try_read<double>(node, "goal_width"             , goal_width             );
+  xml_tools::try_read<double>(node, "goal_area_size_x"       , goal_area_size_x       );
+  xml_tools::try_read<double>(node, "goal_area_size_y"       , goal_area_size_y       );
+  xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
   approach_policy = csa_mdp::PolicyFactory().read(node, "policy");
   if (!approach_policy)
   {
