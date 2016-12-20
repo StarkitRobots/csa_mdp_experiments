@@ -9,9 +9,15 @@
 
 #include "rosban_random/tools.h"
 
+#include <fenv.h>
+
 using namespace csa_mdp;
 
 int main() {
+  // Abort if error are found
+  feenableexcept(FE_DIVBYZERO| FE_INVALID | FE_OVERFLOW);
+
+
   PolicyFactory::registerExtraBuilder("expert_approach",
                                       []() {return std::unique_ptr<Policy>(new ExpertApproach);});
   PolicyFactory::registerExtraBuilder("mixed_approach",
