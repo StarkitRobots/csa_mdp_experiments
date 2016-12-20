@@ -1,36 +1,33 @@
 <BlackBoxLearner>
-  <BlackBoxLearner>
-    <problem>polar_approach</problem>
-    <value_approximator>
-      <ExtraTreesApproximator>
-        <nb_samples>10000</nb_samples>
-        <predictor>
-          <MonteCarloPredictor>
-            <nb_steps>50</nb_steps>
-            <nb_predictions>20</nb_predictions>
-          </MonteCarloPredictor>
-        </predictor>
-        <trainer>PWCForestTrainer</trainer>
-      </ExtraTreesApproximator>
-    </value_approximator>
+  <TreePolicyIteration>
+    <problem>double_integrator</problem>
+    <use_value_approximator>false</use_value_approximator>
     <policy_trainer>
       <AdaptativeTree>
-        <nb_generations>5</nb_generations>
-        <nb_samples>200</nb_samples>
-        <evaluation_trials>5</evaluation_trials>
+        <reuse_samples>false</reuse_samples>
+        <max_depth>5</max_depth>
+        <verbosity>3</verbosity>
+        <nb_generations>1</nb_generations>
+        <nb_samples>50</nb_samples>
+        <evaluation_trials>2</evaluation_trials>
+        <narrow_linear_slope>false</narrow_linear_slope>
+        <constant_uses_guess>true</constant_uses_guess>
+        <linear_uses_guess>true</linear_uses_guess>
         <model_optimizer>
-          <CMAESOptimizer>
-            <nb_iterations>50</nb_iterations>
-            <nb_evaluations>100</nb_evaluations>
-            <nb_restarts>2</nb_restarts>
-          </CMAESOptimizer>
+          <CrossEntropy>
+            <nb_generations>20</nb_generations>
+            <population_size>200</population_size>
+            <best_set_size>20</best_set_size>
+          </CrossEntropy>
         </model_optimizer>
       </AdaptativeTree>
     </policy_trainer>
+    <memoryless_policy_trainer>true</memoryless_policy_trainer>
     <nb_threads>3</nb_threads>
     <trial_length>50</trial_length>
-    <nb_evaluation_trials>10000</nb_evaluation_trials>
-    <time_budget>10800</time_budget>
+    <nb_evaluation_trials>50000</nb_evaluation_trials>
+    <time_budget>72000</time_budget>
+    <cv_ratio>100</cv_ratio>
     <discount>0.98</discount>
-  </BlackBoxLearner>
+  </TreePolicyIteration>
 </BlackBoxLearner>
