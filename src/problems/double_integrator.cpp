@@ -8,7 +8,7 @@ namespace csa_mdp
 {
 
 DoubleIntegrator::DoubleIntegrator(Version version_)
-  : version(version_)
+  : version(version_), random_start(false)
 {
   Eigen::MatrixXd state_limits(2,2), action_limits(1,2);
   switch(version)
@@ -79,19 +79,27 @@ Eigen::VectorXd DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
     currentState = nextState;
   }
   return currentState;
+
 }
 
 Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine * engine) const
 {
   (void) engine;
+  if (random_start) {
+    return rosban_random::getUniformSamplesMatrix(getStateLimits(), 1, engine);
+  }
   Eigen::VectorXd state(2);
   state << 1, 0;
   return state;
 }
 
-void DoubleIntegrator::to_xml(std::ostream & out) const {(void)out;}
+void DoubleIntegrator::to_xml(std::ostream & out) const {
+  rosban_utils::xml_tools::write<bool>("random_start", random_start, out);
+}
 
-void DoubleIntegrator::from_xml(TiXmlNode * node) {(void)node;}
+void DoubleIntegrator::from_xml(TiXmlNode * node) {
+  rosban_utils::xml_tools::try_read<bool>(node, "random_start", random_start);
+}
 
 std::string DoubleIntegrator::class_name() const
 {

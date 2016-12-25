@@ -39,7 +39,7 @@ void ExtendedProblemFactory::registerExtraProblems()
   registerExtraBuilder("double_inverted_pendulum",
                        [](){return std::unique_ptr<Problem>(new DoubleInvertedPendulum);}, false);
   registerExtraBuilder("double_integrator",
-                       [](){return std::unique_ptr<Problem>(new DoubleIntegrator);}, false);
+                       [](){return std::unique_ptr<Problem>(new DoubleIntegrator);});
   registerExtraBuilder("kick_optimizer",
                        [](){return std::unique_ptr<Problem>(new KickOptimizer);}, false);
   registerExtraBuilder("one_player_kick",

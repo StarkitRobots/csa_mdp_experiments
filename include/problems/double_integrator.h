@@ -37,6 +37,10 @@ public:
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
+
+private:
+  /// Is the state random or is it determinist?
+  bool random_start;
 };
 
 }
