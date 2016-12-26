@@ -1,0 +1,24 @@
+<BlackBoxLearner>
+  <PolicyMutationLearner>
+    <problem>
+      <double_integrator>
+        <random_start>true</random_start>
+      </double_integrator>
+    </problem>
+    <memoryless_policy_trainer>true</memoryless_policy_trainer>
+    <nb_threads>3</nb_threads>
+    <trial_length>50</trial_length>
+    <training_evaluations>200</training_evaluations>
+    <split_probability>0.2</split_probability>
+    <nb_evaluation_trials>100000</nb_evaluation_trials>
+    <time_budget>72000</time_budget>
+    <discount>0.98</discount>
+    <optimizer>
+      <CrossEntropy>
+        <nb_generations>20</nb_generations>
+        <population_size>100</population_size>
+        <best_set_size>10</best_set_size>
+      </CrossEntropy>
+    </optimizer>
+  </PolicyMutationLearner>
+</BlackBoxLearner>
