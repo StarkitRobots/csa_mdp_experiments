@@ -25,7 +25,7 @@ OnePlayerKick::OnePlayerKick()
     failure_reward(-500),
     field_width(6),
     field_length(9),
-    goal_width(2.1),
+    goal_width(2.6),
     goal_area_size_x(1),
     goal_area_size_y(5),
     goalkeeper_success_rate(0.5)
