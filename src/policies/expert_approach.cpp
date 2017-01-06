@@ -1,5 +1,10 @@
 #include "policies/expert_approach.h"
 
+#include "rosban_fa/linear_approximator.h"
+#include "rosban_fa/orthogonal_split.h"
+
+using namespace rosban_fa;
+
 namespace csa_mdp
 {
 
@@ -209,6 +214,79 @@ void ExpertApproach::from_xml(TiXmlNode * node)
         << "read: " << params_read.size() << ", expecting: " << nb_parameters;
     throw std::runtime_error(oss.str());
   }
+}
+
+// Since ExpertApproach specifies a command, default is substracting current command
+Eigen::MatrixXd getDefaultCoeffs() {
+  Eigen::MatrixXd coeffs = Eigen::MatrixXd::Zero(3,6);
+  for (int dim = 0; dim < 3; dim++) {
+    coeffs(dim,dim+3) = -1;
+  }
+  return coeffs;
+}
+
+std::unique_ptr<FATree> ExpertApproach::extractFATree() const {
+  if (type != Type::polar) {
+    throw std::logic_error("ExpertApproach::extractFATree: not implemented for non-polar");
+  }
+  // Far node parameters
+  Eigen::VectorXd far_bias = Eigen::VectorXd::Zero(3);
+  Eigen::MatrixXd far_coeffs = getDefaultCoeffs();
+  far_bias(0) = step_max;//simplification
+  far_coeffs(2,1) = far_theta_p;
+  // Rotate node parameters
+  Eigen::VectorXd rotate_bias = Eigen::VectorXd::Zero(3);
+  Eigen::MatrixXd rotate_coeffs = getDefaultCoeffs();
+  rotate_coeffs(0,0) = step_p;
+  rotate_bias(0) = - step_p * radius;
+  rotate_coeffs(1,2) = rotate_lateral_p;
+  rotate_coeffs(2,1) = rotate_theta_p;
+  // Near node parameters
+  Eigen::VectorXd near_bias = Eigen::VectorXd::Zero(3);
+  Eigen::MatrixXd near_coeffs = getDefaultCoeffs();
+  near_coeffs(0,0) = step_p;
+  near_bias(0) = -step_p * wished_x;
+  near_coeffs(1,1) = near_lateral_p;//Large approximation
+  near_coeffs(2,2) = near_theta_p;
+  // Build approximators
+  std::unique_ptr<FunctionApproximator> far_node(new LinearApproximator(far_bias, far_coeffs));
+  std::unique_ptr<FunctionApproximator> rotate_node(new LinearApproximator(rotate_bias,
+                                                                           rotate_coeffs));
+  std::unique_ptr<FunctionApproximator> near_node(new LinearApproximator(near_bias, near_coeffs));
+  // Above this distance, we consider state as far
+  double far_split_radius = (min_far_radius + max_rotate_radius) / 2;
+  std::unique_ptr<Split> far_split(new OrthogonalSplit(1, far_split_radius));
+  // Other splits for distance 
+  std::unique_ptr<Split> ball_align_split_low   (new OrthogonalSplit(1, -ball_theta_tol  ));
+  std::unique_ptr<Split> ball_align_split_high  (new OrthogonalSplit(1,  ball_theta_tol  ));
+  std::unique_ptr<Split> target_align_split_low (new OrthogonalSplit(2, -target_theta_tol));
+  std::unique_ptr<Split> target_align_split_high(new OrthogonalSplit(2,  target_theta_tol));
+  // Building complete tree
+  std::vector<std::unique_ptr<FunctionApproximator>> approximators;
+  std::unique_ptr<FATree> tmp;
+  // 1. Near is the result of 4 splits to ensure the 4 boundaries
+  // 1.1 ball_dir > -ball_theta_tol
+  approximators.push_back(rotate_node->clone());
+  approximators.push_back(std::move(near_node));
+  tmp.reset(new FATree(std::move(ball_align_split_low), approximators));
+  // 1.2 ball_dir < ball_theta_tol
+  approximators.push_back(std::move(tmp));
+  approximators.push_back(rotate_node->clone());
+  tmp.reset(new FATree(std::move(ball_align_split_high), approximators));
+  // 1.3 target_dir > - target_theta_tol
+  approximators.push_back(rotate_node->clone());
+  approximators.push_back(std::move(tmp));
+  tmp.reset(new FATree(std::move(target_align_split_low), approximators));
+  // 1.4 target_dir < target_theta_tol
+  approximators.push_back(std::move(tmp));
+  approximators.push_back(rotate_node->clone());
+  tmp.reset(new FATree(std::move(target_align_split_high), approximators));
+  // 2. Distinction between far and the rest
+  approximators.push_back(std::move(tmp));
+  approximators.push_back(std::move(far_node));
+  tmp.reset(new FATree(std::move(far_split), approximators));
+  // Return final result
+  return std::move(tmp);
 }
 
 ExpertApproach::Type ExpertApproach::loadType(const std::string & type_str)

@@ -34,6 +34,15 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
+  // Approximation is not entirely appropriate, but it has the advantage of
+  // having only three nodes
+  // Significant changes are
+  // - Hysteresis do not exist anymore
+  // - Tolerance are not included anymore
+  // - Use of ball_y in near is not available anymore
+  // - Step is always step_max in far
+  virtual std::unique_ptr<rosban_fa::FATree> extractFATree() const override;
+
   // Read type from the given string
   Type loadType(const std::string & type_str);
 
