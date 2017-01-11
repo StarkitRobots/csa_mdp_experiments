@@ -13,8 +13,7 @@ namespace csa_mdp
  */
 static double normalizeAngle(double angle)
 {
-  return angle - 2.0*M_PI*std::floor(
-    (angle + M_PI)/(2.0*M_PI));
+  return angle - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
 }
 
 PolarApproach::PolarApproach()

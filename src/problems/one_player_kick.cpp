@@ -9,6 +9,12 @@ using namespace rosban_utils;
 
 static bool debug_failures = false;
 
+
+static double normalizeAngle(double angle)
+{
+  return angle - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
+}
+
 namespace csa_mdp
 {
 
@@ -218,8 +224,8 @@ double OnePlayerKick::getApproachReward(const Eigen::VectorXd & state,
   double dy = ball_y_field - player_y_field;
   double ball_dist = std::sqrt(dx * dx + dy * dy);
   double ball_dir_field = atan2(dy, dx);
-  double ball_dir_robot = ball_dir_field - player_theta;
-  double kick_theta_robot = kick_theta_field - player_theta;
+  double ball_dir_robot = normalizeAngle(ball_dir_field - player_theta);
+  double kick_theta_robot = normalizeAngle(kick_theta_field - player_theta);
   // Building the input for the approach problem (initial speed is 0)
   Eigen::VectorXd sub_state = Eigen::VectorXd::Zero(6);
   sub_state(0) = ball_dist;
