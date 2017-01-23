@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosban_csa_mdp
 )
 
-find_package(rosban_control)
+find_package(rosban_control QUIET)
 
 # If rosban control is found, then compile files related to simulation
 if (rosban_control_FOUND)
