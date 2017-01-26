@@ -54,6 +54,13 @@ Problem::Result DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
                                                const Eigen::VectorXd & action,
                                                std::default_random_engine * engine) const
 {
+  if (action.rows() != 2) {
+    std::ostringstream oss;
+    oss << "DoubleIntegrator::getSuccessor: "
+        << "Invalid dimensions for action, expecting 2, got " << action.rows();
+    throw std::runtime_error(oss.str());
+  }
+
   std::uniform_real_distribution<double> noise_distribution;
   if (version == Weinstein2012)
   {
@@ -62,7 +69,7 @@ Problem::Result DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
   double integrationStep = 0.05;
   double simulationStep = 0.5;
   double elapsed = 0;
-  double acc = action(0);
+  double acc = action(1);
   if (version == Version::Weinstein2012)
   {
     acc += noise_distribution(*engine);
