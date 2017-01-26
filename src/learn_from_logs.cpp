@@ -52,7 +52,8 @@ int main(int argc, char ** argv)
   std::string config_path = (argv[1]);
 
   // Registering extra_types
-  ExtendedProblemFactory::registerExtraProblems();
+//TODO: Fix problems
+//  ExtendedProblemFactory::registerExtraProblems();
 
   if (chdir(config_path.c_str()))
   {
@@ -66,17 +67,13 @@ int main(int argc, char ** argv)
 
   std::shared_ptr<Problem> problem = config.history_conf.problem;
 
+  if (problem->getNbActions() != 1) {
+    throw std::runtime_error("main: learn_from_logs not implemented for multi actions problems");
+  }
+
   // Setting limits
   config.fpf_conf.setStateLimits(problem->getStateLimits());
-  config.fpf_conf.setActionLimits(problem->getActionLimits());
-
-  // Specifying reward function
-  Problem::RewardFunction reward_func = [problem](const Eigen::VectorXd &src,
-                                                  const Eigen::VectorXd &action,
-                                                  const Eigen::VectorXd &result)
-    {
-      return problem->getReward(src, action, result);
-    };
+  config.fpf_conf.setActionLimits(problem->getActionLimits(0));
 
   // Reading csv file
   std::vector<History> histories = History::readCSV(config.history_conf);

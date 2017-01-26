@@ -16,13 +16,16 @@ using namespace csa_mdp;
 int main()
 {
   // Registering extra features from csa_mdp
-  PolicyFactory::registerExtraBuilder("expert_approach",
-                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
-  PolicyFactory::registerExtraBuilder("mixed_approach",
-                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
-  PolicyFactory::registerExtraBuilder("opk_expert_approach",
-                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
-  ExtendedProblemFactory::registerExtraProblems();
+// TODO: fix custom policies
+//  PolicyFactory::registerExtraBuilder("expert_approach",
+//                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
+//  PolicyFactory::registerExtraBuilder("mixed_approach",
+//                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
+//  PolicyFactory::registerExtraBuilder("opk_expert_approach",
+//                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
+
+//TODO: Fix problems
+//  ExtendedProblemFactory::registerExtraProblems();
 
   // Loading the learning Machine
   LearningMachineFactory lmf;

@@ -17,7 +17,7 @@ public:
   /// Which command needs to be applied when the system is 'sleeping'
   virtual Eigen::VectorXd getNeutralCmd() const
     {
-      return Eigen::VectorXd::Zero(getActionLimits().rows());
+      return Eigen::VectorXd::Zero(getActionLimits(0).rows());
     }
 };
 

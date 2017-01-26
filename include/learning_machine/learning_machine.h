@@ -103,8 +103,7 @@ protected:
   int step;
   double trajectory_reward;
   double trajectory_disc_reward;
-  Eigen::VectorXd current_state;
-  double current_reward;
+  Problem::Result status;
 
   /// The discount gain used
   double discount;

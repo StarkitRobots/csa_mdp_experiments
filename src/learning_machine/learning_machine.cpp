@@ -69,9 +69,7 @@ void LearningMachine::propagate()
   if (problem && learner)
   {
     learner->setStateLimits(getLearningSpace(problem->getStateLimits()));
-    learner->setActionLimits(problem->getActionLimits());
-    learner->setTerminalFunction([this](const Eigen::VectorXd & state)
-                                 {return this->problem->isTerminal(state);});
+    learner->setActionLimits(problem->getActionsLimits());
     learner->setDiscount(discount);
     learner->setNbThreads(nb_threads);
   }
@@ -93,7 +91,7 @@ void LearningMachine::doRun()
   prepareRun();
   writeTimeLog("preparation", Benchmark::close());
   Benchmark::open("simulation");
-  while (alive() && step < nb_steps && !problem->isTerminal(current_state))
+  while (alive() && step < nb_steps && !status.terminal)
   {
     doStep();
     step++;
@@ -104,20 +102,20 @@ void LearningMachine::doRun()
 
 void LearningMachine::doStep()
 {
-  Eigen::VectorXd cmd = learner->getAction(getLearningState(current_state));
-  Eigen::VectorXd last_state = current_state;
+  Eigen::VectorXd cmd = learner->getAction(getLearningState(status.successor));
+  Eigen::VectorXd last_state = status.successor;
   applyAction(cmd);
   if (save_run_logs) {
-    writeRunLog(run_logs, run, step, last_state, cmd, current_reward);
+    writeRunLog(run_logs, run, step, last_state, cmd, status.reward);
   }
   csa_mdp::Sample new_sample(getLearningState(last_state),
                              cmd,
-                             getLearningState(current_state),
-                             current_reward);
+                             getLearningState(status.successor),
+                             status.reward);
   // Add new sample
   learner->feed(new_sample);
-  trajectory_reward += current_reward;
-  double disc_reward = current_reward * std::pow(discount, step);
+  trajectory_reward += status.reward;
+  double disc_reward = status.reward * std::pow(discount, step);
   trajectory_disc_reward += disc_reward;
 }
 
@@ -134,10 +132,14 @@ void LearningMachine::init()
   // Preload some experiment
   if (seed_path != "")
   {
+    if (problem->getNbActions() != 1) {
+      throw std::logic_error("LearningMachine::init: seeds not handled for multi-actions problems");
+    }
+
     std::cout << "Loading experiments from the seed at '" << seed_path << "'" << std::endl;
     std::vector<History> histories = History::readCSV(seed_path,
                                                       problem->getStateLimits().rows(),
-                                                      problem->getActionLimits().rows());
+                                                      problem->getActionLimits(0).rows());
     std::vector<csa_mdp::Sample> samples = History::getBatch(histories);
     for (const csa_mdp::Sample & s : samples)
     {
@@ -165,7 +167,8 @@ void LearningMachine::prepareRun()
   step = 0;
   trajectory_reward = 0;
   trajectory_disc_reward = 0;
-  current_reward = 0;
+  status.reward = 0;
+  status.terminal = false;
 }
 
 void LearningMachine::endRun()
@@ -173,9 +176,9 @@ void LearningMachine::endRun()
   policy_runs_performed++;
   policy_total_reward += trajectory_disc_reward;
   // If the maximal step has not been reached, it mean we reached a final state
-  int u_dim = problem->getActionLimits().rows();
+  int u_dim = problem->getActionLimits(0).rows();
   if (save_run_logs) {
-    writeRunLog(run_logs, run, step, current_state, Eigen::VectorXd::Zero(u_dim), 0);
+    writeRunLog(run_logs, run, step, status.successor, Eigen::VectorXd::Zero(u_dim), 0);
   }
   reward_logs << run << ","
               << policy_id << ","
@@ -256,7 +259,7 @@ void LearningMachine::writeRunLogHeader(std::ostream &out)
     out << name << ",";
   }
   // Commands
-  for (const std::string & name : problem->getActionNames())
+  for (const std::string & name : problem->getActionNames(0))
   {
     out << name << ",";
   }

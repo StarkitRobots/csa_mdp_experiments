@@ -24,7 +24,7 @@ DoubleIntegrator::DoubleIntegrator(Version version_)
       break;
   }
   setStateLimits(state_limits);
-  setActionLimits(action_limits);
+  setActionLimits({action_limits});
 }
 
 bool DoubleIntegrator::isTerminal(const Eigen::VectorXd & state) const
@@ -50,7 +50,7 @@ double DoubleIntegrator::getReward(const Eigen::VectorXd & state,
   return -(posCost + accCost);
 }
 
-Eigen::VectorXd DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
+Problem::Result DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
                                                const Eigen::VectorXd & action,
                                                std::default_random_engine * engine) const
 {
@@ -78,8 +78,11 @@ Eigen::VectorXd DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
     elapsed += dt;
     currentState = nextState;
   }
-  return currentState;
-
+  Problem::Result result;
+  result.successor = currentState;
+  result.reward = getReward(state, action, currentState);
+  result.terminal = isTerminal(currentState);
+  return result;
 }
 
 Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine * engine) const

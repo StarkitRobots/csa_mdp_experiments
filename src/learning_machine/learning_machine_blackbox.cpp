@@ -21,14 +21,14 @@ void LearningMachineBlackBox::prepareRun()
   if (casted == nullptr) {
     throw std::logic_error("Trying to run a LearningMachineBlackBox on a NOT blackbox problem");
   }
-  current_state = casted->getStartingState(&engine);
+  status.successor = casted->getStartingState(&engine);
+  status.reward = 0;
+  status.terminal = false;
 }
 
 void LearningMachineBlackBox::applyAction(const Eigen::VectorXd &action)
 {
-  csa_mdp::Sample new_sample = problem->getSample(current_state, action);
-  current_reward = new_sample.reward;
-  current_state = new_sample.next_state;
+  status = problem->getSuccessor(status.successor, action, &engine);
 }
 
 void LearningMachineBlackBox::setProblem(std::unique_ptr<csa_mdp::Problem> new_problem)

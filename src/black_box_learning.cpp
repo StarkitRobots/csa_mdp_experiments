@@ -18,12 +18,13 @@ int main() {
   feenableexcept(FE_DIVBYZERO| FE_INVALID | FE_OVERFLOW);
 
 
-  PolicyFactory::registerExtraBuilder("expert_approach",
-                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
-  PolicyFactory::registerExtraBuilder("mixed_approach",
-                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
-  PolicyFactory::registerExtraBuilder("opk_expert_approach",
-                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
+// TODO: fix custom policies
+//  PolicyFactory::registerExtraBuilder("expert_approach",
+//                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
+//  PolicyFactory::registerExtraBuilder("mixed_approach",
+//                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
+//  PolicyFactory::registerExtraBuilder("opk_expert_approach",
+//                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
 
   ExtendedProblemFactory::registerExtraProblems();
 
