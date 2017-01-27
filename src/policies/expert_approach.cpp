@@ -218,9 +218,11 @@ void ExpertApproach::from_xml(TiXmlNode * node)
 
 // Since ExpertApproach specifies a command, default is substracting current command
 Eigen::MatrixXd getDefaultCoeffs() {
-  Eigen::MatrixXd coeffs = Eigen::MatrixXd::Zero(3,6);
-  for (int dim = 0; dim < 3; dim++) {
-    coeffs(dim,dim+3) = -1;
+  Eigen::MatrixXd coeffs = Eigen::MatrixXd::Zero(4,6);
+  // Since 'action' is acceleration and not speed, then current speed is
+  // removed from wished speed
+  for (int dim = 1; dim < 4; dim++) {
+    coeffs(dim,dim+2) = -1;
   }
   return coeffs;
 }
@@ -230,24 +232,24 @@ std::unique_ptr<FATree> ExpertApproach::extractFATree() const {
     throw std::logic_error("ExpertApproach::extractFATree: not implemented for non-polar");
   }
   // Far node parameters
-  Eigen::VectorXd far_bias = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd far_bias = Eigen::VectorXd::Zero(4);
   Eigen::MatrixXd far_coeffs = getDefaultCoeffs();
-  far_bias(0) = step_max;//simplification
-  far_coeffs(2,1) = far_theta_p;
+  far_bias(1) = step_max;//simplification
+  far_coeffs(3,1) = far_theta_p;
   // Rotate node parameters
-  Eigen::VectorXd rotate_bias = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd rotate_bias = Eigen::VectorXd::Zero(4);
   Eigen::MatrixXd rotate_coeffs = getDefaultCoeffs();
-  rotate_coeffs(0,0) = step_p;
-  rotate_bias(0) = - step_p * radius;
-  rotate_coeffs(1,2) = rotate_lateral_p;
-  rotate_coeffs(2,1) = rotate_theta_p;
+  rotate_coeffs(1,0) = step_p;
+  rotate_bias(1) = - step_p * radius;
+  rotate_coeffs(2,2) = rotate_lateral_p;
+  rotate_coeffs(3,1) = rotate_theta_p;
   // Near node parameters
-  Eigen::VectorXd near_bias = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd near_bias = Eigen::VectorXd::Zero(4);
   Eigen::MatrixXd near_coeffs = getDefaultCoeffs();
-  near_coeffs(0,0) = step_p;
-  near_bias(0) = -step_p * wished_x;
-  near_coeffs(1,1) = near_lateral_p;//Large approximation
-  near_coeffs(2,2) = near_theta_p;
+  near_coeffs(1,0) = step_p;
+  near_bias(1) = -step_p * wished_x;
+  near_coeffs(2,1) = near_lateral_p;//Large approximation
+  near_coeffs(3,2) = near_theta_p;
   // Build approximators
   std::unique_ptr<FunctionApproximator> far_node(new LinearApproximator(far_bias, far_coeffs));
   std::unique_ptr<FunctionApproximator> rotate_node(new LinearApproximator(rotate_bias,

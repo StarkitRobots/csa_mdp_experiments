@@ -1,7 +1,7 @@
 #include "problems/extended_problem_factory.h"
 
 //#include "problems/approach.h"
-//#include "problems/polar_approach.h"
+#include "problems/polar_approach.h"
 //#include "problems/cart_pole.h"
 //#include "problems/cart_pole_stabilization.h"
 //#include "problems/simulated_cart_pole.h"
@@ -27,8 +27,8 @@ void ExtendedProblemFactory::registerExtraProblems()
   // Registering extra builders
 //  registerExtraBuilder("approach",
 //                       [](){return std::unique_ptr<Problem>(new Approach);}, false);
-//  registerExtraBuilder("polar_approach",
-//                       [](){return std::unique_ptr<Problem>(new PolarApproach);});
+  registerExtraBuilder("polar_approach",
+                       [](){return std::unique_ptr<Problem>(new PolarApproach);});
 //  registerExtraBuilder("cart_pole", [](){return std::unique_ptr<Problem>(new CartPole);});
 //  registerExtraBuilder("simulated_cart_pole",
 //                       [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});

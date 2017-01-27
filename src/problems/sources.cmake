@@ -8,7 +8,7 @@ set (SOURCES
 #  inverted_pendulum.cpp
 #  double_inverted_pendulum.cpp
   extended_problem_factory.cpp
-#  polar_approach.cpp
+  polar_approach.cpp
 #  kick_optimizer.cpp
 #  one_player_kick.cpp
 )

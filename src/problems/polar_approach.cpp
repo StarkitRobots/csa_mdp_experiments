@@ -69,11 +69,11 @@ void PolarApproach::updateLimits()
     -max_step_y_diff, max_step_y_diff,
     -max_step_theta_diff, max_step_theta_diff;
   setStateLimits(state_limits);
-  setActionLimits(action_limits);
+  setActionLimits({action_limits});
 
   // Also ensure names are valid
   setStateNames({"ball_dist", "ball_dir", "target_angle", "step_x", "step_y", "step_theta"});
-  setActionNames({"d_step_x","d_step_y","d_step_theta"});
+  setActionsNames({{"d_step_x","d_step_y","d_step_theta"}});
 }
 
 void PolarApproach::setMaxDist(double dist)
@@ -109,10 +109,18 @@ double  PolarApproach::getReward(const Eigen::VectorXd & state,
   return reward;
 }
 
-Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
+Problem::Result PolarApproach::getSuccessor(const Eigen::VectorXd & state,
                                             const Eigen::VectorXd & action,
                                             std::default_random_engine * engine) const
 {
+  // Now, actions need to be (0 vx vy vtheta)
+  if (action.rows() != 4) {
+    std::ostringstream oss;
+    oss << "PolarApproach::getSuccessor: "
+        << " invalid dimension for action, expecting 4 and received "
+        << action.rows();
+    throw std::runtime_error(oss.str());
+  }
   /// Initialize noise distributions
   std::uniform_real_distribution<double> step_x_noise_distrib    (-step_x_noise,
                                                                   step_x_noise);
@@ -125,10 +133,10 @@ Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
   for (int dim = 0; dim < 3; dim++)
   {
     // Ensuring that acceleration is in the bounds
-    const Eigen::MatrixXd & action_limits = getActionLimits();
+    const Eigen::MatrixXd & action_limits = getActionLimits(0);
     double min_acc = action_limits(dim, 0);
     double max_acc = action_limits(dim, 1);
-    double bounded_action = std::min(max_acc, std::max(min_acc, action(dim)));
+    double bounded_action = std::min(max_acc, std::max(min_acc, action(dim+1)));
     // Action applies a delta on step
     next_cmd(dim) = bounded_action + state(dim + 3);
     // Ensuring that final action is inside of the bounds
@@ -159,7 +167,11 @@ Eigen::VectorXd PolarApproach::getSuccessor(const Eigen::VectorXd & state,
   next_state(1) = new_dir;
   // Update cmd
   next_state.segment(3,3) = next_cmd;
-  return next_state;
+  Problem::Result result;
+  result.successor = next_state;
+  result.reward = getReward(state, action, next_state);
+  result.terminal = isTerminal(next_state);
+  return result;
 }
 
 Eigen::VectorXd PolarApproach::getStartingState(std::default_random_engine * engine) const
