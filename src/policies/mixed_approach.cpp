@@ -37,8 +37,10 @@ Eigen::VectorXd MixedApproach::getRawAction(const Eigen::VectorXd & state,
     wished_speed(0) = std::max(0.0, cos(ball_dir));
     wished_speed(1) = 0;
     wished_speed(2) = - ball_dir * far_theta_p;
-    // Action is acceleration
-    return wished_speed - current_speed;
+    // Action is (0, acceleration)
+    Eigen::VectorXd action = Eigen::VectorXd::Zero(4);
+    action.segment(1,3) = wished_speed - current_speed;
+    return action;
   }
   // When ball is close, use the nearby policy
   return nearby_policy->getRawAction(state, engine);

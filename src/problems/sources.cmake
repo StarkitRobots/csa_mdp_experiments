@@ -10,5 +10,5 @@ set (SOURCES
   extended_problem_factory.cpp
   polar_approach.cpp
 #  kick_optimizer.cpp
-#  one_player_kick.cpp
+  one_player_kick.cpp
 )

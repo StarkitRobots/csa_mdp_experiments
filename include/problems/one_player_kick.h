@@ -53,6 +53,7 @@ namespace csa_mdp
 ///    - *ball_final* is computed: *ball_real* + polar(*kick_real_power*, *kick_real_direction*)
 /// 6. If *ball_final* is outside of the field, the same process as in 2. is used
 ///
+/// TODO: Remove the warning once the fix is working properly
 /// WARNING: Due to a flaw in software design, problems where the reward and the
 ///          terminal function are part of the event and not simply function of (s,a,s')
 ///          cannot be handled properly, therefore a special encoding is used to 
@@ -72,27 +73,24 @@ public:
   OnePlayerKick();
 
   /// cf class description
-  bool isTerminal(const Eigen::VectorXd & state) const override;
-
-  /// cf class description
-  double getReward(const Eigen::VectorXd & state,
-                   const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) const override;
-
-  /// cf class description
-  Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
+  Problem::Result getSuccessor(const Eigen::VectorXd & state,
                                const Eigen::VectorXd & action,
                                std::default_random_engine * engine) const override;
 
   /// At starting state:
-  /// Player 1 and Player 2 are placed randomly on the field
+  /// Player is placed randomly on the field
   /// Ball is placed randomly
   Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
   /// Return the expected reward for the given kicker during approach
   /// toward kicking the ball with target angle
+  /// TODO: remove function once performApproach has been written
   double getApproachReward(const Eigen::VectorXd & state,
                            const Eigen::VectorXd & action) const;
+
+  void performApproach(Problem::Result * status,
+                       double kick_theta_field,
+                       std::default_random_engine * engine) const;
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
@@ -116,6 +114,16 @@ private:
 
   /// Is the player inside of the goal area
   bool isGoalArea(double player_x, double player_y) const;
+
+  /// Extract a polar_approach state from a one_player_kick state and the wished
+  /// direction for the kick. The speed of the robot is considered as 0
+  Eigen::VectorXd toPolarApproachState(const Eigen::VectorXd & opk_state,
+                                       double kick_theta_field) const;
+  /// TODO: Find and add the missing parameters
+  /// Extract a one_player_kick state from a polar_approach state
+  Eigen::VectorXd toOnePlayerKickState(const Eigen::VectorXd & pa_state,
+                                       double ball_x, double ball_y,
+                                       double kick_theta_field) const;
 
 
   /// #KICK PROPERTIES

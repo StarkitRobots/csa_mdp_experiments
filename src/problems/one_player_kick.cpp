@@ -34,7 +34,7 @@ OnePlayerKick::OnePlayerKick()
     goal_width(2.6),
     goal_area_size_x(1),
     goal_area_size_y(5),
-    goalkeeper_success_rate(0.5)
+    goalkeeper_success_rate(0.05)
 {
   /// Ball can be a lot further than in usual polar_approach
   polar_approach.setMaxDist(field_width + field_length);//Extra margin is not an issue
@@ -50,42 +50,16 @@ OnePlayerKick::OnePlayerKick()
     - M_PI, M_PI,
     kick_power_min, kick_power_max;
   setStateLimits(state_limits);
-  setActionLimits(action_limits);
+  setActionLimits({action_limits});
 
   setStateNames({"ball_x", "ball_y", "robot_x", "robot_y", "robot_theta"});
-  setActionNames({"kick_direction", "kick_power"});
+  setActionsNames({{"kick_direction", "kick_power"}});
 }
 
-bool OnePlayerKick::isTerminal(const Eigen::VectorXd & state) const
-{
-  return std::fabs(state(0)) > field_length / 2;
-}
-
-double OnePlayerKick::getReward(const Eigen::VectorXd & state,
-                                const Eigen::VectorXd & action,
-                                const Eigen::VectorXd & dst) const
-{
-  double total_reward = 0;
-  // Add cost of scoring a goal / failure if state is terminal
-  if (isTerminal(dst)) {
-    if (dst(0) > 0)
-      total_reward += goal_reward;
-    else
-      total_reward += failure_reward;
-  }
-  // Add moving reward and kick reward if player had to move
-  if (dst(2) < field_length / 2) {
-    total_reward += getApproachReward(state, action);
-    total_reward += kick_reward;
-  }
-  return total_reward;
-}
-
-Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
+Problem::Result OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
                                             const Eigen::VectorXd & action,
                                             std::default_random_engine * engine) const
 {
-  Eigen::VectorXd dst(5);
   // Checking state dimension
   if (state.rows() != 5) {
     std::ostringstream oss;
@@ -94,18 +68,23 @@ Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
     throw std::logic_error(oss.str());
   }
   // Checking action dimension
-  if (action.rows() != 2) {
+  if (action.rows() != 3) {
     std::ostringstream oss;
     oss << "OnePlayerKick::getSuccessor: invalid dimension for action: "
-        << action.rows() << " (expected 2)";
+        << action.rows() << " (expected 3)";
     throw std::logic_error(oss.str());
   }
+  // Initializing result properties
+  Problem::Result result;
+  result.successor = state;
+  result.reward = 0;
+  result.terminal = false;
   // Importing the parameters of the state
   double ball_x = state(0);
   double ball_y = state(1);
   // Importing the parameters of the action
-  double kick_theta = action(0);
-  double kick_power = action(1);
+  double kick_theta = action(1);
+  double kick_power = action(2);
   // T1: Adding noise to get ball_real
   double ball_real_x, ball_real_y;
   initialBallNoise(ball_x, ball_y, &ball_real_x, &ball_real_y, engine);
@@ -113,61 +92,41 @@ Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
   if (std::fabs(ball_real_x) > field_length / 2 ||
       std::fabs(ball_real_y) > field_width / 2)
   {
-    // Approach is not necessary and state is terminal
-    dst(1) = 0;
-    dst(2) = field_length;
-    dst(3) = 0;
-    dst(4) = 0;
+    // Update ball position and force it to be terminal
+    result.successor(0) = ball_real_x;
+    result.successor(1) = ball_real_y;
+    result.terminal = true;
     // Has a goal been scored?
-    if (isGoal(ball_x, ball_y, ball_real_x, ball_real_y)) {
-      dst(0) = field_length;
-    }
-    else {
-      dst(0) = -field_length;
-    }
+    if (isGoal(ball_x, ball_y, ball_real_x, ball_real_y))
+      result.reward += goal_reward;
+    else
+      result.reward += failure_reward;
     // No need to perform additional computations
-    return dst;
+    return result;
   }
-  // T3: Position of the kicker
-  double cos_kick = cos(kick_theta);
-  double sin_kick = sin(kick_theta);
-  dst(2) = ball_x - cos_kick * kick_range;
-  dst(3) = ball_y - sin_kick * kick_range;
-  dst(4) = kick_theta;
-  // T4: Probability of failure if inside goal area
-  if (isGoalArea(dst(2), dst(3)))
-  {
-    std::uniform_real_distribution<double> failure_distrib(0,1);
-    if (failure_distrib(*engine) < goalkeeper_success_rate)
-    {
-      dst(0) = -field_length;
-      dst(1) = 0;
-      if (debug_failures)
-      {
-        std::cout << "---------------------------------------------" << std::endl;
-        std::cout << "Failed to score a goal, ball inside goal area" << std::endl;
-      }
-      return dst;
-    }
+  // T3: Simulate player approach (end approach if the robot commited illegal attack)
+  performApproach(&result, action(1), engine);
+  if (result.terminal) {
+    return result;
   }
-  // T5: Random noise on shoot
+  // T4: Apply kick with noise
   double ball_final_x, ball_final_y;
   applyKick(ball_real_x, ball_real_y, kick_power, kick_theta, &ball_final_x, &ball_final_y, engine);
-  dst(0) = ball_final_x;
-  dst(1) = ball_final_y;
-  // T6: Testing if ball left the field after kick
+  result.successor(0) = ball_final_x;
+  result.successor(1) = ball_final_y;
+  result.reward += kick_reward;
+  // T5: Testing if ball left the field after kick
   if (std::fabs(ball_final_x) > field_length / 2 ||
       std::fabs(ball_final_y) > field_width / 2)
   {
     // State is terminal
-    dst(1) = 0;
+    result.terminal = true;
     // Has a goal been scored?
     if (isGoal(ball_real_x, ball_real_y, ball_final_x, ball_final_y)) {
-      dst(0) = field_length;
+      result.reward += goal_reward;
     }
     else {
-      dst(0) = -field_length;
-      // DEBUG
+      result.reward += failure_reward;
       if (debug_failures)
       {
         std::cout << "---------------------------" << std::endl;
@@ -183,7 +142,7 @@ Eigen::VectorXd OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
       }
     }
   }  
-  return dst;
+  return result;
 }
 
 Eigen::VectorXd OnePlayerKick::getStartingState(std::default_random_engine * engine) const
@@ -201,24 +160,55 @@ Eigen::VectorXd OnePlayerKick::getStartingState(std::default_random_engine * eng
   return state;
 }
 
-double OnePlayerKick::getApproachReward(const Eigen::VectorXd & state,
-                                        const Eigen::VectorXd & action) const
+void OnePlayerKick::performApproach(Problem::Result * status,
+                                    double kick_theta_field,
+                                    std::default_random_engine * engine) const
 {
-  // Check that approach_cost function has properly been loaded
-  if (!approach_policy)
-    throw std::logic_error("OnePlayerKick::getApproachReward: approach_policy has not been set");
-  // Warning: using a generated random engine, while it should be provided, however, since this
-  //          function is called by 'getReward' which is const, it is not possible to use the on
-  //          provided by the class and it is not possible to use an external one,
-  //          Signature of the function 'getReward' should be modified.
-  std::default_random_engine engine = rosban_random::getRandomEngine();
+  // Explicit names for ball position
+  double ball_x = status->successor(0);
+  double ball_y = status->successor(1);
+  // Computing the status in the polar_approach problem
+  Problem::Result pa_status;
+  pa_status.successor = toPolarApproachState(status->successor, kick_theta_field);
+  pa_status.reward = 0;
+  pa_status.terminal = false;
+  // Simulating steps until destination has been reached
+  int nb_steps = 0;
+  while (!pa_status.terminal)
+  {
+    Eigen::VectorXd action = approach_policy->getAction(pa_status.successor);
+    pa_status = polar_approach.getSuccessor(pa_status.successor, action, engine);
+    // If robot is inside of the dead zone, each step has a failure risk
+    Eigen::VectorXd curr_opk_state = toOnePlayerKickState(pa_status.successor,
+                                                          ball_x, ball_y,
+                                                          kick_theta_field);
+    if (isGoalArea(curr_opk_state(2), curr_opk_state(3))) {
+      std::uniform_real_distribution<double> failure_distrib(0,1);
+      if (failure_distrib(*engine) < goalkeeper_success_rate)
+      {
+        status->reward += failure_reward;
+        status->terminal = true;
+      }
+    }
+    nb_steps++;
+  }
+  // TODO: treat collisions between robot and ball
+  // Update reward and final state
+  status->successor = toOnePlayerKickState(pa_status.successor,
+                                           ball_x, ball_y,
+                                           kick_theta_field);
+  status->reward += nb_steps * approach_step_reward;  
+}
+
+Eigen::VectorXd OnePlayerKick::toPolarApproachState(const Eigen::VectorXd & opk_state,
+                                                    double kick_theta_field) const
+{
   // Computing basic properties
-  double ball_x_field = state(0);
-  double ball_y_field = state(1);
-  double player_x_field = state(2);
-  double player_y_field = state(3);
-  double player_theta   = state(4);
-  double kick_theta_field = action(0);
+  double ball_x_field = opk_state(0);
+  double ball_y_field = opk_state(1);
+  double player_x_field = opk_state(2);
+  double player_y_field = opk_state(3);
+  double player_theta   = opk_state(4);
   // Computing position in robot referential
   double dx = ball_x_field - player_x_field;
   double dy = ball_y_field - player_y_field;
@@ -227,19 +217,34 @@ double OnePlayerKick::getApproachReward(const Eigen::VectorXd & state,
   double ball_dir_robot = normalizeAngle(ball_dir_field - player_theta);
   double kick_theta_robot = normalizeAngle(kick_theta_field - player_theta);
   // Building the input for the approach problem (initial speed is 0)
-  Eigen::VectorXd sub_state = Eigen::VectorXd::Zero(6);
-  sub_state(0) = ball_dist;
-  sub_state(1) = ball_dir_robot;
-  sub_state(2) = kick_theta_robot;
-  // Simulating steps until destination has been reached
-  int nb_steps = 0;
-  while (!polar_approach.isKickable(sub_state) && !polar_approach.isOutOfSpace(sub_state))
-  {
-    Eigen::VectorXd action = approach_policy->getAction(sub_state);
-    sub_state = polar_approach.getSuccessor(sub_state, action, &engine);
-    nb_steps++;
-  }
-  return nb_steps * approach_step_reward;
+  Eigen::VectorXd pa_state = Eigen::VectorXd::Zero(6);
+  pa_state(0) = ball_dist;
+  pa_state(1) = ball_dir_robot;
+  pa_state(2) = kick_theta_robot;
+  return pa_state;
+}
+
+
+Eigen::VectorXd OnePlayerKick::toOnePlayerKickState(const Eigen::VectorXd & pa_state,
+                                                    double ball_x,
+                                                    double ball_y,
+                                                    double kick_theta_field) const
+{
+  // Getting basic data
+  double ball_dist = pa_state(0);
+  double ball_dir_robot = pa_state(1);
+  double target_angle = pa_state(2);
+  // Computing player orientation
+  double robot_theta_field = normalizeAngle(kick_theta_field - target_angle);
+  double robot2ball_theta_field = normalizeAngle(ball_dir_robot + robot_theta_field);
+  // Filling state
+  Eigen::VectorXd opk_state(5);
+  opk_state(0) = ball_x;
+  opk_state(1) = ball_y;
+  opk_state(2) = ball_x - ball_dist * cos(robot2ball_theta_field);
+  opk_state(3) = ball_y - ball_dist * sin(robot2ball_theta_field);
+  opk_state(4) = robot_theta_field;
+  return opk_state;
 }
 
 void OnePlayerKick::to_xml(std::ostream & out) const
@@ -271,7 +276,7 @@ void OnePlayerKick::from_xml(TiXmlNode * node)
   {
     throw std::logic_error("OnePlayerKick::from_xml: failed to load approach policy");
   }
-  approach_policy->setActionLimits(polar_approach.getActionLimits());
+  approach_policy->setActionLimits(polar_approach.getActionsLimits());
 }
 
 std::string OnePlayerKick::class_name() const

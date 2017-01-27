@@ -9,7 +9,7 @@
 //#include "problems/inverted_pendulum.h"
 //#include "problems/double_inverted_pendulum.h"
 //#include "problems/kick_optimizer.h"
-//#include "problems/one_player_kick.h"
+#include "problems/one_player_kick.h"
 
 namespace csa_mdp
 {
@@ -42,8 +42,8 @@ void ExtendedProblemFactory::registerExtraProblems()
                        [](){return std::unique_ptr<Problem>(new DoubleIntegrator);});
 //  registerExtraBuilder("kick_optimizer",
 //                       [](){return std::unique_ptr<Problem>(new KickOptimizer);}, false);
-//  registerExtraBuilder("one_player_kick",
-//                       [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
+  registerExtraBuilder("one_player_kick",
+                       [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)
