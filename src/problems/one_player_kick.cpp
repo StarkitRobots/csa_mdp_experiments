@@ -174,7 +174,8 @@ void OnePlayerKick::performApproach(Problem::Result * status,
   pa_status.terminal = false;
   // Simulating steps until destination has been reached
   int nb_steps = 0;
-  while (!pa_status.terminal)
+  while (!polar_approach.isKickable(pa_status.successor)
+         && !status->terminal)
   {
     Eigen::VectorXd action = approach_policy->getAction(pa_status.successor);
     pa_status = polar_approach.getSuccessor(pa_status.successor, action, engine);
@@ -191,6 +192,14 @@ void OnePlayerKick::performApproach(Problem::Result * status,
       }
     }
     nb_steps++;
+    int max_steps = 1000;
+    if (nb_steps > max_steps) {
+      std::ostringstream oss;
+      oss << "OnePlayerKick::performApproach: kickable state not reached after "
+          << max_steps << std::endl
+          << "state: " << pa_status.successor.transpose() << std::endl;
+      throw std::runtime_error(oss.str());
+    }
   }
   // TODO: treat collisions between robot and ball
   // Update reward and final state

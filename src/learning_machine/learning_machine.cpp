@@ -259,9 +259,13 @@ void LearningMachine::writeRunLogHeader(std::ostream &out)
     out << name << ",";
   }
   // Commands
-  for (const std::string & name : problem->getActionNames(0))
+  out << "action_id,";
+  for (int action_id = 0; action_id < problem->getNbActions(); action_id++)
   {
-    out << name << ",";
+    for (const std::string & name : problem->getActionNames(0))
+    {
+      out << name << ",";
+    }
   }
   out << "reward" << std::endl;
 }
@@ -272,9 +276,9 @@ void LearningMachine::writeTimeLog(const std::string &type, double time)
 }
 
 void LearningMachine::writeRunLog(std::ostream &out, int run, int step,
-                             const Eigen::VectorXd &state,
-                             const Eigen::VectorXd &action,
-                             double reward)
+                                  const Eigen::VectorXd &state,
+                                  const Eigen::VectorXd &action,
+                                  double reward)
 {
   out << run << "," << step << ",";
 
@@ -282,9 +286,20 @@ void LearningMachine::writeRunLog(std::ostream &out, int run, int step,
   {
     out << state(i) << ",";
   }
-  for (int i = 0; i < action.rows(); i++)
-  {
-    out << action(i) << ",";
+  out << action(0) << ",";
+  // Currently jumping first element of action (only used for multiple action spaces problems)
+  for (int action_id = 0; action_id < problem->getNbActions(); action_id++) {
+    if (action(0) == action_id) {
+      for (int i = 1; i < action.rows(); i++)
+      {
+        out << action(i) << ",";
+      }
+    }
+    else {
+      for (int i = 0; i < problem->actionDims(action_id); i++) {
+        out << "NA,";
+      }
+    }
   }
   out << reward << std::endl;
 }

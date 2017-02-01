@@ -169,7 +169,10 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
     *final_state = current_state;
   }
 
-  return delta_cmd;
+  Eigen::VectorXd action = Eigen::VectorXd::Zero(4);
+  action.segment(1,3) = delta_cmd;
+
+  return action;
 }
 
 Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,

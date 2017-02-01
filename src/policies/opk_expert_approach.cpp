@@ -34,9 +34,10 @@ Eigen::VectorXd OPKExpertApproach::getRawAction(const Eigen::VectorXd &state,
   double dy = - ball_y;
   double dir = atan2(dy, dx);
   /// Preparing result
-  Eigen::VectorXd action(2);
-  action(0) = dir;
-  action(1) = kick_power;
+  Eigen::VectorXd action(3);
+  action(0) = 0;
+  action(1) = dir;
+  action(2) = kick_power;
   return action;
 }
 

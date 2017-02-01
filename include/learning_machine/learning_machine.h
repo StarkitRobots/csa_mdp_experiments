@@ -72,11 +72,11 @@ public:
 
   void writeTimeLog(const std::string &type, double time);
 
-  static void writeRunLog(std::ostream &out,
-                          int run, int step,
-                          const Eigen::VectorXd &state,
-                          const Eigen::VectorXd &action,
-                          double reward);
+  void writeRunLog(std::ostream &out,
+                   int run, int step,
+                   const Eigen::VectorXd &state,
+                   const Eigen::VectorXd &action,
+                   double reward);
 
   /// Check if detail folder exists and if not, then create it
   void createDetailFolder() const;
