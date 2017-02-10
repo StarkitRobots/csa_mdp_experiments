@@ -43,6 +43,7 @@ include_directories(
 
 # Directories containing sources files
 set(DIRECTORIES
+  src/kick_model
   src/learning_machine
   src/policies
   src/problems

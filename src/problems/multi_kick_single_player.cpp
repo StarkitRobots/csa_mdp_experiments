@@ -1,4 +1,6 @@
-#include "problems/one_player_kick.h"
+#include "problems/multi_kick_single_player.h"
+
+#include "kick_model/kick_model_factory.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 
@@ -17,14 +19,25 @@ static double normalizeAngle(double angle)
 namespace csa_mdp
 {
 
-OnePlayerKick::OnePlayerKick()
-  : kick_power_min(0.2),
-    kick_power_max(3.0),
-    kick_dist_rel_noise(0.1),
-    kick_direction_noise(0.3),
-    kick_range(0.1),
-    kick_initial_noise(0.25),
-    kick_reward(-5),
+void MultiKickSinglePlayer::KickOption::to_xml(std::ostream & out) const {
+  (void) out;
+  //TODO
+  throw std::logic_error("MultiKickSinglePlayer::KickOption::to_xml: not implemented");
+}
+
+void MultiKickSinglePlayer::KickOption::from_xml(TiXmlNode * node)
+{
+  kick_model = KickModelFactory().read(node, "kick_model");
+  approach_policy = PolicyFactory().read(node, "policy");
+}
+
+std::string MultiKickSinglePlayer::KickOption::class_name() const
+{
+  return "multi_kick_single_player";
+}
+
+MultiKickSinglePlayer::MultiKickSinglePlayer()
+  : step_initial_noise(0.25),
     goal_reward(0),
     approach_step_reward(-1),
     failure_reward(-500),
@@ -35,8 +48,6 @@ OnePlayerKick::OnePlayerKick()
     goal_area_size_y(5),
     goalkeeper_success_rate(0.05)
 {
-  /// Ball can be a lot further than in usual polar_approach
-  polar_approach.setMaxDist(field_width + field_length);//Extra margin is not an issue
   /// Updating limits
   Eigen::MatrixXd state_limits(5,2), action_limits(2,2);
   state_limits <<
@@ -45,34 +56,37 @@ OnePlayerKick::OnePlayerKick()
     -field_length / 2, field_length / 2,
     -field_width / 2, field_width / 2,
     - M_PI, M_PI;
-  action_limits <<
-    - M_PI, M_PI,
-    kick_power_min, kick_power_max;
   setStateLimits(state_limits);
-  setActionLimits({action_limits});
-
   setStateNames({"ball_x", "ball_y", "robot_x", "robot_y", "robot_theta"});
-  setActionsNames({{"kick_direction", "kick_power"}});
 }
 
-Problem::Result OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
-                                            const Eigen::VectorXd & action,
-                                            std::default_random_engine * engine) const
+Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & state,
+                                                    const Eigen::VectorXd & action,
+                                                    std::default_random_engine * engine) const
 {
   // Checking state dimension
   if (state.rows() != 5) {
     std::ostringstream oss;
-    oss << "OnePlayerKick::getSuccessor: invalid dimension for state: "
+    oss << "MultiKickSinglePlayer::getSuccessor: invalid dimension for state: "
         << state.rows() << " (expected 5)";
     throw std::logic_error(oss.str());
   }
   // Checking action dimension
   if (action.rows() != 3) {
     std::ostringstream oss;
-    oss << "OnePlayerKick::getSuccessor: invalid dimension for action: "
+    oss << "MultiKickSinglePlayer::getSuccessor: invalid dimension for action: "
         << action.rows() << " (expected 3)";
     throw std::logic_error(oss.str());
   }
+  // Choosing Kick Option:
+  int action_id = (int)action(0);
+  if (action_id < 0 || action_id >= (int)kick_options.size()) {
+    std::ostringstream oss;
+    oss << "MultiKickSinglePlayer::getSuccessor: invalid value for action_id: "
+        << action(0) << " (expecting value in [" << 0 << "," << kick_options.size() << "[)";
+    throw std::logic_error(oss.str());
+  }
+  const KickOption & kick_option = *(kick_options[action_id]);
   // Initializing result properties
   Problem::Result result;
   result.successor = state;
@@ -104,15 +118,16 @@ Problem::Result OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
     return result;
   }
   // T3: Simulate player approach (end approach if the robot commited illegal attack)
-  performApproach(&result, action(1), engine);
+  performApproach(kick_option, &result, action(1), engine);
   if (result.terminal) {
     return result;
   }
   // T4: Apply kick with noise
   double ball_final_x, ball_final_y;
-  applyKick(ball_real_x, ball_real_y, kick_power, kick_theta, &ball_final_x, &ball_final_y, engine);
-  result.successor(0) = ball_final_x;
-  result.successor(1) = ball_final_y;
+  double kick_reward;
+  kick_option.kick_model->applyKick(ball_real_x, ball_real_y,
+                                    action.segment(1, action.rows()-1), engine,
+                                    &ball_final_x, &ball_final_y, &kick_reward);
   result.reward += kick_reward;
   // T5: Testing if ball left the field after kick
   if (std::fabs(ball_final_x) > field_length / 2 ||
@@ -144,24 +159,25 @@ Problem::Result OnePlayerKick::getSuccessor(const Eigen::VectorXd & state,
   return result;
 }
 
-Eigen::VectorXd OnePlayerKick::getStartingState(std::default_random_engine * engine) const
+Eigen::VectorXd MultiKickSinglePlayer::getStartingState(std::default_random_engine * engine) const
 {
   Eigen::MatrixXd limits(3,2);
   limits <<
-    -field_length/2 + kick_initial_noise, field_length/2 - kick_initial_noise,
-    -field_width/2 + kick_initial_noise, field_width/2 - kick_initial_noise,
+    -field_length/2 + step_initial_noise, field_length/2 - step_initial_noise,
+    -field_width/2 + step_initial_noise, field_width/2 - step_initial_noise,
     -M_PI, M_PI; 
   std::vector<Eigen::VectorXd> random_positions;
-  random_positions = rosban_random::getUniformSamples(limits, 3, engine);
+  random_positions = rosban_random::getUniformSamples(limits, 2, engine);
   Eigen::VectorXd state(5);
   state.segment(0,2) = random_positions[0].segment(0,2);// Ball pos
   state.segment(2,3) = random_positions[1];// Player pos
   return state;
 }
 
-void OnePlayerKick::performApproach(Problem::Result * status,
-                                    double kick_theta_field,
-                                    std::default_random_engine * engine) const
+void MultiKickSinglePlayer::performApproach(const KickOption & kick_option,
+                                            Problem::Result * status,
+                                            double kick_theta_field,
+                                            std::default_random_engine * engine) const
 {
   // Explicit names for ball position
   double ball_x = status->successor(0);
@@ -173,13 +189,13 @@ void OnePlayerKick::performApproach(Problem::Result * status,
   pa_status.terminal = false;
   // Simulating steps until destination has been reached
   int nb_steps = 0;
-  while (!polar_approach.isKickable(pa_status.successor)
+  while (!kick_option.approach_model.isKickable(pa_status.successor)
          && !status->terminal)
   {
-    Eigen::VectorXd action = approach_policy->getAction(pa_status.successor);
-    pa_status = polar_approach.getSuccessor(pa_status.successor, action, engine);
+    Eigen::VectorXd action = kick_option.approach_policy->getAction(pa_status.successor);
+    pa_status = kick_option.approach_model.getSuccessor(pa_status.successor, action, engine);
     // If robot is inside of the dead zone, each step has a failure risk
-    Eigen::VectorXd curr_opk_state = toOnePlayerKickState(pa_status.successor,
+    Eigen::VectorXd curr_opk_state = toMultiKickSinglePlayerState(pa_status.successor,
                                                           ball_x, ball_y,
                                                           kick_theta_field);
     if (isGoalArea(curr_opk_state(2), curr_opk_state(3))) {
@@ -194,7 +210,7 @@ void OnePlayerKick::performApproach(Problem::Result * status,
     int max_steps = 1000;
     if (nb_steps > max_steps) {
       std::ostringstream oss;
-      oss << "OnePlayerKick::performApproach: kickable state not reached after "
+      oss << "MultiKickSinglePlayer::performApproach: kickable state not reached after "
           << max_steps << std::endl
           << "state: " << pa_status.successor.transpose() << std::endl;
       throw std::runtime_error(oss.str());
@@ -202,14 +218,14 @@ void OnePlayerKick::performApproach(Problem::Result * status,
   }
   // TODO: treat collisions between robot and ball
   // Update reward and final state
-  status->successor = toOnePlayerKickState(pa_status.successor,
+  status->successor = toMultiKickSinglePlayerState(pa_status.successor,
                                            ball_x, ball_y,
                                            kick_theta_field);
   status->reward += nb_steps * approach_step_reward;  
 }
 
-Eigen::VectorXd OnePlayerKick::toPolarApproachState(const Eigen::VectorXd & opk_state,
-                                                    double kick_theta_field) const
+Eigen::VectorXd MultiKickSinglePlayer::toPolarApproachState(const Eigen::VectorXd & opk_state,
+                                                            double kick_theta_field) const
 {
   // Computing basic properties
   double ball_x_field = opk_state(0);
@@ -233,7 +249,7 @@ Eigen::VectorXd OnePlayerKick::toPolarApproachState(const Eigen::VectorXd & opk_
 }
 
 
-Eigen::VectorXd OnePlayerKick::toOnePlayerKickState(const Eigen::VectorXd & pa_state,
+Eigen::VectorXd MultiKickSinglePlayer::toMultiKickSinglePlayerState(const Eigen::VectorXd & pa_state,
                                                     double ball_x,
                                                     double ball_y,
                                                     double kick_theta_field) const
@@ -255,21 +271,15 @@ Eigen::VectorXd OnePlayerKick::toOnePlayerKickState(const Eigen::VectorXd & pa_s
   return opk_state;
 }
 
-void OnePlayerKick::to_xml(std::ostream & out) const
+void MultiKickSinglePlayer::to_xml(std::ostream & out) const
 {
   (void) out;
-  throw std::logic_error("OnePlayerKick::to_xml: unimplemented");
+  throw std::logic_error("MultiKickSinglePlayer::to_xml: unimplemented");
 }
 
-void OnePlayerKick::from_xml(TiXmlNode * node)
+void MultiKickSinglePlayer::from_xml(TiXmlNode * node)
 {
-  xml_tools::try_read<double>(node, "kick_power_min"         , kick_power_min         );
-  xml_tools::try_read<double>(node, "kick_power_max"         , kick_power_max         );
-  xml_tools::try_read<double>(node, "kick_dist_rel_noise"    , kick_dist_rel_noise    );
-  xml_tools::try_read<double>(node, "kick_direction_noise"   , kick_direction_noise   );
-  xml_tools::try_read<double>(node, "kick_range"             , kick_range             );
-  xml_tools::try_read<double>(node, "kick_initial_noise"     , kick_initial_noise     );
-  xml_tools::try_read<double>(node, "kick_reward"            , kick_reward            );
+  xml_tools::try_read<double>(node, "step_initial_noise"     , step_initial_noise     );
   xml_tools::try_read<double>(node, "goal_reward"            , goal_reward            );
   xml_tools::try_read<double>(node, "approach_step_reward"   , approach_step_reward   );
   xml_tools::try_read<double>(node, "failure_reward"         , failure_reward         );
@@ -279,27 +289,48 @@ void OnePlayerKick::from_xml(TiXmlNode * node)
   xml_tools::try_read<double>(node, "goal_area_size_x"       , goal_area_size_x       );
   xml_tools::try_read<double>(node, "goal_area_size_y"       , goal_area_size_y       );
   xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
-  approach_policy = csa_mdp::PolicyFactory().read(node, "policy");
-  if (!approach_policy)
+  TiXmlNode* values = node->FirstChild("kick_options");
+  kick_options.clear();
+  for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())
   {
-    throw std::logic_error("OnePlayerKick::from_xml: failed to load approach policy");
+    std::unique_ptr<KickOption> ko(new KickOption);
+    ko->from_xml(child);
+    kick_options.push_back(std::move(ko));
   }
-  approach_policy->setActionLimits(polar_approach.getActionsLimits());
+  updateApproachesLimits();
+  updateActionsLimits();
 }
 
-std::string OnePlayerKick::class_name() const
+std::string MultiKickSinglePlayer::class_name() const
 {
-  return "one_player_kick";
+  return "multi_kick_single_player";
 }
 
-void OnePlayerKick::initialBallNoise(double ball_x, double ball_y,
-                                     double * ball_real_x, double * ball_real_y,
-                                     std::default_random_engine * engine) const
+void MultiKickSinglePlayer::updateApproachesLimits()
 {
-  std::uniform_real_distribution<double> noise_distrib(0, kick_initial_noise);
-  double dist = 2 * kick_initial_noise;
+  for (size_t ko_id = 0; ko_id < kick_options.size(); ko_id++) {
+    /// Ball can be a lot further than in usual approach_model
+    kick_options[ko_id]->approach_model.setMaxDist(field_width + field_length);//Extra margin is not an issue
+  }
+}
+
+void MultiKickSinglePlayer::updateActionsLimits()
+{
+  for (size_t ko_id = 0; ko_id < kick_options.size(); ko_id++) {
+    std::vector<Eigen::MatrixXd> actions_limits;
+    actions_limits= kick_options[ko_id]->approach_model.getActionsLimits();
+    kick_options[ko_id]->approach_policy->setActionLimits(actions_limits);
+  }
+}
+
+void MultiKickSinglePlayer::initialBallNoise(double ball_x, double ball_y,
+                                             double * ball_real_x, double * ball_real_y,
+                                             std::default_random_engine * engine) const
+{
+  std::uniform_real_distribution<double> noise_distrib(0, step_initial_noise);
+  double dist = 2 * step_initial_noise;
   double dx(0), dy(0);
-  while (dist > kick_initial_noise)
+  while (dist > step_initial_noise)
   {
     dx = noise_distrib(*engine);
     dy = noise_distrib(*engine);
@@ -309,28 +340,7 @@ void OnePlayerKick::initialBallNoise(double ball_x, double ball_y,
   *ball_real_y = ball_y + dy;
 }
 
-void OnePlayerKick::applyKick(double ball_real_x, double ball_real_y,
-                              double kick_power, double kick_theta,
-                              double * ball_final_x, double * ball_final_y,
-                              std::default_random_engine * engine) const
-{
-  // Distribution initialization
-  std::uniform_real_distribution<double> dist_noise(1.0 - kick_dist_rel_noise,
-                                                    1.0 + kick_dist_rel_noise);
-  std::uniform_real_distribution<double> theta_noise(-kick_direction_noise,
-                                                     kick_direction_noise);
-  // Sampling real parameters
-  double ball_real_dist = kick_power * dist_noise(*engine);
-  double ball_real_angle = kick_theta + theta_noise(*engine);
-
-  // Estimating ball final position
-  double cos_kick = cos(ball_real_angle);
-  double sin_kick = sin(ball_real_angle);
-  *ball_final_x = ball_real_x + cos_kick * ball_real_dist;
-  *ball_final_y = ball_real_y + sin_kick * ball_real_dist;
-}
-
-bool OnePlayerKick::isGoal(double src_x, double src_y, double dst_x, double dst_y) const
+bool MultiKickSinglePlayer::isGoal(double src_x, double src_y, double dst_x, double dst_y) const
 {
   double dx = dst_x - src_x;
   if (debug_failures)
@@ -356,7 +366,7 @@ bool OnePlayerKick::isGoal(double src_x, double src_y, double dst_x, double dst_
   return std::fabs(intercept_y) < goal_width / 2;
 }
 
-bool OnePlayerKick::isGoalArea(double player_x, double player_y) const
+bool MultiKickSinglePlayer::isGoalArea(double player_x, double player_y) const
 {
   bool xOk = player_x > (field_length/2 - goal_area_size_x) && player_x < field_length/2;
   bool yOk = std::fabs(player_y) < (field_width - goal_area_size_y) / 2;
