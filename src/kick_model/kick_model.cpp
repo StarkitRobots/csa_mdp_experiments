@@ -5,6 +5,13 @@
 namespace csa_mdp
 {
 
+KickModel::KickModel()
+  : kick_pow_rel_noise(0.1),
+    kick_direction_noise(0.3),
+    kick_reward(-10)
+{
+}
+
 void KickModel::applyKick(double ball_start_x, double ball_start_y,
                           double kick_power, double kick_theta,
                           std::default_random_engine * engine,

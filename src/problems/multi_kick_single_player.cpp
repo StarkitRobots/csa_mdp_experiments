@@ -28,6 +28,7 @@ void MultiKickSinglePlayer::KickOption::to_xml(std::ostream & out) const {
 void MultiKickSinglePlayer::KickOption::from_xml(TiXmlNode * node)
 {
   kick_model = KickModelFactory().read(node, "kick_model");
+  approach_model.from_xml(node);
   approach_policy = PolicyFactory().read(node, "policy");
 }
 
@@ -71,13 +72,6 @@ Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & stat
         << state.rows() << " (expected 5)";
     throw std::logic_error(oss.str());
   }
-  // Checking action dimension
-  if (action.rows() != 3) {
-    std::ostringstream oss;
-    oss << "MultiKickSinglePlayer::getSuccessor: invalid dimension for action: "
-        << action.rows() << " (expected 3)";
-    throw std::logic_error(oss.str());
-  }
   // Choosing Kick Option:
   int action_id = (int)action(0);
   if (action_id < 0 || action_id >= (int)kick_options.size()) {
@@ -87,6 +81,14 @@ Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & stat
     throw std::logic_error(oss.str());
   }
   const KickOption & kick_option = *(kick_options[action_id]);
+  // Checking action dimension (depending on kick_option
+  int expected_action_dimension = 1 + kick_option.kick_model->getActionsLimits().rows();
+  if (action.rows() != expected_action_dimension) {
+    std::ostringstream oss;
+    oss << "MultiKickSinglePlayer::getSuccessor: invalid dimension for action: "
+        << action.rows() << " (expected " << expected_action_dimension << ")";
+    throw std::logic_error(oss.str());
+  }
   // Initializing result properties
   Problem::Result result;
   result.successor = state;
@@ -219,8 +221,8 @@ void MultiKickSinglePlayer::performApproach(const KickOption & kick_option,
   // TODO: treat collisions between robot and ball
   // Update reward and final state
   status->successor = toMultiKickSinglePlayerState(pa_status.successor,
-                                           ball_x, ball_y,
-                                           kick_theta_field);
+                                                   ball_x, ball_y,
+                                                   kick_theta_field);
   status->reward += nb_steps * approach_step_reward;  
 }
 
@@ -249,7 +251,8 @@ Eigen::VectorXd MultiKickSinglePlayer::toPolarApproachState(const Eigen::VectorX
 }
 
 
-Eigen::VectorXd MultiKickSinglePlayer::toMultiKickSinglePlayerState(const Eigen::VectorXd & pa_state,
+Eigen::VectorXd
+MultiKickSinglePlayer::toMultiKickSinglePlayerState(const Eigen::VectorXd & pa_state,
                                                     double ball_x,
                                                     double ball_y,
                                                     double kick_theta_field) const
@@ -316,11 +319,19 @@ void MultiKickSinglePlayer::updateApproachesLimits()
 
 void MultiKickSinglePlayer::updateActionsLimits()
 {
+  std::vector<Eigen::MatrixXd> kick_action_limits;
+  std::vector<std::vector<std::string>> kick_action_names;
   for (size_t ko_id = 0; ko_id < kick_options.size(); ko_id++) {
+    // Updating the action limits for the policies
     std::vector<Eigen::MatrixXd> actions_limits;
-    actions_limits= kick_options[ko_id]->approach_model.getActionsLimits();
+    actions_limits = kick_options[ko_id]->approach_model.getActionsLimits();
     kick_options[ko_id]->approach_policy->setActionLimits(actions_limits);
+    // Filling action spaces and names for this problem
+    kick_action_limits.push_back(kick_options[ko_id]->kick_model->getActionsLimits());
+    kick_action_names.push_back(kick_options[ko_id]->kick_model->getActionsNames());
   }
+  setActionLimits(kick_action_limits);
+  setActionsNames(kick_action_names);
 }
 
 void MultiKickSinglePlayer::initialBallNoise(double ball_x, double ball_y,

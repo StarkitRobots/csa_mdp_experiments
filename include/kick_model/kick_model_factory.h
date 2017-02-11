@@ -8,7 +8,8 @@ namespace csa_mdp
 {
 
 class KickModelFactory : public rosban_utils::Factory<KickModel> {
-  //TODO
+public:
+  KickModelFactory();
 };
 
 }
