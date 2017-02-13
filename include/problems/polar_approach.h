@@ -67,6 +67,11 @@ public:
   /// Update maximal distance at which the ball is accepted
   void setMaxDist(double dist);
 
+  /// Does the position of the ball allows the robot to kick with the left foot?
+  bool canKickLeftFoot(const Eigen::VectorXd & state) const;
+  /// Does the position of the ball allows the robot to kick with the right foot?
+  bool canKickRightFoot(const Eigen::VectorXd & state) const;
+
   /// Update motion odometry model
   void setOdometry(const Eigen::MatrixXd& model);
 
@@ -109,6 +114,15 @@ protected:
   double kick_x_max;
   /// Ball tolerance along y axis for shooting
   double kick_y_tol;
+  /// Ball ideal offset in y for each foot: (offset for left_foot, -offset for right_foot)
+  /// Warning: For lateral kicks, offset should be a negative value (kick with opposite foot)
+  double kick_y_offset;
+  /// Direction offset when kicking the ball: symetrical
+  /// right_kick: kick_dir = robot_dir + kick_theta_offset
+  /// left_kick : kick_dir = robot_dir - kick_theta_offset
+  /// For forward kicks, value is expected to be 0
+  /// For lateral kicks, value is expected to be pi/2
+  double kick_theta_offset;
   /// The maximal angle allowed for kicking
   double kick_theta_tol;
   /// Reward received when reaching kick position

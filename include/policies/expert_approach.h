@@ -48,9 +48,18 @@ public:
 
 private:
 
+  /// Is input polar or cartesian?
   Type type;
 
+  /// What is the current state of the approach
   State memory_state;
+
+  /// Should approach end with a lateral kick or not?
+  bool lateral_kick;
+
+  /// Ball offset for kicking with left foot (opposite for right foot)
+  /// @see PolarApproach:kick_y_offset
+  double foot_y_offset;
 
   // Maximal step forward authorized
   double step_max;

@@ -13,6 +13,8 @@ const int ExpertApproach::nb_parameters = 15;
 ExpertApproach::ExpertApproach()
   : type(Type::cartesian),
     memory_state(State::far),
+    lateral_kick(false),
+    foot_y_offset(0.03),
     step_max(0.04),
     max_rotate_radius(1),
     min_far_radius(0.75),
@@ -109,13 +111,27 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
   double ball_distance = std::sqrt(ball_x * ball_x + ball_y * ball_y);
   double target_angle = state(2);
 
+  // Errors
+  float x_error = ball_x - wished_x;
+  float y_error = ball_y - wished_y;
+
+  // In lateral mode, target angle and y error change
+  if (lateral_kick) {
+    // If target is on the left, use right foot, else use left foot
+    if (target_angle > 0) {
+      target_angle -= M_PI/2;
+      y_error += foot_y_offset;
+    }
+    else {
+      target_angle += M_PI/2;
+      y_error -= foot_y_offset;
+    }
+  }
+
   // Alignements
   bool good_align_goal = std::fabs(target_angle) < target_theta_tol;
   bool good_align_ball = std::fabs(ball_azimuth) < ball_theta_tol;
 
-  // Errors
-  float x_error = ball_x - wished_x;
-  float y_error = ball_y - wished_y;
 
   // Updating state
   if (current_state == State::far && ball_distance < min_far_radius)
@@ -185,6 +201,8 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
 void ExpertApproach::to_xml(std::ostream & out) const
 {
   rosban_utils::xml_tools::write<std::string>("type", to_string(type), out);
+  rosban_utils::xml_tools::write<bool>  ("lateral_kick" , lateral_kick , out);
+  rosban_utils::xml_tools::write<double>("foot_y_offset", foot_y_offset, out);
   Eigen::VectorXd config = getConfig();
   std::vector<double> params;
   for (int i = 0; i < config.size(); i++)
@@ -201,6 +219,8 @@ void ExpertApproach::from_xml(TiXmlNode * node)
   if (type_str != "") {
     type = loadType(type_str);
   }
+  rosban_utils::xml_tools::try_read<bool>  (node, "lateral_kick" , lateral_kick );
+  rosban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
   // Reading vector list of parameters
   std::vector<double> params_read;
   rosban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);

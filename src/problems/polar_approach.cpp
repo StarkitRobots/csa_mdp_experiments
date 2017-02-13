@@ -34,7 +34,9 @@ PolarApproach::PolarApproach()
     // Kick
     kick_x_min(0.15),
     kick_x_max(0.30),
-    kick_y_tol(0.06),
+    kick_y_tol(0.03),
+    kick_y_offset(0.03),
+    kick_theta_offset(0),
     kick_theta_tol(10 * M_PI/180),
     kick_reward(0),
     // Viewing the ball
@@ -80,6 +82,34 @@ void PolarApproach::setMaxDist(double dist)
 {
   max_dist = dist;
   updateLimits();
+}
+
+bool PolarApproach::canKickLeftFoot(const Eigen::VectorXd & state) const
+{
+  // Compute Basic properties
+  double ball_x = getBallX(state);
+  double ball_y = getBallY(state);
+  double theta  = state(2);
+  double kick_dir = normalizeAngle(theta - kick_theta_offset);
+  // Check validity
+  bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
+  bool y_ok = std::fabs(ball_y - kick_y_offset) < kick_y_tol;
+  bool theta_ok = -kick_theta_tol < kick_dir && theta < kick_dir;
+  return x_ok && y_ok;
+}
+
+bool PolarApproach::canKickRightFoot(const Eigen::VectorXd & state) const
+{
+  // Compute Basic properties
+  double ball_x = getBallX(state);
+  double ball_y = getBallY(state);
+  double theta  = state(2);
+  double kick_dir = normalizeAngle(theta + kick_theta_offset);
+  // Check validity
+  bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
+  bool y_ok = std::fabs(ball_y + kick_y_offset) < kick_y_tol;
+  bool theta_ok = -kick_theta_tol < kick_dir && theta < kick_dir;
+  return x_ok && y_ok;
 }
   
 void PolarApproach::setOdometry(const Eigen::MatrixXd& model)
@@ -195,13 +225,7 @@ Eigen::VectorXd PolarApproach::getStartingState(std::default_random_engine * eng
 
 bool PolarApproach::isKickable(const Eigen::VectorXd & state) const
 {
-  double ball_x = getBallX(state);
-  double ball_y = getBallY(state);
-  double theta  = state(2);
-  bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
-  bool y_ok = std::fabs(ball_y) < kick_y_tol;
-  bool theta_ok = - kick_theta_tol < theta && theta < kick_theta_tol;
-  return x_ok && y_ok && theta_ok;
+  return canKickLeftFoot(state) || canKickRightFoot(state);
 }
 
 bool PolarApproach::isColliding(const Eigen::VectorXd & state) const
@@ -269,6 +293,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"kick_x_min", kick_x_min);
   rosban_utils::xml_tools::try_read<double>(node,"kick_x_max", kick_x_max);
   rosban_utils::xml_tools::try_read<double>(node,"kick_y_tol", kick_y_tol);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_y_offset", kick_y_offset);
   rosban_utils::xml_tools::try_read<double>(node,"kick_theta_tol", kick_theta_tol);
   rosban_utils::xml_tools::try_read<double>(node,"kick_reward", kick_reward);
   rosban_utils::xml_tools::try_read<double>(node,"viewing_angle", viewing_angle);
