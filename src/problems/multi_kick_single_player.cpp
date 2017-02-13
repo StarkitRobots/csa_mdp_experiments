@@ -97,9 +97,6 @@ Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & stat
   // Importing the parameters of the state
   double ball_x = state(0);
   double ball_y = state(1);
-  // Importing the parameters of the action
-  double kick_theta = action(1);
-  double kick_power = action(2);
   // T1: Adding noise to get ball_real
   double ball_real_x, ball_real_y;
   initialBallNoise(ball_x, ball_y, &ball_real_x, &ball_real_y, engine);
@@ -131,6 +128,8 @@ Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & stat
                                     action.segment(1, action.rows()-1), engine,
                                     &ball_final_x, &ball_final_y, &kick_reward);
   result.reward += kick_reward;
+  result.successor(0) = ball_final_x;
+  result.successor(1) = ball_final_y;
   // T5: Testing if ball left the field after kick
   if (std::fabs(ball_final_x) > field_length / 2 ||
       std::fabs(ball_final_y) > field_width / 2)
@@ -153,8 +152,6 @@ Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & stat
         std::cout << "\tball_real_y: " << ball_real_y << std::endl;
         std::cout << "\tball_final_x: " << ball_final_x << std::endl;
         std::cout << "\tball_final_y: " << ball_final_y << std::endl;
-        std::cout << "\tkick_power: " << kick_power << std::endl;
-        std::cout << "\tkick_theta: " << kick_theta << std::endl;
       }
     }
   }  

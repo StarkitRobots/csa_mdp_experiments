@@ -176,9 +176,9 @@ void LearningMachine::endRun()
   policy_runs_performed++;
   policy_total_reward += trajectory_disc_reward;
   // If the maximal step has not been reached, it mean we reached a final state
-  int u_dim = problem->getActionLimits(0).rows();
   if (save_run_logs) {
-    writeRunLog(run_logs, run, step, status.successor, Eigen::VectorXd::Zero(u_dim), 0);
+    Eigen::VectorXd fake_action;
+    writeRunLog(run_logs, run, step, status.successor, fake_action, 0);
   }
   reward_logs << run << ","
               << policy_id << ","
@@ -262,9 +262,9 @@ void LearningMachine::writeRunLogHeader(std::ostream &out)
   out << "action_id,";
   for (int action_id = 0; action_id < problem->getNbActions(); action_id++)
   {
-    for (const std::string & name : problem->getActionNames(0))
+    for (const std::string & name : problem->getActionNames(action_id))
     {
-      out << name << ",";
+      out << "a" << action_id << "_" << name << ",";
     }
   }
   out << "reward" << std::endl;
@@ -286,10 +286,12 @@ void LearningMachine::writeRunLog(std::ostream &out, int run, int step,
   {
     out << state(i) << ",";
   }
-  out << action(0) << ",";
+  int curr_action_id = -1;
+  if (action.rows() > 0) curr_action_id = action(0);
+  out << curr_action_id << ",";
   // Currently jumping first element of action (only used for multiple action spaces problems)
   for (int action_id = 0; action_id < problem->getNbActions(); action_id++) {
-    if (action(0) == action_id) {
+    if (curr_action_id == action_id) {
       for (int i = 1; i < action.rows(); i++)
       {
         out << action(i) << ",";

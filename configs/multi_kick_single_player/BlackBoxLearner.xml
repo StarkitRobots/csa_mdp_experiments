@@ -19,6 +19,23 @@
               </expert_approach>
             </policy>
           </v>
+          <v>
+            <kick_model>
+              <CustomPowerKick>
+                <kick_pow_rel_noise>0.1</kick_pow_rel_noise>
+                <kick_direction_noise>0.3</kick_direction_noise>
+                <kick_reward>-10</kick_reward>
+                <min_kick_power>0.2</min_kick_power>
+                <max_kick_power>1.5</max_kick_power>
+              </CustomPowerKick>
+            </kick_model>
+            <approach_model/>
+            <policy>
+              <expert_approach>
+                <type>polar</type>
+              </expert_approach>
+            </policy>
+          </v>
         </kick_options>
       </multi_kick_single_player>
     </problem>
