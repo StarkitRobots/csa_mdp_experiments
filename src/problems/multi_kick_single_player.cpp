@@ -9,8 +9,6 @@
 
 using namespace rosban_utils;
 
-static bool debug_failures = false;
-
 static double normalizeAngle(double angle)
 {
   return angle - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
@@ -45,9 +43,14 @@ MultiKickSinglePlayer::MultiKickSinglePlayer()
     field_width(6),
     field_length(9),
     goal_width(2.6),
+    ball_radius(0.07),
     goal_area_size_x(1),
     goal_area_size_y(5),
-    goalkeeper_success_rate(0.05)
+    goalkeeper_success_rate(0.05),
+    goalie_x(field_length/2 - 0.1),
+    goalie_y(0),
+    goalie_thickness(0.2),
+    goalie_width(0.4)
 {
   /// Updating limits
   Eigen::MatrixXd state_limits(5,2), action_limits(2,2);
@@ -100,19 +103,15 @@ Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & stat
   // T1: Adding noise to get ball_real
   double ball_real_x, ball_real_y;
   initialBallNoise(ball_x, ball_y, &ball_real_x, &ball_real_y, engine);
-  // T2: Handle cases where ball was outside of the field
-  if (std::fabs(ball_real_x) > field_length / 2 ||
-      std::fabs(ball_real_y) > field_width / 2)
+  // T2: Move the ball to its real position
+  bool early_terminal = false;
+  moveBall(ball_x, ball_y, &ball_real_x, &ball_real_y, &early_terminal, &result.reward);
+  if (early_terminal)
   {
     // Update ball position and force it to be terminal
     result.successor(0) = ball_real_x;
     result.successor(1) = ball_real_y;
     result.terminal = true;
-    // Has a goal been scored?
-    if (isGoal(ball_x, ball_y, ball_real_x, ball_real_y))
-      result.reward += goal_reward;
-    else
-      result.reward += failure_reward;
     // No need to perform additional computations
     return result;
   }
@@ -128,33 +127,12 @@ Problem::Result MultiKickSinglePlayer::getSuccessor(const Eigen::VectorXd & stat
                                     action.segment(1, action.rows()-1), engine,
                                     &ball_final_x, &ball_final_y, &kick_reward);
   result.reward += kick_reward;
+  // T5: Testing if ball left the field after kick
+  bool late_terminal = false;
+  moveBall(ball_real_x, ball_real_y, &ball_final_x, &ball_final_y, &late_terminal, &result.reward);
   result.successor(0) = ball_final_x;
   result.successor(1) = ball_final_y;
-  // T5: Testing if ball left the field after kick
-  if (std::fabs(ball_final_x) > field_length / 2 ||
-      std::fabs(ball_final_y) > field_width / 2)
-  {
-    // State is terminal
-    result.terminal = true;
-    // Has a goal been scored?
-    if (isGoal(ball_real_x, ball_real_y, ball_final_x, ball_final_y)) {
-      result.reward += goal_reward;
-    }
-    else {
-      result.reward += failure_reward;
-      if (debug_failures)
-      {
-        std::cout << "---------------------------" << std::endl;
-        std::cout << "Failed to score a goal:" << std::endl;
-        std::cout << "\tball_x: " << ball_x << std::endl;
-        std::cout << "\tball_y: " << ball_y << std::endl;
-        std::cout << "\tball_real_x: " << ball_real_x << std::endl;
-        std::cout << "\tball_real_y: " << ball_real_y << std::endl;
-        std::cout << "\tball_final_x: " << ball_final_x << std::endl;
-        std::cout << "\tball_final_y: " << ball_final_y << std::endl;
-      }
-    }
-  }  
+  result.terminal = late_terminal;
   return result;
 }
 
@@ -348,30 +326,145 @@ void MultiKickSinglePlayer::initialBallNoise(double ball_x, double ball_y,
   *ball_real_y = ball_y + dy;
 }
 
-bool MultiKickSinglePlayer::isGoal(double src_x, double src_y, double dst_x, double dst_y) const
+void MultiKickSinglePlayer::moveBall(double src_x, double src_y,
+                                     double * dst_x, double * dst_y,
+                                     bool * terminal, double * reward) const
 {
-  double dx = dst_x - src_x;
-  if (debug_failures)
-  {
-    std::cout << "dx: " << dx << std::endl;
+  if (isCollidingGoalie(src_x,src_y,dst_x,dst_y)) {
+    *reward = *reward + failure_reward;
+    *terminal = true;
+    return;
   }
-  // Impossible to score a goal by kicking backward or if ball did not cross the line
-  if (dx <= 0 || dst_x < field_length / 2) return false;
+  else if (isGoal(src_x,src_y,dst_x,dst_y)) {
+    *reward = *reward + goal_reward;
+    *terminal = true;
+    return;
+  }
+  else if (isOut(src_x,src_y,dst_x,dst_y)) {
+    *reward = *reward + failure_reward;
+    *terminal = true;
+    return;
+  }
+  *terminal = false;
+}
+
+
+bool MultiKickSinglePlayer::isCollidingGoalie(double src_x, double src_y,
+                                              double * dst_x, double * dst_y) const
+{
+  // 0: precomputing values (using ball radius)
+  double min_goalie_x = goalie_x - goalie_thickness / 2 - ball_radius;
+  double max_goalie_x = goalie_x + goalie_thickness / 2 + ball_radius;
+  double min_goalie_y = goalie_y - goalie_width / 2 - ball_radius;
+  double max_goalie_y = goalie_y + goalie_width / 2 + ball_radius;
+  double dx = *dst_x - src_x;
+  double dy = *dst_y - src_y;
+  // 1: If both points are above or below specific values, collision is not possible
+  bool below_x = src_x < min_goalie_x && *dst_x < min_goalie_x;
+  bool above_x = src_x > max_goalie_x && *dst_x > max_goalie_x;
+  bool below_y = src_y < min_goalie_y && *dst_y < min_goalie_y;
+  bool above_y = src_y > max_goalie_y && *dst_y > max_goalie_y;
+  if (below_x || above_x || below_y || above_y) return false;
+  // 2: Special case, ball moving laterally: spot first collision (mandatory)
+  if (dx == 0) {
+    double dist_to_min = std::fabs(src_y - min_goalie_y);
+    double dist_to_max = std::fabs(src_y - max_goalie_y);
+    if (dist_to_min < dist_to_max) {
+      *dst_y = min_goalie_y;
+    }
+    else {
+      *dst_y = max_goalie_y;
+    }
+    return true;
+  }
+  // 3: Computing trajectories under the form a*x + b
+  double a = dy / dx;
+  double b = src_y - a * src_x;
+  // 4: Detecting potential collision:
+  std::vector<double> collisions_x, collisions_y;
+  double tmp_x, tmp_y;
+  // 4.1: collision with min_goalie_x
+  tmp_x = min_goalie_x;
+  tmp_y = a * tmp_x + b;
+  if (tmp_y > min_goalie_y && tmp_y < max_goalie_y) {
+    collisions_x.push_back(tmp_x);
+    collisions_y.push_back(tmp_y);
+  }
+  // 4.2: collision with max_goalie_x
+  tmp_x = max_goalie_x;
+  tmp_y = a * tmp_x + b;
+  if (tmp_y > min_goalie_y && tmp_y < max_goalie_y) {
+    collisions_x.push_back(tmp_x);
+    collisions_y.push_back(tmp_y);
+  }
+  // 4.3: collision with min_goalie_y
+  if (a != 0) {
+    tmp_y = min_goalie_y;
+    tmp_x = (tmp_y - b) / a;
+    if (tmp_x > min_goalie_x && tmp_x < max_goalie_x) {
+      collisions_x.push_back(tmp_x);
+      collisions_y.push_back(tmp_y);
+    }
+  }
+  // 4.4: collision with max_goalie_y
+  if (a != 0) {
+    tmp_y = max_goalie_y;
+    tmp_x = (tmp_y - b) / a;
+    if (tmp_x > min_goalie_x && tmp_x < max_goalie_x) {
+      collisions_x.push_back(tmp_x);
+      collisions_y.push_back(tmp_y);
+    }
+  }
+  // 5: If no collision has been found return false
+  if (collisions_x.size() == 0) return false;
+  // 6: Choose the closest collision to 'src'
+  double best_dist2 = std::numeric_limits<double>::max();
+  for (int i = 0; i < (int) collisions_x.size(); i++) {
+    double dx = collisions_x[i] - src_x;
+    double dy = collisions_y[i] - src_y;
+    double dist2 = dx * dx + dy * dy;
+    if (dist2 < best_dist2) {
+      best_dist2 = dist2;
+      *dst_x = collisions_x[i];
+      *dst_y = collisions_y[i];
+    }
+  }
+  return true;
+}
+
+bool MultiKickSinglePlayer::isGoal(double src_x, double src_y,
+                                   double * dst_x, double * dst_y) const
+{
+  double dx = *dst_x - src_x;
+  double limit_x = field_length / 2 + ball_radius;
+  // Impossible to score a goal by kicking backward or if ball did not entirely cross the line
+  if (dx <= 0 || *dst_x < limit_x) return false;
   // Finding equation a*x +b;
-  double dy = dst_y - src_y;
+  double dy = *dst_y - src_y;
   double a = dy / dx;
   double b = src_y - a * src_x;
   // Finding intersection with goal line
   double intercept_y = a * field_length / 2 + b;
-  if (debug_failures)
-  {
-    std::cout << "dy: " << dy << std::endl;
-    std::cout << "a : " << a << std::endl;
-    std::cout << "b : " << b << std::endl;
-    std::cout << "y : " << intercept_y << std::endl;
-  }
-  // Is intersection inside the goal
-  return std::fabs(intercept_y) < goal_width / 2;
+  bool intersect = std::fabs(intercept_y) < goal_width / 2;
+  // If no intersection: 
+  if (!intersect) return false;
+  // Set x to a given limit without changing trajectory
+  *dst_x = limit_x;
+  *dst_y = a * limit_x + b;
+  return true;
+}
+
+bool MultiKickSinglePlayer::isOut(double src_x, double src_y,
+                                  double * dst_x, double * dst_y) const
+{
+  // Computing limits
+  double min_x = - field_length / 2 - ball_radius;
+  double max_x =   field_length / 2 + ball_radius;
+  double min_y = - field_width  / 2 - ball_radius;
+  double max_y =   field_width  / 2 + ball_radius;
+  // Getting values
+  return (*dst_x < min_x || *dst_y < min_y || *dst_x > max_x || *dst_y > max_y);
+  //TODO: modifies values of dst if ball is out
 }
 
 bool MultiKickSinglePlayer::isGoalArea(double player_x, double player_y) const

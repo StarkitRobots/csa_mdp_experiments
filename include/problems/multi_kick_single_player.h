@@ -101,8 +101,35 @@ private:
                         double * ball_real_x, double * ball_real_y,
                         std::default_random_engine * engine) const;
 
-  /// Has a goal been scored?
-  bool isGoal(double src_x, double src_y, double dst_x, double dst_y) const;
+  /// Examine the result of moving the ball from 'src' to 'dst'
+  /// If one of these 3 events happen:
+  /// - Ball collides with the goalie
+  /// - Ball enters the goal
+  /// - Ball leaves the field
+  /// then:
+  /// - dst is updated
+  /// - terminal value is set to true
+  /// - reward is updated (a reward is accorded according to the event)
+  void moveBall(double src_x, double src_y,
+                double * dst_x, double * dst_y,
+                bool * terminal, double * reward) const;
+
+  /// Is the given kick colliding the goalie ?
+  /// if colliding: return true and modifies dst_x and dst_y
+  bool isCollidingGoalie(double src_x, double src_y,
+                         double * dst_x, double * dst_y) const;
+
+  /// Is the given kick resulting with a goal?
+  /// If goal: return true and modifies dst_x and dst_y
+  bool isGoal(double src_x, double src_y,
+              double * dst_x, double * dst_y) const;
+
+
+  /// Is the ball outside of the field after the given kick
+  /// If ball is outside: return true and modifies dst_x and dst_y
+  /// src is expected to be inside the field
+  bool isOut(double src_x, double src_y,
+             double * dst_x, double * dst_y) const;
 
   /// Is the player inside of the goal area
   bool isGoalArea(double player_x, double player_y) const;
@@ -138,6 +165,8 @@ private:
   double field_length;
   /// Goal width [m]
   double goal_width;
+  /// Ball radius [m]
+  double ball_radius;
 
   /// #GOALKEEPER PROPERTIES
   /// Goal area: size along x-axis [m]
@@ -146,6 +175,14 @@ private:
   double goal_area_size_y;
   /// Success rate of the goalkeeper once player entered his area [0,1]
   double goalkeeper_success_rate;
+  /// Goalie position x [m]
+  double goalie_x;
+  /// Goalie position y [m]
+  double goalie_y;
+  /// Goalie size along x-axis
+  double goalie_thickness;
+  /// Goalie size along y-axis
+  double goalie_width;
 };
 
 }
