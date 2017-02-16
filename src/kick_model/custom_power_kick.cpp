@@ -17,10 +17,10 @@ std::vector<std::string> CustomPowerKick::getActionsNames() const
 }
 
 void CustomPowerKick::applyKick(double ball_start_x, double ball_start_y,
-                              const Eigen::VectorXd & kick_parameters,
-                              std::default_random_engine * engine,
-                              double * final_ball_x, double * final_ball_y,
-                              double * reward) const
+                                const Eigen::VectorXd & kick_parameters,
+                                std::default_random_engine * engine,
+                                double * final_ball_x, double * final_ball_y,
+                                double * reward) const
 {
   if (kick_parameters.rows() != 2) {
     std::ostringstream oss;
