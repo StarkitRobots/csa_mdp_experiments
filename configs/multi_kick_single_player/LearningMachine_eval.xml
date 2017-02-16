@@ -5,12 +5,51 @@
         <kick_options>
           <v>
             <kick_model>
-              <FullPowerKick>
-                <kick_pow_rel_noise>0.1</kick_pow_rel_noise>
+              <CustomPowerKick>
+                <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
                 <kick_direction_noise>0.3</kick_direction_noise>
                 <kick_reward>-10</kick_reward>
-                <kick_power>3</kick_power>
+                <min_kick_power>0.2</min_kick_power>
+                <max_kick_power>1.2</max_kick_power>
+              </CustomPowerKick>
+            </kick_model>
+            <approach_model>
+              <kick_theta_offset>1.57</kick_theta_offset>
+              <kick_y_offset>-0.03</kick_y_offset>              
+            </approach_model>
+            <policy>
+              <expert_approach>
+                <type>polar</type>
+                <lateral_kick>true</lateral_kick>
+                <foot_y_offset>-0.03</foot_y_offset>
+              </expert_approach>
+            </policy>
+          </v>
+          <v>
+            <kick_model>
+              <FullPowerKick>
+                <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
+                <kick_direction_noise>0.3</kick_direction_noise>
+                <kick_reward>-10</kick_reward>
+                <kick_power>3.5</kick_power>
               </FullPowerKick>
+            </kick_model>
+            <approach_model/>
+            <policy>
+              <expert_approach>
+                <type>polar</type>
+              </expert_approach>
+            </policy>
+          </v>
+          <v>
+            <kick_model>
+              <CustomPowerKick>
+                <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
+                <kick_direction_noise>0.3</kick_direction_noise>
+                <kick_reward>-10</kick_reward>
+                <min_kick_power>0.2</min_kick_power>
+                <max_kick_power>1.0</max_kick_power>
+              </CustomPowerKick>
             </kick_model>
             <approach_model/>
             <policy>
