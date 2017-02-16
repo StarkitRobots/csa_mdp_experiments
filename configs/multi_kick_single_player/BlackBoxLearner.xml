@@ -6,7 +6,7 @@
           <v>
             <kick_model>
               <CustomPowerKick>
-                <kick_pow_rel_noise>0.1</kick_pow_rel_noise>
+                <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
                 <kick_direction_noise>0.3</kick_direction_noise>
                 <kick_reward>-10</kick_reward>
                 <min_kick_power>0.2</min_kick_power>
@@ -28,7 +28,7 @@
           <v>
             <kick_model>
               <FullPowerKick>
-                <kick_pow_rel_noise>0.1</kick_pow_rel_noise>
+                <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
                 <kick_direction_noise>0.3</kick_direction_noise>
                 <kick_reward>-10</kick_reward>
                 <kick_power>3.5</kick_power>
@@ -44,7 +44,7 @@
           <v>
             <kick_model>
               <CustomPowerKick>
-                <kick_pow_rel_noise>0.1</kick_pow_rel_noise>
+                <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
                 <kick_direction_noise>0.3</kick_direction_noise>
                 <kick_reward>-10</kick_reward>
                 <min_kick_power>0.2</min_kick_power>
