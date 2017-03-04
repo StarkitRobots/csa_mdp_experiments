@@ -26,7 +26,7 @@ void MultiKickSinglePlayer::KickOption::to_xml(std::ostream & out) const {
 void MultiKickSinglePlayer::KickOption::from_xml(TiXmlNode * node)
 {
   kick_model = KickModelFactory().read(node, "kick_model");
-  approach_model.from_xml(node);
+  approach_model.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
 }
 
