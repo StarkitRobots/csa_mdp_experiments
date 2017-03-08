@@ -9,6 +9,7 @@ set (SOURCES
 #  double_inverted_pendulum.cpp
   extended_problem_factory.cpp
   polar_approach.cpp
+  kick_controler.cpp
 #  kick_optimizer.cpp
   multi_kick_single_player.cpp
   one_player_kick.cpp
