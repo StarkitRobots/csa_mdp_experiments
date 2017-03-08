@@ -90,11 +90,11 @@ bool PolarApproach::canKickLeftFoot(const Eigen::VectorXd & state) const
   double ball_x = getBallX(state);
   double ball_y = getBallY(state);
   double theta  = state(2);
-  double kick_dir = normalizeAngle(theta - kick_theta_offset);
+  double kick_err = normalizeAngle(theta + kick_theta_offset);
   // Check validity
   bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
   bool y_ok = std::fabs(ball_y - kick_y_offset) < kick_y_tol;
-  bool theta_ok = -kick_theta_tol < kick_dir && theta < kick_dir;
+  bool theta_ok = -kick_theta_tol < kick_err && kick_err < kick_theta_tol;
   return x_ok && y_ok && theta_ok;
 }
 
@@ -104,11 +104,11 @@ bool PolarApproach::canKickRightFoot(const Eigen::VectorXd & state) const
   double ball_x = getBallX(state);
   double ball_y = getBallY(state);
   double theta  = state(2);
-  double kick_dir = normalizeAngle(theta + kick_theta_offset);
+  double kick_err = normalizeAngle(theta - kick_theta_offset);
   // Check validity
   bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
   bool y_ok = std::fabs(ball_y + kick_y_offset) < kick_y_tol;
-  bool theta_ok = -kick_theta_tol < kick_dir && theta < kick_dir;
+  bool theta_ok = -kick_theta_tol < kick_err && kick_err < kick_theta_tol;
   return x_ok && y_ok && theta_ok;
 }
   
@@ -256,7 +256,10 @@ bool PolarApproach::seeBall(const Eigen::VectorXd & state) const
   return angle < viewing_angle && angle > -viewing_angle;
 }
 
-void PolarApproach::to_xml(std::ostream & out) const {(void)out;}
+void PolarApproach::to_xml(std::ostream & out) const {
+  (void)out;
+  throw std::logic_error("PolarApproach::to_xml: not implemented");
+}
 
 void PolarApproach::from_xml(TiXmlNode * node)
 {
@@ -295,6 +298,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"kick_y_tol", kick_y_tol);
   rosban_utils::xml_tools::try_read<double>(node,"kick_y_offset", kick_y_offset);
   rosban_utils::xml_tools::try_read<double>(node,"kick_theta_tol", kick_theta_tol);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_theta_offset", kick_theta_offset);
   rosban_utils::xml_tools::try_read<double>(node,"kick_reward", kick_reward);
   rosban_utils::xml_tools::try_read<double>(node,"viewing_angle", viewing_angle);
   rosban_utils::xml_tools::try_read<double>(node,"no_view_reward", no_view_reward);

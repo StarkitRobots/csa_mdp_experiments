@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# The user should add a symbolic link in home directory
-binary_path="~/blackbox_learner"
-
 # This script allows to run several black_box_learning in a row
 if [ $# -lt 2 ]
 then
@@ -48,7 +45,7 @@ do
     # Jumping in the folder
     cd ${newFolder}
     # Running the experiment
-    ${binary_path} > bb.out
+    ~/black_box_learning > bb.out 2> bb.err
     # back to previous folder
     cd ..
     ((i++))
