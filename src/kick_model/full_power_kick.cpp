@@ -9,11 +9,11 @@ Eigen::MatrixXd FullPowerKick::getActionsLimits() const
 {
   Eigen::MatrixXd limits(1,2);
   limits << -M_PI, M_PI;
-  return {limits};
+  return limits;
 }
 std::vector<std::string> FullPowerKick::getActionsNames() const
 {
-  return {{"kick_direction"}};
+  return {"kick_direction"};
 }
 
 void FullPowerKick::applyKick(double ball_start_x, double ball_start_y,

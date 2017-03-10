@@ -457,7 +457,7 @@ bool MultiKickSinglePlayer::isGoal(double src_x, double src_y,
 bool MultiKickSinglePlayer::isOut(double src_x, double src_y,
                                   double * dst_x, double * dst_y) const
 {
-  (void)src_x, src_y;
+  (void)src_x; (void) src_y;
   // Computing limits
   double min_x = - field_length / 2 - ball_radius;
   double max_x =   field_length / 2 + ball_radius;

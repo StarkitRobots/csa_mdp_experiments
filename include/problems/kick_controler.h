@@ -106,12 +106,20 @@ public:
   ///            and the others start at a random position but above max_dist
   Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
-  void performApproach(const PolarApproach & approach_model,
-                       const csa_mdp::Policy & approach_policy,
-                       int player_id,
-                       Problem::Result * status,
-                       double kick_theta_field,
-                       std::default_random_engine * engine) const;
+
+  /// Run up to 'max_steps' of simulation on all players using the provided action.
+  /// if kicker is enabled, cost is increased according to the number of steps and the
+  /// step cost.
+  /// Execution is interrupted if:
+  /// - one of the robot fails (inside goalArea)
+  /// - Kicker is enabled and has reached target
+  void runSteps(int max_steps,
+                const Eigen::VectorXd & action,
+                int kicker_id,
+                int kick_option,
+                bool kicker_enabled,
+                Problem::Result * status,
+                std::default_random_engine * engine) const;
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
@@ -173,17 +181,25 @@ private:
   /// Is the player inside of the goal area
   bool isGoalArea(double player_x, double player_y) const;
 
-  /// Extract a polar_approach state from a kick_controler state and the wished
-  /// direction for the kick. The speed of the robot is considered as 0
-  Eigen::VectorXd toPolarApproachState(const Eigen::VectorXd & mksp_state,
-                                       int player_id,
-                                       double kick_theta_field) const;
+  Eigen::Vector3d getPlayerState(const Eigen::VectorXd & state,
+                                 int player_id) const;
 
-  /// Extract a kick_controler state from a polar_approach state
+  Eigen::Vector3d getTarget(const Eigen::VectorXd & state,
+                            const Eigen::VectorXd & action,
+                            int player_id,
+                            int kicker_id,
+                            int kick_option) const;
+
+  /// Extract a polar_approach state from the given player state and the given target
+  /// Current speeds of the robots are set to [0,0,0]
+  Eigen::VectorXd toPolarApproachState(const Eigen::Vector3d & player_state,
+                                       const Eigen::Vector3d & target) const;
+
+  /// Return an updated version
   Eigen::VectorXd toKickControlerState(const Eigen::VectorXd & pa_state,
-                                       const Eigen::VectorXd & prev_opk_state,
+                                       const Eigen::VectorXd & prev_kc_state,
                                        int player_id,
-                                       double kick_theta_field) const;
+                                       const Eigen::Vector3d & target) const;
   /// #TRANSITION FUNCTION
   /// Which KickOptions are available?
   std::vector<std::unique_ptr<Player>> players;

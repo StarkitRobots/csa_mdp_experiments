@@ -11,6 +11,7 @@
 //#include "problems/kick_optimizer.h"
 #include "problems/multi_kick_single_player.h"
 #include "problems/one_player_kick.h"
+#include "problems/kick_controler.h"
 
 namespace csa_mdp
 {
@@ -47,6 +48,8 @@ void ExtendedProblemFactory::registerExtraProblems()
                        [](){return std::unique_ptr<Problem>(new MultiKickSinglePlayer);});
   registerExtraBuilder("one_player_kick",
                        [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
+  registerExtraBuilder("kick_controler",
+                       [](){return std::unique_ptr<Problem>(new KickControler);});
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)

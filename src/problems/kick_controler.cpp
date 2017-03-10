@@ -43,6 +43,7 @@ void KickControler::Player::to_xml(std::ostream & out) const {
 
 void KickControler::Player::from_xml(TiXmlNode * node)
 {
+  name = rosban_utils::xml_tools::read<std::string>(node, "name");
   TiXmlNode* values = node->FirstChild("kick_options");
   kick_options.clear();
   for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())
@@ -94,7 +95,7 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   int action_id = (int)action(0);
   int kicker_id, kick_option_id;
   analyzeActionId(action_id, &kicker_id, &kick_option_id);
-  const KickOption & kick_option = *(players[kicker_id]->kick_options[action_id]);
+  const KickOption & kick_option = *(players[kicker_id]->kick_options[kick_option_id]);
   // Checking action dimension (depending on kick_option)
   int kick_dims = kick_option.kick_model->getActionsLimits().rows();
   int expected_action_dimension = 1 + kick_dims + 3 * (players.size()-1);
@@ -127,10 +128,9 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
     // No need to perform additional computations
     return result;
   }
-  // T3: Simulate player approach (end approach if the robot commited illegal attack)
-  performApproach(kick_option.approach_model,
-                  *kick_option.approach_policy,
-                  kicker_id, &result, action(1), engine);
+  // T3: Simulate players approach (end approach if one of the robot commited illegal attack)
+  int max_steps = 500;
+  runSteps(max_steps, action, kicker_id, kick_option_id, true, &result, engine);
   if (result.terminal) {
     return result;
   }
@@ -138,10 +138,12 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   double ball_final_x, ball_final_y;
   double kick_reward;
   kick_option.kick_model->applyKick(ball_real_x, ball_real_y,
-                                    action.segment(1, action.rows()-1), engine,
+                                    action.segment(1, kick_dims), engine,
                                     &ball_final_x, &ball_final_y, &kick_reward);
   result.reward += kick_reward;
   // T5: TODO: move other robots
+  int extra_steps = (int)-kick_reward;
+  runSteps(extra_steps, action, kicker_id, kick_option_id, false, &result, engine);
   // T6: Testing if ball left the field after kick
   bool late_terminal = false;
   moveBall(ball_real_x, ball_real_y, &ball_final_x, &ball_final_y, &late_terminal, &result.reward);
@@ -159,71 +161,149 @@ Eigen::VectorXd KickControler::getStartingState(std::default_random_engine * eng
   Eigen::VectorXd state(2 + 3 * players.size());
   state.segment(0,2) = random_positions[0].segment(0,2);// Ball pos
   for (size_t player = 0; player < players.size(); player++) {
-    state.segment(2 + player * 3,3) = random_positions[1];// Player pos
+    state.segment(2 + player * 3,3) = random_positions[player+1];// Player pos
   }
   return state;
 }
 
-void KickControler::performApproach(const PolarApproach & approach_model,
-                                    const csa_mdp::Policy & approach_policy,
-                                    int player_id,
-                                    Problem::Result * status,
-                                    double kick_theta_field,
-                                    std::default_random_engine * engine) const
+void KickControler::runSteps(int max_steps,
+                             const Eigen::VectorXd & action,
+                             int kicker_id,
+                             int kick_option,
+                             bool kicker_enabled,
+                             Problem::Result * status,
+                             std::default_random_engine * engine) const
 {
-  // Computing the status in the polar_approach problem
-  Problem::Result pa_status;
-  pa_status.successor = toPolarApproachState(status->successor, player_id, kick_theta_field);
-  pa_status.reward = 0;
-  pa_status.terminal = false;
-  // Simulating steps until destination has been reached
+  // Variables used globally in the function
+  std::uniform_real_distribution<double> failure_distrib(0,1);
+  // Step 1: gather all players states according to their polar_approach
+  std::vector<Problem::Result> approach_status;
+  std::vector<Eigen::Vector3d> targets;
+  for (int player_id = 0; player_id < (int)players.size(); player_id++) {
+    // Build player_state and target
+    Eigen::Vector3d player_state, target;
+    player_state = getPlayerState(status->successor, player_id);
+    target = getTarget(status->successor, action, player_id, kicker_id, kick_option);
+    // Build player_status
+    Problem::Result player_status;
+    player_status.successor = toPolarApproachState(player_state, target);
+    player_status.reward = 0;
+    player_status.terminal = false;
+    // Storing necessary values
+    approach_status.push_back(player_status);
+    targets.push_back(target);
+  }
+  // Step 2: Simulate until one of these conditions is filled
+  // - Max steps is reached
+  // - kicker is enabled and has reached target
+  // - One of the robot has failed (goal area)
   int nb_steps = 0;
-  while (!approach_model.isKickable(pa_status.successor)
-         && !status->terminal)
-  {
-    Eigen::VectorXd action = approach_policy.getAction(pa_status.successor, engine);
-    pa_status = approach_model.getSuccessor(pa_status.successor, action, engine);
-    // If robot is inside of the dead zone, each step has a failure risk
-    status->successor = toKickControlerState(pa_status.successor,
-                                             status->successor,
-                                             player_id,
-                                             kick_theta_field);
-    double player_x = status->successor(2 + 3 * player_id);
-    double player_y = status->successor(3 + 3 * player_id);
-    if (isGoalArea(player_x, player_y)) {
-      std::uniform_real_distribution<double> failure_distrib(0,1);
-      if (failure_distrib(*engine) < goalkeeper_success_rate)
-      {
-        status->reward += failure_reward;
-        status->terminal = true;
+  std::vector<bool> reached_target(players.size(), false);
+  bool failed = false;
+  while(nb_steps <= max_steps && !reached_target[kicker_id] && !failed) {
+    // Simulate all robot iteratively
+    for (int player_id = 0; player_id < (int)players.size(); player_id++) {
+      // Skip player who have already reached destination
+      if (reached_target[player_id]) continue;
+      // TODO: avoid code duplication between kickers and non kickers
+      if (player_id == kicker_id) {
+        if (!kicker_enabled) continue;//Skip kicker if disabled
+        const PolarApproach & model = players[player_id]->kick_options[kick_option]->approach_model;
+        const csa_mdp::Policy & policy = *(players[player_id]->kick_options[kick_option]->approach_policy);
+        // Get action 
+        Eigen::VectorXd pa_action = policy.getAction(approach_status[player_id].successor, engine);
+        // Simulate approach action
+        approach_status[player_id] = model.getSuccessor(approach_status[player_id].successor,
+                                                        pa_action, engine);
+        // Update 'reached target'
+        reached_target[player_id] = model.isKickable(approach_status[player_id].successor);
+      }
+      else {
+        // Retrieve model
+        const PolarApproach & model = players[player_id]->navigation_approach;
+        const csa_mdp::Policy & policy = *(players[player_id]->approach_policy);
+        // Get action 
+        Eigen::VectorXd pa_action = policy.getAction(approach_status[player_id].successor, engine);
+        // Simulate approach action
+        approach_status[player_id] = model.getSuccessor(approach_status[player_id].successor,
+                                                        pa_action, engine);
+        // Update 'reached target'
+        reached_target[player_id] = model.isKickable(approach_status[player_id].successor);
+      }
+      // Update global status
+      status->successor = toKickControlerState(approach_status[player_id].successor,
+                                               status->successor,
+                                               player_id,
+                                               targets[player_id]);
+      // Checking if player is inside the goal area
+      Eigen::Vector3d player_state = getPlayerState(status->successor, player_id);
+      if (isGoalArea(player_state(0), player_state(1))) {
+        if (failure_distrib(*engine) < goalkeeper_success_rate) {
+          failed = true;
+        }
       }
     }
+    //Increasing number of steps
     nb_steps++;
-    // Safeguard to ensure issues appear if policy is not reaching kick states
-    int max_steps = 1000;
-    if (nb_steps > max_steps) {
-      std::ostringstream oss;
-      oss << "KickControler::performApproach: kickable state not reached after "
-          << max_steps << std::endl
-          << "state: " << pa_status.successor.transpose() << std::endl;
-      throw std::runtime_error(oss.str());
-    }
   }
-  // TODO: treat collisions between robot and ball
-  // Update reward
-  status->reward += nb_steps * approach_step_reward;  
+  // if kicker is enabled, max_steps should never be reached -> throw error
+  if (kicker_enabled && nb_steps >= max_steps) {
+    std::ostringstream oss;
+    oss << "KickControler::performApproach: kickable state not reached after "
+        << max_steps << std::endl
+        << "state: " << approach_status[kicker_id].successor.transpose() << std::endl;
+    throw std::runtime_error(oss.str());
+  }
+  // Use failure reward if 
+  if (failed) {
+    status->reward += failure_reward;
+    status->terminal = true;
+  }
+  // If kicker is enabled, increase status cost
+  if (kicker_enabled) status->reward += nb_steps * approach_step_reward;
 }
 
-Eigen::VectorXd KickControler::toPolarApproachState(const Eigen::VectorXd & opk_state,
-                                                    int player_id,
-                                                    double kick_theta_field) const
+Eigen::Vector3d KickControler::getPlayerState(const Eigen::VectorXd & state,
+                                              int player_id) const
+{
+  return state.segment(2+3*player_id, 3);
+}
+
+Eigen::Vector3d KickControler::getTarget(const Eigen::VectorXd & state,
+                                         const Eigen::VectorXd & action,
+                                         int player_id,
+                                         int kicker_id,
+                                         int kick_option) const
+{
+  Eigen::Vector3d target;
+  // Specific, kick direction has to be computed
+  if (player_id == kicker_id) {
+    // Target is the ball
+    target(0) = state(0);
+    target(1) = state(1);
+    //TODO use an interface for kicks to define the kick_direction (this mode is not stable9
+    target(2) = action(1);
+  }
+  else {
+    const KickModel & kick_model = *(players[kicker_id]->kick_options[kick_option]->kick_model);
+    int kick_dims = kick_model.getActionsLimits().rows();
+    int start_row = 1 + kick_dims + 3 * player_id;
+    if (player_id > kicker_id) start_row -= 3;
+    target = action.segment(start_row, 3);
+  }
+  return target;
+}
+
+Eigen::VectorXd KickControler::toPolarApproachState(const Eigen::Vector3d & player_state,
+                                                    const Eigen::Vector3d & target) const
 {
   // Computing basic properties
-  double ball_x_field = opk_state(0);
-  double ball_y_field = opk_state(1);
-  double player_x_field = opk_state(2 + 3*player_id);
-  double player_y_field = opk_state(3 + 3*player_id);
-  double player_theta   = opk_state(4 + 3*player_id);
+  double ball_x_field     = target(0);
+  double ball_y_field     = target(1);
+  double kick_theta_field = target(2);
+  double player_x_field = player_state(0);
+  double player_y_field = player_state(1);
+  double player_theta   = player_state(2);
   // Computing position in robot referential
   double dx = ball_x_field - player_x_field;
   double dy = ball_y_field - player_y_field;
@@ -242,25 +322,26 @@ Eigen::VectorXd KickControler::toPolarApproachState(const Eigen::VectorXd & opk_
 
 Eigen::VectorXd
 KickControler::toKickControlerState(const Eigen::VectorXd & pa_state,
-                                    const Eigen::VectorXd & prev_opk_state,
+                                    const Eigen::VectorXd & prev_kc_state,
                                     int player_id,
-                                    double kick_theta_field) const
+                                    const Eigen::Vector3d & target) const
 {
   // Getting basic data
   double ball_dist = pa_state(0);
   double ball_dir_robot = pa_state(1);
   double target_angle = pa_state(2);
-  double ball_x = prev_opk_state(0);
-  double ball_y = prev_opk_state(1);
+  double ball_x = target(0);
+  double ball_y = target(1);
+  double kick_theta_field = target(2);
   // Computing player orientation
   double robot_theta_field = normalizeAngle(kick_theta_field - target_angle);
   double robot2ball_theta_field = normalizeAngle(ball_dir_robot + robot_theta_field);
   // Filling state
-  Eigen::VectorXd opk_state = prev_opk_state;
-  opk_state(2 + 3*player_id) = ball_x - ball_dist * cos(robot2ball_theta_field);
-  opk_state(3 + 3*player_id) = ball_y - ball_dist * sin(robot2ball_theta_field);
-  opk_state(4 + 3*player_id) = robot_theta_field;
-  return opk_state;
+  Eigen::VectorXd kc_state = prev_kc_state;
+  kc_state(2 + 3*player_id) = ball_x - ball_dist * cos(robot2ball_theta_field);
+  kc_state(3 + 3*player_id) = ball_y - ball_dist * sin(robot2ball_theta_field);
+  kc_state(4 + 3*player_id) = robot_theta_field;
+  return kc_state;
 }
 
 void KickControler::to_xml(std::ostream & out) const
@@ -345,15 +426,16 @@ void KickControler::updateStateLimits()
   /// Updating limits
   Eigen::MatrixXd state_limits(2 + 3 *nb_players,2);
   std::vector<std::string> state_names = {"ball_x","ball_y"};
-  state_limits.block(2,2,0,0) = getFieldLimits();
+  state_limits.block(0,0,2,2) = getFieldLimits();
   for (int player_id = 0; player_id < nb_players; player_id++) {
-    state_limits.block(2,2,2+3*player_id,0) = getPlayerLimits();
+    state_limits.block(2+3*player_id,0,3,2) = getPlayerLimits();
     for (const std::string & suffix : {"x","y","theta"}) {
       std::ostringstream oss;
-      oss << players[player_id]->name << "_" << suffix << std::endl;
+      oss << players[player_id]->name << "_" << suffix;
       state_names.push_back(oss.str());
     }
   }
+  setStateLimits(state_limits);
   setStateNames(state_names);
 }
 
@@ -362,6 +444,7 @@ void KickControler::updateApproachesLimits()
   /// Ball can be a lot further than in usual approach_model
   double max_dist = field_width + field_length;//Extra margin is not an issue
   for (size_t player_id = 0; player_id < players.size(); player_id++) {
+    players[player_id]->navigation_approach.setMaxDist(max_dist);
     for (size_t ko_id = 0; ko_id < players[player_id]->kick_options.size(); ko_id++) {
       players[player_id]->kick_options[ko_id]->approach_model.setMaxDist(max_dist);
     }
@@ -374,6 +457,10 @@ void KickControler::updateActionsLimits()
   std::vector<Eigen::MatrixXd> kick_action_limits;
   std::vector<std::vector<std::string>> kick_action_names;
   for (size_t p_id = 0; p_id < players.size(); p_id++) {
+    // Update actions limits for navigation
+    std::vector<Eigen::MatrixXd> nav_action_limits;
+    nav_action_limits = players[p_id]->navigation_approach.getActionsLimits();
+    players[p_id]->approach_policy->setActionLimits(nav_action_limits);
     for (size_t ko_id = 0; ko_id < players[p_id]->kick_options.size(); ko_id++) {
       // kick_model
       const KickModel & kick_model = *(players[p_id]->kick_options[ko_id]->kick_model);
@@ -386,20 +473,22 @@ void KickControler::updateActionsLimits()
       int kick_dims = kick_limits.rows();
       // Filling action spaces and names for this problem
       Eigen::MatrixXd action_limits(kick_dims + 3 * (players.size()-1),2);
-      action_limits.block(kick_dims,2,0,0) = kick_limits;
+      action_limits.block(0,0,kick_dims,2) = kick_limits;
       std::vector<std::string> action_names = kick_model.getActionsNames();
       // A target is provided for each robot
       for (size_t non_kicker_id = 0; non_kicker_id < players.size(); non_kicker_id++) {
-        int start_row = 2 + non_kicker_id * 3;
+        int start_row = kick_dims + non_kicker_id * 3;
         if (non_kicker_id == p_id) continue;
         if (non_kicker_id > p_id) start_row -= 3;
-        action_limits.block(3,2,start_row,0) = getPlayerLimits();
+        action_limits.block(start_row,0,3,2) = getPlayerLimits();
         for (const std::string & suffix : {"x","y","dir"}) {
           std::ostringstream oss;
           oss << players[non_kicker_id]->name << "_" << suffix;
           action_names.push_back(oss.str());
         }
       }
+      std::cout << "Action_limits: " << kick_action_limits.size() << std::endl
+                << action_limits << std::endl;
       kick_action_limits.push_back(action_limits);
       kick_action_names.push_back(action_names);
     }
@@ -556,7 +645,7 @@ bool KickControler::isGoal(double src_x, double src_y,
 bool KickControler::isOut(double src_x, double src_y,
                           double * dst_x, double * dst_y) const
 {
-  (void)src_x;(void) src_y;
+  (void)src_x;(void)src_y;
   // Computing limits
   double min_x = - field_length / 2 - ball_radius;
   double max_x =   field_length / 2 + ball_radius;
