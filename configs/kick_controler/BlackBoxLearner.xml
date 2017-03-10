@@ -92,17 +92,18 @@
         </players>
       </kick_controler>
     </problem>
-    <nb_threads>3</nb_threads>
+    <nb_threads>20</nb_threads>
     <trial_length>50</trial_length>
     <training_evaluations>40</training_evaluations>
     <training_evaluations_growth>0.2</training_evaluations_growth>
     <split_probability>0.1</split_probability>
+    <change_action_probability>0.2</change_action_probability>
     <nb_evaluation_trials>1000</nb_evaluation_trials>
     <evaluations_ratio>10</evaluations_ratio>
     <evaluations_growth>20</evaluations_growth>
     <avoid_growing_slopes>false</avoid_growing_slopes>
     <shared_initial_states>false</shared_initial_states>
-    <time_budget>36000</time_budget>
+    <time_budget>7200</time_budget>
     <discount>1.0</discount>
     <optimizer>
       <CompositeOptimizer>
