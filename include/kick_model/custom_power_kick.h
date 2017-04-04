@@ -12,6 +12,9 @@ public:
 
   using KickModel::applyKick;
 
+  virtual double getWishedDir(double ball_x, double ball_y,
+                              const Eigen::VectorXd & kick_parameters) const;
+  
   /// Throw an error if kick_parameters size is not adapted
   virtual void applyKick(double ball_start_x, double ball_start_y,
                          const Eigen::VectorXd & kick_parameters,

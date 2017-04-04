@@ -16,6 +16,12 @@ public:
   virtual Eigen::MatrixXd getActionsLimits() const = 0;
   virtual std::vector<std::string> getActionsNames() const = 0;
 
+  /// For some type of kicks, the direction of the kick might depend on
+  /// the position of the ball and the kick_parameters
+  /// return: the target angle for kick [rad]
+  virtual double getWishedDir(double ball_x, double ball_y,
+                              const Eigen::VectorXd & kick_parameters) const = 0;
+
   /// Throw an error if kick_parameters size is not adapted
   virtual void applyKick(double ball_start_x, double ball_start_y,
                          const Eigen::VectorXd & kick_parameters,

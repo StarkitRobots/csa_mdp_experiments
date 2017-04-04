@@ -275,18 +275,25 @@ Eigen::Vector3d KickControler::getTarget(const Eigen::VectorXd & state,
                                          int kicker_id,
                                          int kick_option) const
 {
+  // Importing basic kick properties
+  const KickModel & kick_model = *(players[kicker_id]->kick_options[kick_option]->kick_model);
+  int kick_dims = kick_model.getActionsLimits().rows();
+  // Computing target
   Eigen::Vector3d target;
-  // Specific, kick direction has to be computed
+  // If player is a kicker, target depend on chosen kick
   if (player_id == kicker_id) {
+    // Renaming variables to improve readability
+    double ball_x = state(0);
+    double ball_y = state(1);
     // Target is the ball
-    target(0) = state(0);
-    target(1) = state(1);
-    //TODO use an interface for kicks to define the kick_direction (this mode is not stable9
-    target(2) = action(1);
+    target(0) = ball_x;
+    target(1) = ball_y;
+    // Importing kick_action
+    Eigen::VectorXd kick_action = action.segment(1, kick_dims);
+    // Using kick model to determine where action 
+    target(2) = kick_model.getWishedDir(ball_x, ball_y, kick_action);
   }
   else {
-    const KickModel & kick_model = *(players[kicker_id]->kick_options[kick_option]->kick_model);
-    int kick_dims = kick_model.getActionsLimits().rows();
     int start_row = 1 + kick_dims + 3 * player_id;
     if (player_id > kicker_id) start_row -= 3;
     target = action.segment(start_row, 3);

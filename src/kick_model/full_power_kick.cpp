@@ -16,6 +16,15 @@ std::vector<std::string> FullPowerKick::getActionsNames() const
   return {"kick_direction"};
 }
 
+double FullPowerKick::getWishedDir(double ball_x, double ball_y,
+                                   const Eigen::VectorXd & kick_parameters) const
+{
+  // Direction of kick is not dependent on ball position
+  (void) ball_x;(void) ball_y;
+
+  return kick_parameters(0);
+}
+
 void FullPowerKick::applyKick(double ball_start_x, double ball_start_y,
                               const Eigen::VectorXd & kick_parameters,
                               std::default_random_engine * engine,

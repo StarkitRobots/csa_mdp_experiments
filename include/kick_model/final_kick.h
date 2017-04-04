@@ -5,8 +5,11 @@
 namespace csa_mdp
 {
 
-class FullPowerKick : public KickModel {
+class FinalKick : public KickModel {
 public:
+
+  FinalKick();
+
   virtual Eigen::MatrixXd getActionsLimits() const override;
   virtual std::vector<std::string> getActionsNames() const override;
 
@@ -29,6 +32,12 @@ public:
 private:
   /// The average distance of the shoot
   double kick_power;
+  
+  /// The position of the opponent goal in x (expecting field_length / 2)
+  double goal_x;
+
+  /// The maximal value for target_y (expecting goal_width / 2)
+  double max_y;
 };
 
 }
