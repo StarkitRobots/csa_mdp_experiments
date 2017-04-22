@@ -387,6 +387,11 @@ std::string KickControler::class_name() const
   return "kick_controler";
 }
 
+size_t KickControler::getNbPlayers() const
+{
+  return players.size();
+}
+
 void KickControler::analyzeActionId(int action_id, int * kicker_id, int * kick_id) const
 {
   int cpt = 0;
@@ -406,6 +411,23 @@ void KickControler::analyzeActionId(int action_id, int * kicker_id, int * kick_i
         << action_id << " (expecting value in [" << 0 << "," << cpt << "[)";
     throw std::logic_error(oss.str());
   }
+}
+double KickControler::getKickDir(const Eigen::VectorXd & state,
+                                 const Eigen::VectorXd & action) const
+{
+  int action_id = action(0);
+  int kicker_id(0), kick_option(0);
+  analyzeActionId(action_id, &kicker_id, &kick_option);
+  // Importing basic kick properties
+  const KickModel & kick_model = *(players[kicker_id]->kick_options[kick_option]->kick_model);
+  int kick_dims = kick_model.getActionsLimits().rows();
+  // Renaming variables to improve readability
+  double ball_x = state(0);
+  double ball_y = state(1);
+  // Importing kick_action
+  Eigen::VectorXd kick_action = action.segment(1, kick_dims);
+  // Using kick model to determine where action 
+  return kick_model.getWishedDir(ball_x, ball_y, kick_action);
 }
 
 Eigen::Matrix<double,2,2> KickControler::getFieldLimits() const

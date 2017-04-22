@@ -125,10 +125,16 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
-private:
+  size_t getNbPlayers() const;
+
   // Import kicker_id and kick_id from action_id
   void analyzeActionId(int action_id, int * kicker_id, int * kick_id) const;
 
+  // Get kick direction [rad] (in field basis)
+  double getKickDir(const Eigen::VectorXd & state,
+                    const Eigen::VectorXd & action) const;
+
+private:
   // Return the limits for the field (row1: field_x, row2: field_y)
   Eigen::Matrix<double,2,2> getFieldLimits() const;
   // Return the limits for the field (row1: field_x, row2: field_y, row3: orientation)
