@@ -14,11 +14,11 @@ find_package(rosban_control QUIET)
 
 # If rosban control is found, then compile files related to simulation
 if (rosban_control_FOUND)
-  message("rosban_control found, adding support for gazebo interface")
+  message(STATUS "rosban_control found, adding support for gazebo interface")
   list(APPEND catkin_LIBRARIES     ${rosban_control_LIBRARIES})
   list(APPEND catkin_INCLUDE_DIRS  ${rosban_control_INCLUDE_DIRS})
 else()
-  message("rosban_control was not found, no support for gazebo interface")
+  message(STATUS "rosban_control was not found, no support for gazebo interface")
   add_definitions(-DNO_ROSBAN_CONTROL)
 endif(rosban_control_FOUND)
 
