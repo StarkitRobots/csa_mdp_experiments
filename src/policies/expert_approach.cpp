@@ -14,7 +14,7 @@ ExpertApproach::ExpertApproach()
   : type(Type::cartesian),
     memory_state(State::far),
     lateral_kick(false),
-    foot_y_offset(0.03),
+    foot_y_offset(0.08),
     step_max(0.04),
     max_rotate_radius(1),
     min_far_radius(0.75),
@@ -27,7 +27,7 @@ ExpertApproach::ExpertApproach()
     near_lateral_p(0.06),
     stop_y_near(0.125),
     max_y_near(0.25),
-    wished_x(0.22),
+    wished_x(0.2),
     wished_y(0.0),
     target_theta_tol(10 * M_PI / 180),
     ball_theta_tol(10 * M_PI / 180)

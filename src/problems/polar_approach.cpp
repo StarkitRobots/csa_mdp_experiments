@@ -24,18 +24,18 @@ PolarApproach::PolarApproach()
     max_step_y(0.02),
     max_step_theta(0.3),
     // Action limits
-    max_step_x_diff(0.02),
+    max_step_x_diff(0.01),
     max_step_y_diff(0.01),
-    max_step_theta_diff(0.15),
+    max_step_theta_diff(0.1),
     // Step noise
     step_x_noise(0.02),
     step_y_noise(0.02),
     step_theta_noise(5 * M_PI / 180),
     // Kick
-    kick_x_min(0.15),
-    kick_x_max(0.30),
-    kick_y_tol(0.03),
-    kick_y_offset(0.03),
+    kick_x_min(0.12),
+    kick_x_max(0.25),
+    kick_y_tol(0.04),
+    kick_y_offset(0.08),
     kick_theta_offset(0),
     kick_theta_tol(10 * M_PI/180),
     kick_reward(0),
@@ -43,8 +43,8 @@ PolarApproach::PolarApproach()
     viewing_angle(2*M_PI/3),
     no_view_reward(0),
     // Collision
-    collision_x_front(0.15),
-    collision_x_back(0.20),
+    collision_x_front(0.12),
+    collision_x_back(0.12),
     collision_y( 0.25),
     collision_reward(-3),
     // Misc
