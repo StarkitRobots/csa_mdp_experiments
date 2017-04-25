@@ -369,6 +369,8 @@ void KickControler::from_xml(TiXmlNode * node)
   xml_tools::try_read<double>(node, "goal_area_size_x"       , goal_area_size_x       );
   xml_tools::try_read<double>(node, "goal_area_size_y"       , goal_area_size_y       );
   xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
+
+  //TODO: improve format, currently very verbose and redundant
   TiXmlNode* values = node->FirstChild("players");
   players.clear();
   for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())

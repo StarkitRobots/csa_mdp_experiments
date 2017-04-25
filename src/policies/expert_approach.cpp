@@ -130,11 +130,9 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
   else { 
     // If target is on the left, use left foot, else use right foot
     if (target_angle > 0) {
-      target_angle -= M_PI/2;
       y_error -= foot_y_offset;
     }
     else {
-      target_angle += M_PI/2;
       y_error += foot_y_offset;
     }
   }
@@ -142,7 +140,6 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
   // Alignements
   bool good_align_goal = std::fabs(target_angle) < target_theta_tol;
   bool good_align_ball = std::fabs(ball_azimuth) < ball_theta_tol;
-
 
   // Updating state
   if (current_state == State::far && ball_distance < min_far_radius)
