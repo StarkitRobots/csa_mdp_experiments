@@ -28,12 +28,12 @@ PolarApproach::PolarApproach()
     max_step_y_diff(0.01),
     max_step_theta_diff(0.1),
     // Step noise
-    step_x_noise(0.02),
-    step_y_noise(0.02),
-    step_theta_noise(5 * M_PI / 180),
+    step_x_noise(0.01),
+    step_y_noise(0.01),
+    step_theta_noise(2 * M_PI / 180),
     // Kick
     kick_x_min(0.12),
-    kick_x_max(0.25),
+    kick_x_max(0.22),
     kick_y_tol(0.04),
     kick_y_offset(0.08),
     kick_theta_offset(0),

@@ -34,12 +34,14 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
+  // WARNING: only works for non-lateral approach
   // Approximation is not entirely appropriate, but it has the advantage of
   // having only three nodes
   // Significant changes are
   // - Hysteresis do not exist anymore
   // - Tolerance are not included anymore
   // - Use of ball_y in near is not available anymore
+  //   - Since we use ball_theta instead of ball_y, ball_theta_tol has to be pretty large
   // - Step is always step_max in far
   virtual std::unique_ptr<rosban_fa::FATree> extractFATree() const override;
 
