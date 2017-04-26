@@ -229,6 +229,7 @@ void ExpertApproach::from_xml(TiXmlNode * node)
   }
   rosban_utils::xml_tools::try_read<bool>  (node, "lateral_kick" , lateral_kick );
   rosban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
+  rosban_utils::xml_tools::try_read<double>(node, "wished_x", wished_x);
   // Reading vector list of parameters
   std::vector<double> params_read;
   rosban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);
