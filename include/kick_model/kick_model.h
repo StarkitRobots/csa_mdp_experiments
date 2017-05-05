@@ -41,8 +41,15 @@ public:
   void from_xml(TiXmlNode * node) override;
 
 protected:
+  /// Uniform noise on relative power
   double kick_pow_rel_noise;
+  /// Uniform noise on kick direction [rad]
   double kick_direction_noise;
+  /// Gaussian noise on kick relative power
+  double kick_pow_rel_stddev;
+  /// Gaussian noise on kick direction [rad]
+  double kick_direction_stddev;
+  /// Reward received after each kick
   double kick_reward;
 };
 

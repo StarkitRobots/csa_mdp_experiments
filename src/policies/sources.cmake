@@ -4,4 +4,6 @@ set(SOURCES
   mixed_approach.cpp
 # One Player Kick
   opk_expert_approach.cpp
+# Kick controler
+  ok_seed.cpp
 )

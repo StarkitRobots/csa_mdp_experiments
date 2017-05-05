@@ -62,7 +62,7 @@ std::string KickControler::Player::class_name() const
 }
 
 KickControler::KickControler()
-  : step_initial_noise(0.25),
+  : step_initial_stddev(0.25),
     goal_reward(0),
     approach_step_reward(-1),
     failure_reward(-500),
@@ -359,7 +359,7 @@ void KickControler::to_xml(std::ostream & out) const
 
 void KickControler::from_xml(TiXmlNode * node)
 {
-  xml_tools::try_read<double>(node, "step_initial_noise"     , step_initial_noise     );
+  xml_tools::try_read<double>(node, "step_initial_stddev"    , step_initial_stddev    );
   xml_tools::try_read<double>(node, "goal_reward"            , goal_reward            );
   xml_tools::try_read<double>(node, "approach_step_reward"   , approach_step_reward   );
   xml_tools::try_read<double>(node, "failure_reward"         , failure_reward         );
@@ -532,17 +532,9 @@ void KickControler::initialBallNoise(double ball_x, double ball_y,
                                      double * ball_real_x, double * ball_real_y,
                                      std::default_random_engine * engine) const
 {
-  std::uniform_real_distribution<double> noise_distrib(0, step_initial_noise);
-  double dist = 2 * step_initial_noise;
-  double dx(0), dy(0);
-  while (dist > step_initial_noise)
-  {
-    dx = noise_distrib(*engine);
-    dy = noise_distrib(*engine);
-    dist = dx * dx + dy * dy;
-  }
-  *ball_real_x = ball_x + dx;
-  *ball_real_y = ball_y + dy;
+  std::normal_distribution<double> noise_distrib(0, step_initial_stddev);
+  *ball_real_x = ball_x + noise_distrib(*engine);
+  *ball_real_y = ball_y + noise_distrib(*engine);
 }
 
 void KickControler::moveBall(double src_x, double src_y,

@@ -83,6 +83,8 @@ target_link_libraries(learn_from_logs ${catkin_LIBRARIES} csa_mdp_experiments)
 add_executable(learning_machine src/learning_machine.cpp)
 target_link_libraries(learning_machine ${catkin_LIBRARIES} csa_mdp_experiments)
 
-# Work In progress
 add_executable(black_box_learning src/black_box_learning.cpp)
 target_link_libraries(black_box_learning ${catkin_LIBRARIES} csa_mdp_experiments)
+
+add_executable(extract_fa_tree src/extract_fa_tree.cpp)
+target_link_libraries(extract_fa_tree ${catkin_LIBRARIES} csa_mdp_experiments)

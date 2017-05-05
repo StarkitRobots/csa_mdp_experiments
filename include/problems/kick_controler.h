@@ -211,7 +211,7 @@ private:
   std::vector<std::unique_ptr<Player>> players;
 
   /// Noise added on ball position at the beginning of every step
-  double step_initial_noise;
+  double step_initial_stddev;
 
   /// #REWARD FUNCTION
   /// Goal reward

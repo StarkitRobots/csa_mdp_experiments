@@ -6,8 +6,10 @@ namespace csa_mdp
 {
 
 KickModel::KickModel()
-  : kick_pow_rel_noise(0.1),
-    kick_direction_noise(0.3),
+  : kick_pow_rel_noise(-1),
+    kick_direction_noise(-1),
+    kick_pow_rel_stddev(-1),
+    kick_direction_stddev(-1),
     kick_reward(-10)
 {
 }
@@ -18,14 +20,32 @@ void KickModel::applyKick(double ball_start_x, double ball_start_y,
                           double * final_ball_x, double * final_ball_y,
                           double * reward) const
 {
-  // Distribution initialization
-  std::uniform_real_distribution<double> dist_noise(1.0 - kick_pow_rel_noise,
-                                                    1.0 + kick_pow_rel_noise);
-  std::uniform_real_distribution<double> theta_noise(-kick_direction_noise,
-                                                     kick_direction_noise);
+  double kick_rel_factor = 1.0;
+  double kick_dir_noise_sampled = 0.0;
+  // Sampling direction noise
+  if (kick_direction_noise > 0) {
+    std::uniform_real_distribution<double> theta_noise(-kick_direction_noise,
+                                                       kick_direction_noise);
+    kick_dir_noise_sampled = theta_noise(*engine);
+  }
+  if (kick_direction_stddev > 0) {
+    std::normal_distribution<double> theta_noise(0, kick_direction_stddev);
+    kick_dir_noise_sampled = theta_noise(*engine);
+  }
+  // Sampling power noise
+  if (kick_pow_rel_noise > 0) {
+    std::uniform_real_distribution<double> dist_noise(-kick_pow_rel_noise,
+                                                      kick_pow_rel_noise);
+    kick_rel_factor += dist_noise(*engine);
+  }
+  if (kick_pow_rel_stddev > 0) {
+    std::normal_distribution<double> dist_noise(0, kick_pow_rel_stddev);
+    kick_rel_factor += dist_noise(*engine);
+  }  
+
   // Sampling real parameters
-  double ball_real_dist  = kick_power * dist_noise(*engine);
-  double ball_real_angle = kick_theta + theta_noise(*engine);
+  double ball_real_dist  = kick_power * kick_rel_factor;
+  double ball_real_angle = kick_theta + kick_dir_noise_sampled;
 
   // Estimating ball final position
   double cos_kick = cos(ball_real_angle);
@@ -37,16 +57,20 @@ void KickModel::applyKick(double ball_start_x, double ball_start_y,
 
 void KickModel::to_xml(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<double>("kick_pow_rel_noise"  , kick_pow_rel_noise  , out);
-  rosban_utils::xml_tools::write<double>("kick_direction_noise", kick_direction_noise, out);
-  rosban_utils::xml_tools::write<double>("kick_reward"         , kick_reward         , out);
+  rosban_utils::xml_tools::write<double>("kick_pow_rel_noise"   , kick_pow_rel_noise   , out);
+  rosban_utils::xml_tools::write<double>("kick_direction_noise" , kick_direction_noise , out);
+  rosban_utils::xml_tools::write<double>("kick_pow_rel_stddev"  , kick_pow_rel_stddev  , out);
+  rosban_utils::xml_tools::write<double>("kick_direction_stddev", kick_direction_stddev, out);
+  rosban_utils::xml_tools::write<double>("kick_reward"          , kick_reward          , out);
 }
 
 void KickModel::from_xml(TiXmlNode * node)
 {
-  kick_pow_rel_noise   = rosban_utils::xml_tools::read<double>(node, "kick_pow_rel_noise"  );
-  kick_direction_noise = rosban_utils::xml_tools::read<double>(node, "kick_direction_noise");
-  kick_reward          = rosban_utils::xml_tools::read<double>(node, "kick_reward"         );  
+  rosban_utils::xml_tools::try_read<double>(node, "kick_pow_rel_noise"   , kick_pow_rel_noise   );
+  rosban_utils::xml_tools::try_read<double>(node, "kick_direction_noise" , kick_direction_noise );
+  rosban_utils::xml_tools::try_read<double>(node, "kick_pow_rel_stddev"  , kick_pow_rel_stddev  );
+  rosban_utils::xml_tools::try_read<double>(node, "kick_direction_stddev", kick_direction_stddev);
+  rosban_utils::xml_tools::try_read<double>(node, "kick_reward"          , kick_reward          );  
 }
 
 }

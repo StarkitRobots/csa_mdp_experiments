@@ -3,6 +3,7 @@
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
 #include "policies/opk_expert_approach.h"
+#include "policies/ok_seed.h"
 #include "problems/extended_problem_factory.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
@@ -13,6 +14,7 @@
 
 using namespace csa_mdp;
 
+
 int main() {
   // Abort if error are found
   feenableexcept(FE_DIVBYZERO| FE_INVALID | FE_OVERFLOW);
@@ -20,6 +22,8 @@ int main() {
 
   PolicyFactory::registerExtraBuilder("expert_approach",
                                       []() {return std::unique_ptr<Policy>(new ExpertApproach);});
+  PolicyFactory::registerExtraBuilder("OKSeed",
+                                      []() {return std::unique_ptr<Policy>(new OKSeed);});
 // TODO: fix custom policies
 //  PolicyFactory::registerExtraBuilder("mixed_approach",
 //                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
