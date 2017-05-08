@@ -86,7 +86,7 @@ Eigen::VectorXd OKSeed::backlaneKick() const
 }
 Eigen::VectorXd OKSeed::centerKick(int side) const
 { 
-  return Eigen::Vector2d(smallKickId, side * M_PI/2);
+  return Eigen::Vector2d(smallKickId, 120 * side * M_PI / 180);
 }
 Eigen::VectorXd OKSeed::placeKick() const
 {
