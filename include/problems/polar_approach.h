@@ -2,6 +2,8 @@
 
 #include "rosban_csa_mdp/core/black_box_problem.h"
 
+#include "Odometry/Odometry.hpp"
+
 #include <Eigen/Core>
 
 #include <functional>
@@ -58,10 +60,6 @@ public:
   static double getBallX(const Eigen::VectorXd & state);
   static double getBallY(const Eigen::VectorXd & state);
 
-  /// Return the predicted motion for the given walk orders (without noise)
-  /// This method uses odometry coefficients if it has been initialized
-  Eigen::VectorXd predictMotion(const Eigen::VectorXd & walk_orders) const;
-
   /// Ensure that limits are consistent with the parameters
   void updateLimits();
   /// Update maximal distance at which the ball is accepted
@@ -72,18 +70,9 @@ public:
   /// Does the position of the ball allows the robot to kick with the right foot?
   bool canKickRightFoot(const Eigen::VectorXd & state) const;
 
-  /// Update motion odometry model
-  void setOdometry(const Eigen::MatrixXd& model);
-
 protected:
-  // TODO: Use all parameters as members and implement from_xml + use dirty flag
-
-  // PREDICTIVE ODOMETRY
-  // structure is the following
-  // offset_x, dx(dx), dx(dy), dx(dz)
-  // offset_y, dy(dx), dy(dy), dy(dz)
-  // offset_z, dz(dx), dz(dy), dz(dz)
-  Eigen::MatrixXd odometry_coefficients;
+  /// The displacement and noise model
+  Leph::Odometry odometry;
 
   // STATE LIMITS
   /// The maximal distance to the ball along one of the axis
@@ -101,11 +90,6 @@ protected:
   double max_step_x_diff;
   double max_step_y_diff;
   double max_step_theta_diff;
-
-  // NOISE
-  double step_x_noise;
-  double step_y_noise;
-  double step_theta_noise;
 
   // TARGET PROPERTIES
   /// Minimal distance along x to kick

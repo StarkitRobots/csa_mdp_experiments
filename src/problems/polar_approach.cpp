@@ -27,10 +27,6 @@ PolarApproach::PolarApproach()
     max_step_x_diff(0.01),
     max_step_y_diff(0.01),
     max_step_theta_diff(0.1),
-    // Step noise
-    step_x_noise(0.01),
-    step_y_noise(0.01),
-    step_theta_noise(2 * M_PI / 180),
     // Kick
     kick_x_min(0.12),
     kick_x_max(0.22),
@@ -111,15 +107,6 @@ bool PolarApproach::canKickRightFoot(const Eigen::VectorXd & state) const
   bool theta_ok = -kick_theta_tol < kick_err && kick_err < kick_theta_tol;
   return x_ok && y_ok && theta_ok;
 }
-  
-void PolarApproach::setOdometry(const Eigen::MatrixXd& model)
-{
-  if (model.rows() != 3 && model.cols() != 4) {
-    throw std::logic_error(
-      "PolarApproach::setOdometry Invalid format");
-  }
-  odometry_coefficients = model;
-}
 
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
 {
@@ -151,13 +138,6 @@ Problem::Result PolarApproach::getSuccessor(const Eigen::VectorXd & state,
         << action.rows();
     throw std::runtime_error(oss.str());
   }
-  /// Initialize noise distributions
-  std::uniform_real_distribution<double> step_x_noise_distrib    (-step_x_noise,
-                                                                  step_x_noise);
-  std::uniform_real_distribution<double> step_y_noise_distrib    (-step_y_noise,
-                                                                  step_y_noise);
-  std::uniform_real_distribution<double> step_theta_noise_distrib(-step_theta_noise,
-                                                                  step_theta_noise);
   // Get the step which will be applied
   Eigen::VectorXd next_cmd(3);
   for (int dim = 0; dim < 3; dim++)
@@ -176,12 +156,7 @@ Problem::Result PolarApproach::getSuccessor(const Eigen::VectorXd & state,
     next_cmd(dim) = std::min(max_cmd, std::max(min_cmd, next_cmd(dim)));
   }
   // Apply a linear modification (from theory to 'reality')
-  Eigen::VectorXd predicted_move = predictMotion(next_cmd);
-  // Apply noise to get the real move
-  Eigen::VectorXd real_move(3);
-  real_move(0) = predicted_move(0) + step_x_noise_distrib(*engine);
-  real_move(1) = predicted_move(1) + step_y_noise_distrib(*engine);
-  real_move(2) = predicted_move(2) + step_theta_noise_distrib(*engine);
+  Eigen::VectorXd real_move = odometry.getDiffFullStep(next_cmd, engine);
   // Apply the real move
   Eigen::VectorXd next_state = state;
   // Apply rotation first
@@ -263,23 +238,23 @@ void PolarApproach::to_xml(std::ostream & out) const {
 
 void PolarApproach::from_xml(TiXmlNode * node)
 {
-  std::vector<double> odometry_coefficients_read;
-  rosban_utils::xml_tools::try_read_vector<double>(node,
-                                                   "odometry_coefficients",
-                                                   odometry_coefficients_read);
+  std::string odometry_path;
+  rosban_utils::xml_tools::try_read<std::string>(node,
+                                                 "odometry_path",
+                                                 odometry_path);
 
   // If coefficients have been properly read, use them
-  if (odometry_coefficients_read.size() == 12)
+  if (odometry_path != "")
   {
-    odometry_coefficients = Eigen::Map<Eigen::MatrixXd>(odometry_coefficients_read.data(), 3, 4);
-  }
-  else if (odometry_coefficients_read.size() != 0)
-  {
-    std::ostringstream oss;
-    oss << "PolarApproach::from_xml: "
-        << "invalid number of coefficients for 'odometry_coefficients'. "
-        << "read: " << odometry_coefficients_read.size() << " expecting 12.";
-    throw std::runtime_error(oss.str());
+    try {
+      odometry.loadFromFile(odometry_path);
+    }
+    catch (const std::runtime_error & err) {
+      std::ostringstream oss;
+      oss << "PolarApproach::from_xml: failed to read odometry file '"
+          << odometry_path << "'";
+      throw std::runtime_error(oss.str());
+    }
   }
   // Read internal properties
   rosban_utils::xml_tools::try_read<double>(node,"max_dist", max_dist);
@@ -290,9 +265,6 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"max_step_x_diff", max_step_x_diff);
   rosban_utils::xml_tools::try_read<double>(node,"max_step_y_diff", max_step_y_diff);
   rosban_utils::xml_tools::try_read<double>(node,"max_step_theta_diff", max_step_theta_diff);
-  rosban_utils::xml_tools::try_read<double>(node,"step_x_noise", step_x_noise);
-  rosban_utils::xml_tools::try_read<double>(node,"step_y_noise", step_y_noise);
-  rosban_utils::xml_tools::try_read<double>(node,"step_theta_noise", step_theta_noise);
   rosban_utils::xml_tools::try_read<double>(node,"kick_x_min", kick_x_min);
   rosban_utils::xml_tools::try_read<double>(node,"kick_x_max", kick_x_max);
   rosban_utils::xml_tools::try_read<double>(node,"kick_y_tol", kick_y_tol);
@@ -328,24 +300,6 @@ double PolarApproach::getBallX(const Eigen::VectorXd & state)
 double PolarApproach::getBallY(const Eigen::VectorXd & state)
 {
   return sin(state(1)) * state(0);
-}
-
-Eigen::VectorXd PolarApproach::predictMotion(const Eigen::VectorXd & walk_orders) const
-{
-  // In theory, robot makes 2 steps
-  Eigen::VectorXd theoric_move = 2 * walk_orders;
-  // If no odometry has been loaded, return walk orders
-  if (odometry_coefficients.rows() <= 0)
-  {
-    return theoric_move;
-  }
-
-  // [1, walk_x, walk_y, walk_theta]
-  Eigen::VectorXd augmented_state(4);
-  augmented_state(0) = 1;
-  augmented_state.segment(1,3) = theoric_move;
-  // Apply odometry on augmented state
-  return odometry_coefficients * augmented_state;
 }
 
 }
