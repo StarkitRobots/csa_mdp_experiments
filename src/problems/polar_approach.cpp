@@ -90,7 +90,7 @@ bool PolarApproach::canKickLeftFoot(const Eigen::VectorXd & state) const
   // Check validity
   bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
   bool y_ok = std::fabs(ball_y - kick_y_offset) < kick_y_tol;
-  bool theta_ok = -kick_theta_tol < kick_err && kick_err < kick_theta_tol;
+  bool theta_ok = std::fabs(kick_err) < kick_theta_tol;
   return x_ok && y_ok && theta_ok;
 }
 
@@ -104,7 +104,7 @@ bool PolarApproach::canKickRightFoot(const Eigen::VectorXd & state) const
   // Check validity
   bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
   bool y_ok = std::fabs(ball_y + kick_y_offset) < kick_y_tol;
-  bool theta_ok = -kick_theta_tol < kick_err && kick_err < kick_theta_tol;
+  bool theta_ok = std::fabs(kick_err) < kick_theta_tol;
   return x_ok && y_ok && theta_ok;
 }
 

@@ -16,8 +16,8 @@ ExpertApproach::ExpertApproach()
     lateral_kick(false),
     foot_y_offset(0.08),
     step_max(0.04),
-    max_rotate_radius(1),
-    min_far_radius(0.75),
+    max_rotate_radius(0.6),
+    min_far_radius(0.4),
     radius(0.5),
     step_p(0.1),
     far_theta_p(0.2),
@@ -263,6 +263,9 @@ std::unique_ptr<FATree> ExpertApproach::extractFATree() const {
   if (type != Type::polar) {
     throw std::logic_error("ExpertApproach::extractFATree: not implemented for non-polar");
   }
+  if (lateral_kick) {
+    return extractLateralFATree();
+  }
   // Far node parameters
   Eigen::VectorXd far_bias = Eigen::VectorXd::Zero(4);
   Eigen::MatrixXd far_coeffs = getDefaultCoeffs();
@@ -293,7 +296,7 @@ std::unique_ptr<FATree> ExpertApproach::extractFATree() const {
                                                                            rotate_coeffs));
   std::unique_ptr<FunctionApproximator> near_right_node(new LinearApproximator(near_right_bias, near_coeffs));
   std::unique_ptr<FunctionApproximator> near_left_node(new LinearApproximator(near_left_bias, near_coeffs));
-  // Foot split depends on sign of split
+  // Foot split depends on sign of ball direction
   std::unique_ptr<Split> foot_split(new OrthogonalSplit(1, 0.0));
   // Above this distance, we consider state as far
   double far_split_radius = (min_far_radius + max_rotate_radius) / 2;
@@ -333,6 +336,116 @@ std::unique_ptr<FATree> ExpertApproach::extractFATree() const {
   tmp.reset(new FATree(std::move(far_split), approximators));
   // Return final result
   return std::move(tmp);
+}
+
+std::unique_ptr<FATree> ExpertApproach::extractLateralFATree() const {
+  double theta_bias = M_PI / 2;
+  // Far nodes parameters
+  Eigen::VectorXd far_bias = Eigen::VectorXd::Zero(4);
+  Eigen::MatrixXd far_coeffs = getDefaultCoeffs();
+  far_bias(1) = step_max;//simplification
+  far_coeffs(3,1) = far_theta_p;
+  // Rotate node parameters
+  Eigen::VectorXd rotate_left_bias = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd rotate_right_bias = Eigen::VectorXd::Zero(4);
+  Eigen::MatrixXd rotate_coeffs = getDefaultCoeffs();
+  rotate_coeffs(1,0) = step_p;
+  rotate_left_bias(1) = - step_p * radius;
+  rotate_right_bias(1) = - step_p * radius;
+  rotate_coeffs(2,2) = rotate_lateral_p;
+  rotate_coeffs(3,1) = rotate_theta_p;
+  rotate_left_bias(2)  = -rotate_lateral_p * theta_bias;
+  rotate_right_bias(2) = rotate_lateral_p * theta_bias;
+  // Near node parameters
+  double near_theta_bias = atan2(foot_y_offset, wished_x);
+  Eigen::VectorXd near_right_bias = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd near_left_bias = Eigen::VectorXd::Zero(4);
+  Eigen::MatrixXd near_coeffs = getDefaultCoeffs();
+  near_coeffs(1,0)   = step_p;
+  near_right_bias(1) = -step_p * wished_x;
+  near_left_bias(1)  = -step_p * wished_x;
+  near_coeffs(2,1)   = near_lateral_p;//Large approximation (sin(x) = x)
+  near_right_bias(2) = -near_lateral_p * near_theta_bias;
+  near_left_bias(2)  =  near_lateral_p * near_theta_bias;
+  near_coeffs(3,2)   = near_theta_p;
+  near_right_bias(3) = near_theta_p * theta_bias;
+  near_left_bias(3)  = -near_theta_p * theta_bias;
+  // Build approximators
+  std::unique_ptr<FunctionApproximator> far_node(
+    new LinearApproximator(far_bias, far_coeffs));
+  std::unique_ptr<FunctionApproximator> rotate_left_node(
+    new LinearApproximator(rotate_left_bias, rotate_coeffs));
+  std::unique_ptr<FunctionApproximator> rotate_right_node(
+    new LinearApproximator(rotate_right_bias, rotate_coeffs));
+  std::unique_ptr<FunctionApproximator> near_right_node(
+    new LinearApproximator(near_right_bias, near_coeffs));
+  std::unique_ptr<FunctionApproximator> near_left_node(
+    new LinearApproximator(near_left_bias, near_coeffs));
+  // Foot split depends on sign of target angle
+  std::unique_ptr<Split> foot_split(new OrthogonalSplit(2, 0.0));
+  // Above this distance, we consider state as far
+  double far_split_radius = (min_far_radius + max_rotate_radius) / 2;
+  std::unique_ptr<Split> far_split(new OrthogonalSplit(0, far_split_radius));
+  // Other splits for distance 
+  std::unique_ptr<Split> ball_align_split_low (new OrthogonalSplit(1, -ball_theta_tol  ));
+  std::unique_ptr<Split> ball_align_split_high(new OrthogonalSplit(1,  ball_theta_tol  ));
+  std::unique_ptr<Split> target_align_right_split_low(
+    new OrthogonalSplit(2, -theta_bias - target_theta_tol));
+  std::unique_ptr<Split> target_align_right_split_high(
+    new OrthogonalSplit(2, -theta_bias + target_theta_tol));
+  std::unique_ptr<Split> target_align_left_split_low(
+    new OrthogonalSplit(2, theta_bias - target_theta_tol));
+  std::unique_ptr<Split> target_align_left_split_high(
+    new OrthogonalSplit(2, theta_bias + target_theta_tol));
+  // Building complete tree
+  std::vector<std::unique_ptr<FunctionApproximator>> approximators;
+  std::unique_ptr<FATree> left_side, right_side;
+  // 1. Left side: Distinction between near_left and rotate_left
+  // 1.1 ball_dir > -ball_theta_tol
+  approximators.push_back(rotate_left_node->clone());
+  approximators.push_back(std::move(near_left_node));
+  left_side.reset(new FATree(ball_align_split_low->clone(), approximators));
+  // 1.2 ball_dir < ball_theta_tol
+  approximators.push_back(std::move(left_side));
+  approximators.push_back(rotate_left_node->clone());
+  left_side.reset(new FATree(ball_align_split_high->clone(), approximators));
+  // 1.3 target_dir > theta_bias - target_theta_tol
+  approximators.push_back(rotate_left_node->clone());
+  approximators.push_back(std::move(left_side));
+  left_side.reset(new FATree(std::move(target_align_left_split_low), approximators));
+  // 1.4 target_dir < theta_bias + target_theta_tol
+  approximators.push_back(std::move(left_side));
+  approximators.push_back(rotate_left_node->clone());
+  left_side.reset(new FATree(std::move(target_align_left_split_high), approximators));
+  // 2. Right side: Distinction between near_right and rotate_right
+  // 2.1 ball_dir > -ball_theta_tol
+  approximators.push_back(rotate_right_node->clone());
+  approximators.push_back(std::move(near_right_node));
+  right_side.reset(new FATree(ball_align_split_low->clone(), approximators));
+  // 2.2 ball_dir < ball_theta_tol
+  approximators.push_back(std::move(right_side));
+  approximators.push_back(rotate_right_node->clone());
+  right_side.reset(new FATree(ball_align_split_high->clone(), approximators));
+  // 2.3 target_dir > -theta_bias - target_theta_tol
+  approximators.push_back(rotate_right_node->clone());
+  approximators.push_back(std::move(right_side));
+  right_side.reset(new FATree(std::move(target_align_right_split_low), approximators));
+  // 2.4 target_dir < -theta_bias + target_theta_tol
+  approximators.push_back(std::move(right_side));
+  approximators.push_back(rotate_right_node->clone());
+  right_side.reset(new FATree(std::move(target_align_right_split_high), approximators));
+  // 3. Merge right and left to get the rotate and near
+  std::unique_ptr<FATree> rotate_and_near;
+  approximators.push_back(std::move(right_side));
+  approximators.push_back(std::move(left_side));
+  rotate_and_near.reset(new FATree(std::move(foot_split), approximators));
+  // 4. Distinction between far and the rest
+  std::unique_ptr<FATree> final_tree;
+  approximators.push_back(std::move(rotate_and_near));
+  approximators.push_back(std::move(far_node));
+  final_tree.reset(new FATree(std::move(far_split), approximators));
+  // Return final result
+  return std::move(final_tree);
 }
 
 ExpertApproach::Type ExpertApproach::loadType(const std::string & type_str)

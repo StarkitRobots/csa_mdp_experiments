@@ -34,7 +34,7 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
-  // WARNING: only works for non-lateral approach
+  // WARNING: Does not work in cartesian mode approach
   // Approximation is not entirely appropriate, but it has the advantage of
   // having only three nodes
   // Significant changes are
@@ -44,6 +44,8 @@ public:
   //   - Since we use ball_theta instead of ball_y, ball_theta_tol has to be pretty large
   // - Step is always step_max in far
   virtual std::unique_ptr<rosban_fa::FATree> extractFATree() const override;
+
+  virtual std::unique_ptr<rosban_fa::FATree> extractLateralFATree() const;
 
   // Read type from the given string
   Type loadType(const std::string & type_str);
