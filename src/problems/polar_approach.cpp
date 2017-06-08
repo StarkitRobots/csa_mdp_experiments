@@ -43,6 +43,7 @@ PolarApproach::PolarApproach()
     collision_x_back(0.12),
     collision_y( 0.25),
     collision_reward(-3),
+    terminal_collisions(false),
     // Misc
     out_of_space_reward(-100),
     step_reward(-1),
@@ -110,7 +111,8 @@ bool PolarApproach::canKickRightFoot(const Eigen::VectorXd & state) const
 
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
 {
-  return isOutOfSpace(state);
+  return isOutOfSpace(state) ||
+    (terminal_collisions && isColliding(state));
 }
 
 double  PolarApproach::getReward(const Eigen::VectorXd & state,
@@ -278,6 +280,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"collision_x_back", collision_x_back);
   rosban_utils::xml_tools::try_read<double>(node,"collision_y", collision_y);
   rosban_utils::xml_tools::try_read<double>(node,"collision_reward", collision_reward);
+  rosban_utils::xml_tools::try_read<bool>  (node,"terminal_collisions", terminal_collisions);
   rosban_utils::xml_tools::try_read<double>(node,"out_of_space_reward", out_of_space_reward);
   rosban_utils::xml_tools::try_read<double>(node,"step_reward", step_reward);
   rosban_utils::xml_tools::try_read<double>(node,"init_min_dist", init_min_dist);

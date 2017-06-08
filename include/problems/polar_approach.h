@@ -142,6 +142,9 @@ protected:
   /// Maximal distance at the beginning
   /// (not max_dist to ensure the robot does not loose during the first steps)
   double init_max_dist;
+
+  /// Are collisions with the ball considered as terminal?
+  bool terminal_collisions;
 };
 
 }
