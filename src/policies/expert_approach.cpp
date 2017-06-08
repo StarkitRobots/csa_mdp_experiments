@@ -23,14 +23,14 @@ ExpertApproach::ExpertApproach()
     far_theta_p(0.2),
     rotate_theta_p(0.3),
     rotate_lateral_p(-0.2),
-    near_theta_p(0.03),
+    near_theta_p(0.2),
     near_lateral_p(0.1),
     stop_y_near(0.125),
     max_y_near(0.25),
     wished_x(0.17),
     wished_y(0.0),
-    target_theta_tol(10 * M_PI / 180),
-    ball_theta_tol(30 * M_PI / 180)
+    target_theta_tol(30 * M_PI / 180),
+    ball_theta_tol(80 * M_PI / 180)
 {
 }
 
@@ -211,6 +211,8 @@ void ExpertApproach::to_xml(std::ostream & out) const
   rosban_utils::xml_tools::write<std::string>("type", to_string(type), out);
   rosban_utils::xml_tools::write<bool>  ("lateral_kick" , lateral_kick , out);
   rosban_utils::xml_tools::write<double>("foot_y_offset", foot_y_offset, out);
+  rosban_utils::xml_tools::write<double>("target_theta_tol", target_theta_tol, out);
+  rosban_utils::xml_tools::write<double>("ball_theta_tol"  , ball_theta_tol  , out);
   Eigen::VectorXd config = getConfig();
   std::vector<double> params;
   for (int i = 0; i < config.size(); i++)
@@ -230,6 +232,8 @@ void ExpertApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<bool>  (node, "lateral_kick" , lateral_kick );
   rosban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
   rosban_utils::xml_tools::try_read<double>(node, "wished_x", wished_x);
+  rosban_utils::xml_tools::try_read<double>(node, "target_theta_tol", target_theta_tol);
+  rosban_utils::xml_tools::try_read<double>(node, "ball_theta_tol", ball_theta_tol);
   // Reading vector list of parameters
   std::vector<double> params_read;
   rosban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);
