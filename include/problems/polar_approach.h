@@ -127,6 +127,8 @@ protected:
   double collision_y;
   /// The reward received when colliding with the ball
   double collision_reward;
+  /// Are collisions with the ball considered as terminal?
+  bool terminal_collisions;
 
   // OUT OF SPACE
   /// The reward received when getting out of space
@@ -142,9 +144,6 @@ protected:
   /// Maximal distance at the beginning
   /// (not max_dist to ensure the robot does not loose during the first steps)
   double init_max_dist;
-
-  /// Are collisions with the ball considered as terminal?
-  bool terminal_collisions;
 };
 
 }
