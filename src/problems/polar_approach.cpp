@@ -47,7 +47,7 @@ PolarApproach::PolarApproach()
     terminal_collisions(false),
     // Misc
     out_of_space_reward(-100),
-    step_reward(-1),
+    walk_frequency(1.7),
     init_min_dist(0.4),
     init_max_dist(0.95)
 {
@@ -140,7 +140,8 @@ double  PolarApproach::getReward(const Eigen::VectorXd & state,
   if (isColliding(dst) ) return collision_reward;
   if (isKickable(dst)  ) return kick_reward;
   if (isOutOfSpace(dst)) return out_of_space_reward;
-  double reward = step_reward;
+  // During each walk cycle, the robot performs 2 steps
+  double reward = 1 / (2 * walk_frequency);
   if (!seeBall(dst)    ) reward += no_view_reward;
   return reward;
 }
@@ -300,7 +301,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"collision_reward", collision_reward);
   rosban_utils::xml_tools::try_read<bool>  (node,"terminal_collisions", terminal_collisions);
   rosban_utils::xml_tools::try_read<double>(node,"out_of_space_reward", out_of_space_reward);
-  rosban_utils::xml_tools::try_read<double>(node,"step_reward", step_reward);
+  rosban_utils::xml_tools::try_read<double>(node,"walk_frequency", walk_frequency);
   rosban_utils::xml_tools::try_read<double>(node,"init_min_dist", init_min_dist);
   rosban_utils::xml_tools::try_read<double>(node,"init_max_dist", init_max_dist);
 

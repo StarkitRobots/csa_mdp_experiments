@@ -139,9 +139,8 @@ protected:
   /// The reward received when getting out of space
   double out_of_space_reward;
 
-  // Step reward
-  /// This reward is received at each non-terminal step
-  double step_reward;
+  /// Walk frequency determines the cost of each step for the robot
+  double walk_frequency;
 
   /// Minimal distance at the beginning
   double init_min_dist;
