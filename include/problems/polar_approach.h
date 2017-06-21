@@ -118,7 +118,7 @@ protected:
   double kick_terminal_speed_factor;
 
   // BALL VIEW
-  /// Ball is seen in [-viewing_angle, viewing_angle]
+  /// Ball is seen in [-viewing_angle, viewing_angle] [rad]
   double viewing_angle;
   /// The reward received when not seeing the ball.
   double no_view_reward;

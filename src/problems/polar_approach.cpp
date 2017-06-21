@@ -201,14 +201,16 @@ Problem::Result PolarApproach::getSuccessor(const Eigen::VectorXd & state,
 
 Eigen::VectorXd PolarApproach::getStartingState(std::default_random_engine * engine) const
 {
-  (void)engine;
   Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
   // Creating the distribution
-  std::uniform_real_distribution<double> dist_distrib(init_min_dist, init_max_dist);
+  std::uniform_real_distribution<double> dist_distrib(init_min_dist,
+                                                      init_max_dist);
+  std::uniform_real_distribution<double> viewable_distrib(-viewing_angle,
+                                                          viewing_angle);
   std::uniform_real_distribution<double> angle_distrib(-M_PI, M_PI);
   // Generating random values
   double dist = dist_distrib(*engine);
-  double ball_theta = angle_distrib(*engine);
+  double ball_theta = viewable_distrib(*engine);
   double target_theta = angle_distrib(*engine);
   // Updating state
   state(0) = dist;
