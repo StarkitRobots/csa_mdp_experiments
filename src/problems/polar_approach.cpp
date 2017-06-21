@@ -35,8 +35,9 @@ PolarApproach::PolarApproach()
     kick_theta_offset(0),
     kick_theta_tol(10 * M_PI/180),
     kick_reward(0),
+    kick_terminal_speed_factor(-1),
     // Viewing the ball
-    viewing_angle(2*M_PI/3),
+    viewing_angle(M_PI/2),
     no_view_reward(0),
     // Collision
     collision_x_front(0.12),
@@ -111,8 +112,24 @@ bool PolarApproach::canKickRightFoot(const Eigen::VectorXd & state) const
 
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
 {
-  return isOutOfSpace(state) ||
-    (terminal_collisions && isColliding(state));
+  bool collision_terminal = (terminal_collisions && isColliding(state));
+  bool kick_terminal = false;
+  if (kick_terminal_speed_factor > 0) {
+    kick_terminal = true;
+    const Eigen::MatrixXd & action_limits = getActionLimits(0);
+    // Check that all orders are below the given threshold
+    for (int dim = 0; dim < 3; dim++) {
+      double min_value = action_limits(dim,0) * kick_terminal_speed_factor;
+      double max_value = action_limits(dim,1) * kick_terminal_speed_factor;
+      double order_value = state(dim+3);
+      // Are we outside of bound for acceptance?
+      if (order_value < min_value || order_value > max_value) {
+        kick_terminal = false;
+        break;
+      }
+    }
+  }
+  return kick_terminal || collision_terminal || isOutOfSpace(state);
 }
 
 double  PolarApproach::getReward(const Eigen::VectorXd & state,
@@ -120,8 +137,8 @@ double  PolarApproach::getReward(const Eigen::VectorXd & state,
                                  const Eigen::VectorXd & dst) const
 {
   (void)state;(void)action;
-  if (isKickable(dst)  ) return kick_reward;
   if (isColliding(dst) ) return collision_reward;
+  if (isKickable(dst)  ) return kick_reward;
   if (isOutOfSpace(dst)) return out_of_space_reward;
   double reward = step_reward;
   if (!seeBall(dst)    ) reward += no_view_reward;
@@ -274,6 +291,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node,"kick_theta_tol", kick_theta_tol);
   rosban_utils::xml_tools::try_read<double>(node,"kick_theta_offset", kick_theta_offset);
   rosban_utils::xml_tools::try_read<double>(node,"kick_reward", kick_reward);
+  rosban_utils::xml_tools::try_read<double>(node,"kick_terminal_speed_factor", kick_terminal_speed_factor);
   rosban_utils::xml_tools::try_read<double>(node,"viewing_angle", viewing_angle);
   rosban_utils::xml_tools::try_read<double>(node,"no_view_reward", no_view_reward);
   rosban_utils::xml_tools::try_read<double>(node,"collision_x_front", collision_x_front);

@@ -111,6 +111,11 @@ protected:
   double kick_theta_tol;
   /// Reward received when reaching kick position
   double kick_reward;
+  /// If negative, kick_area is never terminal [default]
+  /// If positive:
+  /// - If the walk orders are in: [min_order * factor, max_order * factor] for
+  ///   each dimension, then state is considered as terminal
+  double kick_terminal_speed_factor;
 
   // BALL VIEW
   /// Ball is seen in [-viewing_angle, viewing_angle]
