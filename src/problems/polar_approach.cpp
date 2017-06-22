@@ -17,7 +17,7 @@ static double normalizeAngle(double angle)
 }
 
 PolarApproach::PolarApproach()
-  : max_dist(1.0),
+  : max_dist(1.5),
     // State limits
     min_step_x(-0.02),
     max_step_x(0.04),
@@ -35,21 +35,21 @@ PolarApproach::PolarApproach()
     kick_theta_offset(0),
     kick_theta_tol(10 * M_PI/180),
     kick_reward(0),
-    kick_terminal_speed_factor(-1),
+    kick_terminal_speed_factor(0.2),
     // Viewing the ball
     viewing_angle(M_PI/2),
     no_view_reward(0),
     // Collision
     collision_x_front(0.12),
-    collision_x_back(0.12),
-    collision_y( 0.25),
-    collision_reward(-3),
-    terminal_collisions(false),
+    collision_x_back(0.2),
+    collision_y(0.2),
+    collision_reward(-200),
+    terminal_collisions(true),
     // Misc
-    out_of_space_reward(-100),
+    out_of_space_reward(-200),
     walk_frequency(1.7),
     init_min_dist(0.4),
-    init_max_dist(0.95)
+    init_max_dist(max_dist - 0.05)
 {
   updateLimits();
 }
@@ -141,7 +141,7 @@ double  PolarApproach::getReward(const Eigen::VectorXd & state,
   if (isKickable(dst)  ) return kick_reward;
   if (isOutOfSpace(dst)) return out_of_space_reward;
   // During each walk cycle, the robot performs 2 steps
-  double reward = 1 / (2 * walk_frequency);
+  double reward = -1 / (2 * walk_frequency);
   if (!seeBall(dst)    ) reward += no_view_reward;
   return reward;
 }

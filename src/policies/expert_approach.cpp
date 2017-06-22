@@ -19,12 +19,12 @@ ExpertApproach::ExpertApproach()
     max_rotate_radius(0.6),
     min_far_radius(0.4),
     radius(0.5),
-    step_p(0.1),
+    step_p(0.2),
     far_theta_p(0.2),
     rotate_theta_p(0.3),
     rotate_lateral_p(-0.2),
     near_theta_p(0.2),
-    near_lateral_p(0.1),
+    near_lateral_p(0.2),
     stop_y_near(0.125),
     max_y_near(0.25),
     wished_x(0.17),
@@ -209,6 +209,8 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
 void ExpertApproach::to_xml(std::ostream & out) const
 {
   rosban_utils::xml_tools::write<std::string>("type", to_string(type), out);
+  rosban_utils::xml_tools::write<double>("step_p", step_p, out);
+  rosban_utils::xml_tools::write<double>("near_lateral_p", near_lateral_p, out);
   rosban_utils::xml_tools::write<bool>  ("lateral_kick" , lateral_kick , out);
   rosban_utils::xml_tools::write<double>("foot_y_offset", foot_y_offset, out);
   rosban_utils::xml_tools::write<double>("target_theta_tol", target_theta_tol, out);
@@ -229,6 +231,8 @@ void ExpertApproach::from_xml(TiXmlNode * node)
   if (type_str != "") {
     type = loadType(type_str);
   }
+  rosban_utils::xml_tools::try_read<double>(node, "step_p", step_p);
+  rosban_utils::xml_tools::try_read<double>(node, "near_lateral_p", near_lateral_p);
   rosban_utils::xml_tools::try_read<bool>  (node, "lateral_kick" , lateral_kick );
   rosban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
   rosban_utils::xml_tools::try_read<double>(node, "wished_x", wished_x);
