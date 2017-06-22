@@ -232,6 +232,7 @@ void ExpertApproach::from_xml(TiXmlNode * node)
     type = loadType(type_str);
   }
   rosban_utils::xml_tools::try_read<double>(node, "step_p", step_p);
+  rosban_utils::xml_tools::try_read<double>(node, "near_theta_p", near_theta_p);
   rosban_utils::xml_tools::try_read<double>(node, "near_lateral_p", near_lateral_p);
   rosban_utils::xml_tools::try_read<bool>  (node, "lateral_kick" , lateral_kick );
   rosban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);

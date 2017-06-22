@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+using namespace rosban_utils::xml_tools;
+
 namespace csa_mdp
 {
 
@@ -28,12 +30,6 @@ PolarApproach::PolarApproach()
     max_step_y_diff(0.01),
     max_step_theta_diff(0.1),
     // Kick
-    kick_x_min(0.12),
-    kick_x_max(0.22),
-    kick_y_tol(0.04),
-    kick_y_offset(0.08),
-    kick_theta_offset(0),
-    kick_theta_tol(10 * M_PI/180),
     kick_reward(0),
     kick_terminal_speed_factor(0.2),
     // Viewing the ball
@@ -80,34 +76,6 @@ void PolarApproach::setMaxDist(double dist)
 {
   max_dist = dist;
   updateLimits();
-}
-
-bool PolarApproach::canKickLeftFoot(const Eigen::VectorXd & state) const
-{
-  // Compute Basic properties
-  double ball_x = getBallX(state);
-  double ball_y = getBallY(state);
-  double theta  = state(2);
-  double kick_err = normalizeAngle(theta + kick_theta_offset);
-  // Check validity
-  bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
-  bool y_ok = std::fabs(ball_y - kick_y_offset) < kick_y_tol;
-  bool theta_ok = std::fabs(kick_err) < kick_theta_tol;
-  return x_ok && y_ok && theta_ok;
-}
-
-bool PolarApproach::canKickRightFoot(const Eigen::VectorXd & state) const
-{
-  // Compute Basic properties
-  double ball_x = getBallX(state);
-  double ball_y = getBallY(state);
-  double theta  = state(2);
-  double kick_err = normalizeAngle(theta - kick_theta_offset);
-  // Check validity
-  bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
-  bool y_ok = std::fabs(ball_y + kick_y_offset) < kick_y_tol;
-  bool theta_ok = std::fabs(kick_err) < kick_theta_tol;
-  return x_ok && y_ok && theta_ok;
 }
 
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
@@ -222,7 +190,14 @@ Eigen::VectorXd PolarApproach::getStartingState(std::default_random_engine * eng
 
 bool PolarApproach::isKickable(const Eigen::VectorXd & state) const
 {
-  return canKickLeftFoot(state) || canKickRightFoot(state);
+  Eigen::Vector3d ball_state;
+  ball_state << getBallX(state), getBallY(state), state(2);
+  for (const KickZone & zone : kick_zones) {
+    if (zone.isKickable(ball_state)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool PolarApproach::isColliding(const Eigen::VectorXd & state) const
@@ -261,9 +236,7 @@ void PolarApproach::to_xml(std::ostream & out) const {
 void PolarApproach::from_xml(TiXmlNode * node)
 {
   std::string odometry_path;
-  rosban_utils::xml_tools::try_read<std::string>(node,
-                                                 "odometry_path",
-                                                 odometry_path);
+  try_read<std::string>(node, "odometry_path", odometry_path);
 
   // If coefficients have been properly read, use them
   if (odometry_path != "")
@@ -278,34 +251,30 @@ void PolarApproach::from_xml(TiXmlNode * node)
       throw std::runtime_error(oss.str());
     }
   }
+  // Read kicks
+  read_serializable_vector<KickZone>(node, "kick_zones");
   // Read internal properties
-  rosban_utils::xml_tools::try_read<double>(node,"max_dist", max_dist);
-  rosban_utils::xml_tools::try_read<double>(node,"min_step_x", min_step_x);
-  rosban_utils::xml_tools::try_read<double>(node,"max_step_x", max_step_x);
-  rosban_utils::xml_tools::try_read<double>(node,"max_step_y", max_step_y);
-  rosban_utils::xml_tools::try_read<double>(node,"max_step_theta", max_step_theta);
-  rosban_utils::xml_tools::try_read<double>(node,"max_step_x_diff", max_step_x_diff);
-  rosban_utils::xml_tools::try_read<double>(node,"max_step_y_diff", max_step_y_diff);
-  rosban_utils::xml_tools::try_read<double>(node,"max_step_theta_diff", max_step_theta_diff);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_x_min", kick_x_min);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_x_max", kick_x_max);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_y_tol", kick_y_tol);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_y_offset", kick_y_offset);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_theta_tol", kick_theta_tol);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_theta_offset", kick_theta_offset);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_reward", kick_reward);
-  rosban_utils::xml_tools::try_read<double>(node,"kick_terminal_speed_factor", kick_terminal_speed_factor);
-  rosban_utils::xml_tools::try_read<double>(node,"viewing_angle", viewing_angle);
-  rosban_utils::xml_tools::try_read<double>(node,"no_view_reward", no_view_reward);
-  rosban_utils::xml_tools::try_read<double>(node,"collision_x_front", collision_x_front);
-  rosban_utils::xml_tools::try_read<double>(node,"collision_x_back", collision_x_back);
-  rosban_utils::xml_tools::try_read<double>(node,"collision_y", collision_y);
-  rosban_utils::xml_tools::try_read<double>(node,"collision_reward", collision_reward);
-  rosban_utils::xml_tools::try_read<bool>  (node,"terminal_collisions", terminal_collisions);
-  rosban_utils::xml_tools::try_read<double>(node,"out_of_space_reward", out_of_space_reward);
-  rosban_utils::xml_tools::try_read<double>(node,"walk_frequency", walk_frequency);
-  rosban_utils::xml_tools::try_read<double>(node,"init_min_dist", init_min_dist);
-  rosban_utils::xml_tools::try_read<double>(node,"init_max_dist", init_max_dist);
+  try_read<double>(node,"max_dist", max_dist);
+  try_read<double>(node,"min_step_x", min_step_x);
+  try_read<double>(node,"max_step_x", max_step_x);
+  try_read<double>(node,"max_step_y", max_step_y);
+  try_read<double>(node,"max_step_theta", max_step_theta);
+  try_read<double>(node,"max_step_x_diff", max_step_x_diff);
+  try_read<double>(node,"max_step_y_diff", max_step_y_diff);
+  try_read<double>(node,"max_step_theta_diff", max_step_theta_diff);
+  try_read<double>(node,"kick_reward", kick_reward);
+  try_read<double>(node,"kick_terminal_speed_factor", kick_terminal_speed_factor);
+  try_read<double>(node,"viewing_angle", viewing_angle);
+  try_read<double>(node,"no_view_reward", no_view_reward);
+  try_read<double>(node,"collision_x_front", collision_x_front);
+  try_read<double>(node,"collision_x_back", collision_x_back);
+  try_read<double>(node,"collision_y", collision_y);
+  try_read<double>(node,"collision_reward", collision_reward);
+  try_read<bool>  (node,"terminal_collisions", terminal_collisions);
+  try_read<double>(node,"out_of_space_reward", out_of_space_reward);
+  try_read<double>(node,"walk_frequency", walk_frequency);
+  try_read<double>(node,"init_min_dist", init_min_dist);
+  try_read<double>(node,"init_max_dist", init_max_dist);
 
   // Update limits according to the new parameters
   updateLimits();

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kick_model/kick_zone.h"
+
 #include "rosban_csa_mdp/core/black_box_problem.h"
 
 #include "Odometry/Odometry.hpp"
@@ -65,11 +67,6 @@ public:
   /// Update maximal distance at which the ball is accepted
   void setMaxDist(double dist);
 
-  /// Does the position of the ball allows the robot to kick with the left foot?
-  bool canKickLeftFoot(const Eigen::VectorXd & state) const;
-  /// Does the position of the ball allows the robot to kick with the right foot?
-  bool canKickRightFoot(const Eigen::VectorXd & state) const;
-
 protected:
   /// The displacement and noise model
   Leph::Odometry odometry;
@@ -91,25 +88,11 @@ protected:
   double max_step_y_diff;
   double max_step_theta_diff;
 
-  // TARGET PROPERTIES
-  /// Minimal distance along x to kick
-  double kick_x_min;
-  /// Maximal distance along x to kick
-  double kick_x_max;
-  /// Ball tolerance along y axis for shooting
-  double kick_y_tol;
-  /// Ball ideal offset in y for each foot: (offset for left_foot, -offset for right_foot)
-  /// Warning: For lateral kicks, offset should be a negative value (kick with opposite foot)
-  double kick_y_offset;
-  /// Direction offset when kicking the ball: symetrical
-  /// right_kick: kick_dir = robot_dir + kick_theta_offset
-  /// left_kick : kick_dir = robot_dir - kick_theta_offset
-  /// For forward kicks, value is expected to be 0
-  /// For lateral kicks, value is expected to be pi/2
-  double kick_theta_offset;
-  /// The maximal angle allowed for kicking
-  double kick_theta_tol;
-  /// Reward received when reaching kick position
+  // KICK PROPERTIES
+  /// There might be several zones for kicking
+  std::vector<KickZone> kick_zones;
+
+  /// Reward received when inside a kick position
   double kick_reward;
   /// If negative, kick_area is never terminal [default]
   /// If positive:
