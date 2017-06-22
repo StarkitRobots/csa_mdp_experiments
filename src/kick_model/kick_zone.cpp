@@ -41,7 +41,8 @@ bool KickZone::canKickLeftFoot(const Eigen::Vector3d & state) const
   bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
   bool y_ok = std::fabs(ball_y - kick_y_offset) < kick_y_tol;
   bool theta_ok = std::fabs(kick_err) < kick_theta_tol;
-  return x_ok && y_ok && theta_ok;
+  bool kick_ok = x_ok && y_ok && theta_ok;
+  return kick_ok;
 }
 
 bool KickZone::canKickRightFoot(const Eigen::Vector3d & state) const
@@ -55,7 +56,8 @@ bool KickZone::canKickRightFoot(const Eigen::Vector3d & state) const
   bool x_ok = ball_x > kick_x_min && ball_x < kick_x_max;
   bool y_ok = std::fabs(ball_y + kick_y_offset) < kick_y_tol;
   bool theta_ok = std::fabs(kick_err) < kick_theta_tol;
-  return x_ok && y_ok && theta_ok;
+  bool kick_ok = x_ok && y_ok && theta_ok;
+  return kick_ok;
 }
 
 void KickZone::to_xml(std::ostream & out) const

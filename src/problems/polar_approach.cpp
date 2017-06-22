@@ -82,7 +82,7 @@ bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
 {
   bool collision_terminal = (terminal_collisions && isColliding(state));
   bool kick_terminal = false;
-  if (kick_terminal_speed_factor > 0) {
+  if (kick_terminal_speed_factor > 0 && isKickable(state)) {
     kick_terminal = true;
     const Eigen::MatrixXd & action_limits = getActionLimits(0);
     // Check that all orders are below the given threshold
@@ -252,7 +252,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
     }
   }
   // Read kicks
-  read_serializable_vector<KickZone>(node, "kick_zones");
+  kick_zones = read_serializable_vector<KickZone>(node, "kick_zones");
   // Read internal properties
   try_read<double>(node,"max_dist", max_dist);
   try_read<double>(node,"min_step_x", min_step_x);
