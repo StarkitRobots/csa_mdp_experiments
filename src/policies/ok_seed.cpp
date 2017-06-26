@@ -22,7 +22,7 @@ Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd & state,
   double ball_x = state(0);
   double ball_y = state(1);
   // Backlane situation
-  if (ball_x < back_limit) { 
+  if (ball_x < back_limit) {
     return backlaneKick();
   }
   // Center situation
@@ -34,7 +34,7 @@ Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd & state,
     return placeKick();
   }
   // Finish goal!
-  return finishKick(ball_y > 0);
+  return finishKick(ball_y > 0 ? 1 : -1);
 }
 
 std::unique_ptr<rosban_fa::FATree> OKSeed::extractFATree() const

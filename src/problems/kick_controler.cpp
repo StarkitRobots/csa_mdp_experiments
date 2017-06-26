@@ -26,7 +26,7 @@ void KickControler::KickOption::to_xml(std::ostream & out) const {
 void KickControler::KickOption::from_xml(TiXmlNode * node)
 {
   kick_model = KickModelFactory().read(node, "kick_model");
-  approach_model.from_xml(node);
+  approach_model.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
 }
 
@@ -52,7 +52,7 @@ void KickControler::Player::from_xml(TiXmlNode * node)
     ko->from_xml(child);
     kick_options.push_back(std::move(ko));
   }
-  navigation_approach.from_xml(node);
+  navigation_approach.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
 }
 
