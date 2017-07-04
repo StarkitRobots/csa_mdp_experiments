@@ -9,8 +9,8 @@
 //#include "problems/inverted_pendulum.h"
 //#include "problems/double_inverted_pendulum.h"
 //#include "problems/kick_optimizer.h"
-#include "problems/multi_kick_single_player.h"
-#include "problems/one_player_kick.h"
+//#include "problems/multi_kick_single_player.h"
+//#include "problems/one_player_kick.h"
 #include "problems/kick_controler.h"
 
 namespace csa_mdp
@@ -44,12 +44,12 @@ void ExtendedProblemFactory::registerExtraProblems()
                        [](){return std::unique_ptr<Problem>(new DoubleIntegrator);});
 //  registerExtraBuilder("kick_optimizer",
 //                       [](){return std::unique_ptr<Problem>(new KickOptimizer);}, false);
-  registerExtraBuilder("multi_kick_single_player",
-                       [](){return std::unique_ptr<Problem>(new MultiKickSinglePlayer);});
-  registerExtraBuilder("one_player_kick",
-                       [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
-  registerExtraBuilder("kick_controler",
-                       [](){return std::unique_ptr<Problem>(new KickControler);});
+//  registerExtraBuilder("multi_kick_single_player",
+//                       [](){return std::unique_ptr<Problem>(new MultiKickSinglePlayer);});
+//  registerExtraBuilder("one_player_kick",
+//                       [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
+//  registerExtraBuilder("kick_controler",
+//                       [](){return std::unique_ptr<Problem>(new KickControler);});
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)
