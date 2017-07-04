@@ -26,6 +26,11 @@ const Eigen::VectorXd & KickModel::getDefaultParameters() const
   return default_parameters;
 }
 
+double KickModel::getReward() const
+{
+  return kick_reward;
+}
+
 Eigen::Vector2d KickModel::applyKick(const Eigen::Vector2d & ball_pos,
                                      double kick_dir,
                                      std::default_random_engine * engine)const

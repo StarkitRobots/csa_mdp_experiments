@@ -33,6 +33,9 @@ public:
   /// The default value for the parameters
   const Eigen::VectorXd & getDefaultParameters() const;
 
+  /// Return the reward associated to the kick
+  double getReward() const;
+
   // TODO: move to KickDecisionModel
   ///// For some type of kicks, the direction of the kick might depend on
   ///// the position of the ball and the kick_parameters

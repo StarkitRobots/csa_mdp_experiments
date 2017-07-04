@@ -46,6 +46,7 @@ Eigen::Vector2d ClassicKick::applyKick(const Eigen::Vector2d & ball_pos,
 
 void ClassicKick::to_xml(std::ostream & out) const
 {
+  KickModel::to_xml(out);
   xml_tools::write<double>("kick_power"     , kick_power     , out);
   xml_tools::write<double>("right_kick_dir" , right_kick_dir , out);
   xml_tools::write<double>("rel_dist_stddev", rel_dist_stddev, out);
@@ -54,6 +55,7 @@ void ClassicKick::to_xml(std::ostream & out) const
 
 void ClassicKick::from_xml(TiXmlNode * node)
 {
+  KickModel::from_xml(node);
   xml_tools::try_read<double>(node, "kick_power"     , kick_power     );
   xml_tools::try_read<double>(node, "right_kick_dir" , right_kick_dir );
   xml_tools::try_read<double>(node, "rel_dist_stddev", rel_dist_stddev);

@@ -1,38 +1,31 @@
 #pragma once
 
-#include "kick_model/kick_model.h"
+#include "kick_model/kick_decision_model.h"
 
 namespace csa_mdp
 {
 
-class FinalKick : public KickModel {
+/// Final kick chooses only the direction of the kick according to the ball
+/// position.
+/// The direction is chosen in order to reach theoretically the goal line at a
+/// chosen y value (action)
+class FinalKick : public KickDecisionModel {
 public:
 
   FinalKick();
 
-  virtual Eigen::MatrixXd getActionsLimits() const override;
-  virtual std::vector<std::string> getActionsNames() const override;
+  void updateActionLimits();
 
-  using KickModel::applyKick;
-
-  virtual double getWishedDir(double ball_x, double ball_y,
-                              const Eigen::VectorXd & kick_parameters) const;
-
-  /// Throw an error if kick_parameters size is not adapted
-  virtual void applyKick(double ball_start_x, double ball_start_y,
-                         const Eigen::VectorXd & kick_parameters,
-                         std::default_random_engine * engine,
-                         double * final_ball_x, double * final_ball_y,
-                         double * kick_reward) const override;
+  Eigen::VectorXd computeKickParameters(const Eigen::Vector2d & ball_pos,
+                                        const Eigen::VectorXd & actions) const override;
+  double computeKickDirection(const Eigen::Vector2d & ball_pos,
+                              const Eigen::VectorXd & actions) const override;
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
-private:
-  /// The average distance of the shoot
-  double kick_power;
-  
+private:  
   /// The position of the opponent goal in x (expecting field_length / 2)
   double goal_x;
 

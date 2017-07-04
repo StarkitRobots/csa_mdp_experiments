@@ -48,8 +48,8 @@ void ExtendedProblemFactory::registerExtraProblems()
 //                       [](){return std::unique_ptr<Problem>(new MultiKickSinglePlayer);});
 //  registerExtraBuilder("one_player_kick",
 //                       [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
-//  registerExtraBuilder("kick_controler",
-//                       [](){return std::unique_ptr<Problem>(new KickControler);});
+  registerExtraBuilder("kick_controler",
+                       [](){return std::unique_ptr<Problem>(new KickControler);});
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)

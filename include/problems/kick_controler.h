@@ -1,6 +1,7 @@
 #pragma once
 
 #include "problems/polar_approach.h"
+#include "kick_model/kick_decision_model.h"
 #include "kick_model/kick_model.h"
 
 #include "rosban_csa_mdp/core/black_box_problem.h"
@@ -60,6 +61,8 @@ public:
   /// - Approach policy: To choose the orders sent to the walk when simulating the approach
   class KickOption : rosban_utils::Serializable {
   public:
+    //TODO: replace it
+    std::unique_ptr<KickDecisionModel> kick_decision_model;
     std::unique_ptr<KickModel> kick_model;
     PolarApproach approach_model;
     /// The policy used for the approach problem

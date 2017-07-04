@@ -1,5 +1,6 @@
 #include "problems/kick_controler.h"
 
+#include "kick_model/kick_decision_model_factory.h"
 #include "kick_model/kick_model_factory.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
@@ -25,6 +26,7 @@ void KickControler::KickOption::to_xml(std::ostream & out) const {
 
 void KickControler::KickOption::from_xml(TiXmlNode * node)
 {
+  kick_decision_model = KickDecisionModelFactory().read(node, "kick_decision_model");
   kick_model = KickModelFactory().read(node, "kick_model");
   approach_model.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
@@ -97,7 +99,7 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   analyzeActionId(action_id, &kicker_id, &kick_option_id);
   const KickOption & kick_option = *(players[kicker_id]->kick_options[kick_option_id]);
   // Checking action dimension (depending on kick_option)
-  int kick_dims = kick_option.kick_model->getActionsLimits().rows();
+  int kick_dims = kick_option.kick_decision_model->getActionsLimits().rows();
   int expected_action_dimension = 1 + kick_dims + 3 * (players.size()-1);
   if (action.rows() != expected_action_dimension) {
     std::ostringstream oss;
@@ -110,9 +112,16 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   result.successor = state;
   result.reward = 0;
   result.terminal = false;
-  // Importing the parameters of the state
+  // Importing the parameters of the state and action
+  Eigen::Vector2d ball_seen = state.segment(0,2);
+  Eigen::VectorXd decision_actions = action.segment(1, kick_dims);
   double ball_x = state(0);
   double ball_y = state(1);
+  // Computing decision parameters
+  const KickDecisionModel & kdm = *(kick_option.kick_decision_model);
+  double kick_dir = kdm.computeKickDirection(ball_seen, decision_actions);
+  Eigen::VectorXd kick_parameters = kdm.computeKickParameters(ball_seen,
+                                                              decision_actions);
   // T1: Adding noise to get ball_real
   double ball_real_x, ball_real_y;
   initialBallNoise(ball_x, ball_y, &ball_real_x, &ball_real_y, engine);
@@ -137,10 +146,11 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   // T4: Apply kick with noise
   double ball_final_x, ball_final_y;
   double kick_reward;
-  kick_option.kick_model->applyKick(ball_real_x, ball_real_y,
-                                    action.segment(1, kick_dims), engine,
-                                    &ball_final_x, &ball_final_y, &kick_reward);
-  result.reward += kick_reward;
+  Eigen::Vector2d ball_real(ball_real_x, ball_real_y);
+  Eigen::Vector2d ball_final;
+  ball_final = kick_option.kick_model->applyKick(ball_real, kick_dir,
+                                                 kick_parameters, engine);
+  kick_reward = kick_option.kick_model->getReward();
   // T5: TODO: move other robots
   int extra_steps = (int)-kick_reward;
   runSteps(extra_steps, action, kicker_id, kick_option_id, false, &result, engine);
@@ -276,22 +286,21 @@ Eigen::Vector3d KickControler::getTarget(const Eigen::VectorXd & state,
                                          int kick_option) const
 {
   // Importing basic kick properties
-  const KickModel & kick_model = *(players[kicker_id]->kick_options[kick_option]->kick_model);
-  int kick_dims = kick_model.getActionsLimits().rows();
+  const KickDecisionModel & kdm =
+    *(players[kicker_id]->kick_options[kick_option]->kick_decision_model);
+  int kick_dims = kdm.getActionsLimits().rows();
   // Computing target
   Eigen::Vector3d target;
   // If player is a kicker, target depend on chosen kick
   if (player_id == kicker_id) {
     // Renaming variables to improve readability
-    double ball_x = state(0);
-    double ball_y = state(1);
+    Eigen::Vector2d ball_seen = state.segment(0,2);
     // Target is the ball
-    target(0) = ball_x;
-    target(1) = ball_y;
+    target.segment(0,2) = ball_seen;
     // Importing kick_action
-    Eigen::VectorXd kick_action = action.segment(1, kick_dims);
-    // Using kick model to determine where action 
-    target(2) = kick_model.getWishedDir(ball_x, ball_y, kick_action);
+    Eigen::VectorXd kick_actions = action.segment(1, kick_dims);
+    // Using kick decision model to determine direction of the kick
+    target(2) = kdm.computeKickDirection(ball_seen, kick_actions);
   }
   else {
     int start_row = 1 + kick_dims + 3 * player_id;
@@ -421,15 +430,15 @@ double KickControler::getKickDir(const Eigen::VectorXd & state,
   int kicker_id(0), kick_option(0);
   analyzeActionId(action_id, &kicker_id, &kick_option);
   // Importing basic kick properties
-  const KickModel & kick_model = *(players[kicker_id]->kick_options[kick_option]->kick_model);
-  int kick_dims = kick_model.getActionsLimits().rows();
+  const KickDecisionModel & kdm =
+    *(players[kicker_id]->kick_options[kick_option]->kick_decision_model);
+  int kick_dims = kdm.getActionsLimits().rows();
   // Renaming variables to improve readability
-  double ball_x = state(0);
-  double ball_y = state(1);
+  Eigen::Vector2d ball_seen = state.segment(0,2);
   // Importing kick_action
   Eigen::VectorXd kick_action = action.segment(1, kick_dims);
   // Using kick model to determine where action 
-  return kick_model.getWishedDir(ball_x, ball_y, kick_action);
+  return kdm.computeKickDirection(ball_seen, kick_action);
 }
 
 Eigen::Matrix<double,2,2> KickControler::getFieldLimits() const
@@ -494,18 +503,19 @@ void KickControler::updateActionsLimits()
     players[p_id]->approach_policy->setActionLimits(nav_action_limits);
     for (size_t ko_id = 0; ko_id < players[p_id]->kick_options.size(); ko_id++) {
       // kick_model
-      const KickModel & kick_model = *(players[p_id]->kick_options[ko_id]->kick_model);
+      const KickDecisionModel & kdm =
+        *(players[p_id]->kick_options[ko_id]->kick_decision_model);
       // Updating the approach action limits for approach policies
       std::vector<Eigen::MatrixXd> app_action_limits;
       app_action_limits = players[p_id]->kick_options[ko_id]->approach_model.getActionsLimits();
       players[p_id]->kick_options[ko_id]->approach_policy->setActionLimits(app_action_limits);
       // Getting current kick model parameters limits
-      Eigen::MatrixXd kick_limits = kick_model.getActionsLimits();
+      Eigen::MatrixXd kick_limits = kdm.getActionsLimits();
       int kick_dims = kick_limits.rows();
       // Filling action spaces and names for this problem
       Eigen::MatrixXd action_limits(kick_dims + 3 * (players.size()-1),2);
       action_limits.block(0,0,kick_dims,2) = kick_limits;
-      std::vector<std::string> action_names = kick_model.getActionsNames();
+      std::vector<std::string> action_names = kdm.getActionsNames();
       // A target is provided for each robot
       for (size_t non_kicker_id = 0; non_kicker_id < players.size(); non_kicker_id++) {
         int start_row = kick_dims + non_kicker_id * 3;
