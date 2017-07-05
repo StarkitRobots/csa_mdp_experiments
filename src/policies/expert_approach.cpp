@@ -173,17 +173,14 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
       wished_cmd(2) = rotate_theta_p * ball_azimuth;
       break;
     case State::near:
-      // Turn for alignements only if goal is entirely wrong
-      if (!good_align_goal)
-      {
-        wished_cmd(2) = near_theta_p * target_angle;
-      }
       // Move forward / backward if error along y is lower than a threshold
       if (std::fabs(y_error) < stop_y_near)
       {
         wished_cmd(0) = step_p * x_error;
       }
       wished_cmd(1) = near_lateral_p * y_error;
+      // Align with goals
+      wished_cmd(2) = near_theta_p * target_angle;
       break;
   }
 

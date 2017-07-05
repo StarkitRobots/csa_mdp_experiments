@@ -32,6 +32,8 @@ public:
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
+  virtual KickModel * clone() const override;
+
 private:
   /// The average distance of the shoot [m]
   double kick_power;
@@ -47,7 +49,6 @@ private:
   /// Standard deviation for the direction of the kick [rad]
   double dir_stddev;
 
-  //TODO: parameters from KickZone
 };
 
 }

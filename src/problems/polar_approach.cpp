@@ -1,5 +1,7 @@
 #include "problems/polar_approach.h"
 
+#include "kick_model/kick_model_collection.h"
+
 #include "rosban_utils/xml_tools.h"
 
 #include <cmath>
@@ -48,6 +50,11 @@ PolarApproach::PolarApproach()
     init_max_dist(max_dist - 0.05)
 {
   updateLimits();
+}
+
+void PolarApproach::addKickZone(const KickZone & kz)
+{
+  kick_zones.push_back(kz);
 }
 
 void PolarApproach::updateLimits()
@@ -190,6 +197,10 @@ Eigen::VectorXd PolarApproach::getStartingState(std::default_random_engine * eng
 
 bool PolarApproach::isKickable(const Eigen::VectorXd & state) const
 {
+  if (kick_zones.size() == 0) {
+    throw std::logic_error("PolarApproach::isKickable: No kick zones");
+  }
+
   Eigen::Vector3d ball_state;
   ball_state << getBallX(state), getBallY(state), state(2);
   for (const KickZone & zone : kick_zones) {
@@ -252,7 +263,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
     }
   }
   // Read kicks
-  kick_zones = read_serializable_vector<KickZone>(node, "kick_zones");
+  try_read_serializable_vector<KickZone>(node, "kick_zones", kick_zones);
   // Read internal properties
   try_read<double>(node,"max_dist", max_dist);
   try_read<double>(node,"min_step_x", min_step_x);
@@ -275,6 +286,17 @@ void PolarApproach::from_xml(TiXmlNode * node)
   try_read<double>(node,"walk_frequency", walk_frequency);
   try_read<double>(node,"init_min_dist", init_min_dist);
   try_read<double>(node,"init_max_dist", init_max_dist);
+
+  std::vector<std::string> kick_zone_names;
+  try_read_vector<std::string>(node, "kick_zone_names", kick_zone_names);
+
+  if (kick_zone_names.size() > 0) {
+    KickModelCollection kmc;
+    kmc.load_file();
+    for (const std::string & name : kick_zone_names) {
+      kick_zones.push_back(kmc.getKickModel(name).getKickZone());
+    }
+  }
 
   // Update limits according to the new parameters
   updateLimits();

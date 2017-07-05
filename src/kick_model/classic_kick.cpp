@@ -1,6 +1,11 @@
 #include "kick_model/classic_kick.h"
 
+#include <math.h>
+
 using namespace rosban_utils;
+
+static double deg2rad(double deg) { return M_PI * deg / 180; }
+static double rad2deg(double rad) { return 180 * rad / M_PI; }
 
 namespace csa_mdp
 {
@@ -22,13 +27,16 @@ Eigen::Vector2d ClassicKick::applyKick(const Eigen::Vector2d & ball_pos,
                                        const Eigen::VectorXd & kick_parameters,
                                        std::default_random_engine * engine) const
 {
+  (void) kick_parameters;
   double kick_real_dist = kick_power;
   double kick_real_dir = kick_dir;
   // If engine has been provided, apply noise
   if (engine != nullptr) {
+    //TODO: theta_tol could be provided by kick_parameters, but kick_decision models
+    //       would need to be changed
+    double theta_tol = 10 * M_PI / 180;
     // Uniform noise related to kick tolerance
-    std::uniform_real_distribution<double> player_dir_dist(-kick_parameters(0),
-                                                           kick_parameters(0));
+    std::uniform_real_distribution<double> player_dir_dist(-theta_tol, theta_tol);
     // Kick related noise
     std::normal_distribution<double> kick_dir_dist(0.0, dir_stddev);
     // Distance relative noise
@@ -47,19 +55,26 @@ Eigen::Vector2d ClassicKick::applyKick(const Eigen::Vector2d & ball_pos,
 void ClassicKick::to_xml(std::ostream & out) const
 {
   KickModel::to_xml(out);
+  // Using human readable values in xml
+  double kick_dir_deg   = rad2deg(right_kick_dir);
+  double dir_stddev_deg = rad2deg(dir_stddev);
   xml_tools::write<double>("kick_power"     , kick_power     , out);
-  xml_tools::write<double>("right_kick_dir" , right_kick_dir , out);
+  xml_tools::write<double>("right_kick_dir" , kick_dir_deg   , out);
   xml_tools::write<double>("rel_dist_stddev", rel_dist_stddev, out);
-  xml_tools::write<double>("dir_stddev"     , dir_stddev     , out);
+  xml_tools::write<double>("dir_stddev"     , dir_stddev_deg , out);
 }
 
 void ClassicKick::from_xml(TiXmlNode * node)
 {
   KickModel::from_xml(node);
-  xml_tools::try_read<double>(node, "kick_power"     , kick_power     );
-  xml_tools::try_read<double>(node, "right_kick_dir" , right_kick_dir );
-  xml_tools::try_read<double>(node, "rel_dist_stddev", rel_dist_stddev);
-  xml_tools::try_read<double>(node, "dir_stddev"     , dir_stddev     );
+  double kick_dir_deg, dir_stddev_deg;
+  kick_power      = xml_tools::read<double>(node, "kick_power"     );
+  kick_dir_deg    = xml_tools::read<double>(node, "right_kick_dir" );
+  rel_dist_stddev = xml_tools::read<double>(node, "rel_dist_stddev");
+  dir_stddev_deg  = xml_tools::read<double>(node, "dir_stddev"     );
+  // Stored informations are [rad], but xml values are [deg]
+  right_kick_dir = deg2rad(kick_dir_deg);
+  dir_stddev = deg2rad(dir_stddev_deg);
 }
 
 std::string ClassicKick::class_name() const
@@ -67,5 +82,9 @@ std::string ClassicKick::class_name() const
   return "ClassicKick";
 }
 
+KickModel * ClassicKick::clone() const
+{
+  return new ClassicKick(*this);
+}
 
 }

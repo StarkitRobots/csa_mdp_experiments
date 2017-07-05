@@ -1,6 +1,7 @@
 #include "problems/kick_controler.h"
 
 #include "kick_model/kick_decision_model_factory.h"
+#include "kick_model/kick_model_collection.h"
 #include "kick_model/kick_model_factory.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
@@ -9,6 +10,7 @@
 #include "rosban_utils/xml_tools.h"
 
 using namespace rosban_utils;
+using namespace rosban_utils::xml_tools;
 
 static double normalizeAngle(double angle)
 {
@@ -27,9 +29,23 @@ void KickControler::KickOption::to_xml(std::ostream & out) const {
 void KickControler::KickOption::from_xml(TiXmlNode * node)
 {
   kick_decision_model = KickDecisionModelFactory().read(node, "kick_decision_model");
-  kick_model = KickModelFactory().read(node, "kick_model");
+  KickModelFactory().tryReadVector(node, "kick_models", kick_models);
   approach_model.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
+  // Reading kick_model from name if found
+  std::vector<std::string> kick_model_names;
+  try_read_vector(node, "kick_model_names", kick_model_names);
+  if (kick_model_names.size() != 0) {
+    KickModelCollection kmc;
+    kmc.load_file();
+    for (const std::string & name : kick_model_names) {
+      kick_models.push_back(
+        std::unique_ptr<KickModel>(kmc.getKickModel(name).clone()));
+    }
+  }
+  for (size_t km_id = 0; km_id < kick_models.size(); km_id++) {
+    approach_model.addKickZone(kick_models[km_id]->getKickZone());
+  }
 }
 
 std::string KickControler::KickOption::class_name() const
@@ -143,15 +159,33 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   if (result.terminal) {
     return result;
   }
-  // T4: Apply kick with noise
+  // T4.0: Find the kick which need to be applied
+  //       (or return if none can be applied)
+  Eigen::Vector2d ball_real(ball_real_x, ball_real_y);
+  const Eigen::Vector3d & kicker_state =
+    getPlayerState(result.successor, kicker_id);
+  int kick_id = -1;
+  if (kick_option.kick_models.size() == 0) {
+    throw std::logic_error("no kick_models for current kick_option");
+  }
+  for (size_t i = 0; i < kick_option.kick_models.size(); i++) {
+    const KickZone & kick_zone = kick_option.kick_models[i]->getKickZone();
+    if (kick_zone.isKickable(ball_real, kicker_state, kick_dir)) {
+      kick_id = i;
+      break;
+    }
+  }
+  if (kick_id == -1) {
+    return result;
+  }
+  const KickModel & kick_model = *(kick_option.kick_models[kick_id]);
+  // T4.1: Apply kick with noise
   double ball_final_x, ball_final_y;
   double kick_reward;
-  Eigen::Vector2d ball_real(ball_real_x, ball_real_y);
   Eigen::Vector2d ball_final;
-  ball_final = kick_option.kick_model->applyKick(ball_real, kick_dir,
-                                                 kick_parameters, engine);
-  kick_reward = kick_option.kick_model->getReward();
-  // T5: TODO: move other robots
+  ball_final = kick_model.applyKick(ball_real, kick_dir, kick_parameters, engine);
+  kick_reward = kick_model.getReward();
+  // T5: move other robots
   int extra_steps = (int)-kick_reward;
   runSteps(extra_steps, action, kicker_id, kick_option_id, false, &result, engine);
   // T6: Testing if ball left the field after kick
@@ -528,8 +562,8 @@ void KickControler::updateActionsLimits()
           action_names.push_back(oss.str());
         }
       }
-      std::cout << "Action_limits: " << kick_action_limits.size() << std::endl
-                << action_limits << std::endl;
+//      std::cout << "Action_limits: " << kick_action_limits.size() << std::endl
+//                << action_limits << std::endl;
       kick_action_limits.push_back(action_limits);
       kick_action_names.push_back(action_names);
     }

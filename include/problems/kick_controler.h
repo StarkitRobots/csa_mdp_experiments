@@ -63,7 +63,7 @@ public:
   public:
     //TODO: replace it
     std::unique_ptr<KickDecisionModel> kick_decision_model;
-    std::unique_ptr<KickModel> kick_model;
+    std::vector<std::unique_ptr<KickModel>> kick_models;
     PolarApproach approach_model;
     /// The policy used for the approach problem
     /// S: (ball_dist, ball_dir, target_angle, last_step_x, last_step_y, last_step_theta)

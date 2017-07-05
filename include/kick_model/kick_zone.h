@@ -9,7 +9,7 @@
 namespace csa_mdp
 {
 
-/// Provided states follow this form
+/// Provided states follow this form (inside player_referential
 /// 0: ball_x   [m]
 /// 1: ball_y   [m]
 /// 2: kick_dir [rad]
@@ -19,7 +19,16 @@ public:
 
   KickZone();
 
+  /// Can the robot shoot with any of the foot?
   bool isKickable(const Eigen::Vector3d & state) const;
+
+  /// Can the robot shoot with any of the foot?
+  /// ball_pos is in field referential [m]
+  /// player_state is in field referential [m][m][rad]
+  /// kick_dir is in field_referential [rad]
+  bool isKickable(const Eigen::Vector2d & ball_pos,
+                  const Eigen::Vector3d & player_state,
+                  double kick_dir) const;
 
   /// Does the position of the ball allows the robot to kick with the left foot?
   bool canKickLeftFoot(const Eigen::Vector3d & state) const;

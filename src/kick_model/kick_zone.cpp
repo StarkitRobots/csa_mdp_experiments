@@ -30,6 +30,20 @@ bool KickZone::isKickable(const Eigen::Vector3d & state) const
   return canKickLeftFoot(state) || canKickRightFoot(state);
 }
 
+bool KickZone::isKickable(const Eigen::Vector2d & ball_pos,
+                          const Eigen::Vector3d & player_state,
+                          double kick_dir) const
+{
+  double dx = ball_pos(0) - player_state(0);
+  double dy = ball_pos(1) - player_state(1);
+  double player_dir = player_state(2);
+  Eigen::Vector3d state_in_self;
+  state_in_self(0) =   dx * cos(player_dir) + dy * sin(player_dir);
+  state_in_self(1) = - dx * sin(player_dir) + dy * cos(player_dir);
+  state_in_self(2) = kick_dir - player_dir;
+  return isKickable(state_in_self);
+}
+
 bool KickZone::canKickLeftFoot(const Eigen::Vector3d & state) const
 {
   // Getting explicit names

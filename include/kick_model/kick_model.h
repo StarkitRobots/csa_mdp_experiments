@@ -22,6 +22,8 @@ class KickModel : public rosban_utils::Serializable {
 public:
   KickModel();
 
+  const KickZone & getKickZone() const;
+
   /// Return the limits for the parameters (empty matrix if no parameters)
   /// @see parameters
   const Eigen::MatrixXd & getParametersLimits() const;
@@ -66,6 +68,8 @@ public:
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
+
+  virtual KickModel * clone() const = 0;
 
 protected:
   /// TODO: might be moved somewhere else

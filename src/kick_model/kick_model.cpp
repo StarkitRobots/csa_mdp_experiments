@@ -10,6 +10,12 @@ KickModel::KickModel()
 {
 }
 
+const KickZone & KickModel::getKickZone() const
+{
+  return kick_zone;
+}
+
+
 const Eigen::MatrixXd & KickModel::getParametersLimits() const
 {
   return parameters_limits;
