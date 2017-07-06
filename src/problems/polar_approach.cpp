@@ -52,6 +52,11 @@ PolarApproach::PolarApproach()
   updateLimits();
 }
 
+void PolarApproach::clearKickZones()
+{
+  kick_zones.clear();
+}
+
 void PolarApproach::addKickZone(const KickZone & kz)
 {
   kick_zones.push_back(kz);

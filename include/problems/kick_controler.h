@@ -2,7 +2,7 @@
 
 #include "problems/polar_approach.h"
 #include "kick_model/kick_decision_model.h"
-#include "kick_model/kick_model.h"
+#include "kick_model/kick_model_collection.h"
 
 #include "rosban_csa_mdp/core/black_box_problem.h"
 
@@ -63,7 +63,7 @@ public:
   public:
     //TODO: replace it
     std::unique_ptr<KickDecisionModel> kick_decision_model;
-    std::vector<std::unique_ptr<KickModel>> kick_models;
+    std::vector<std::string> kick_model_names;
     PolarApproach approach_model;
     /// The policy used for the approach problem
     /// S: (ball_dist, ball_dir, target_angle, last_step_x, last_step_y, last_step_theta)
@@ -73,6 +73,8 @@ public:
     void to_xml(std::ostream & out) const override;
     void from_xml(TiXmlNode * node) override;
     std::string class_name() const override;
+
+    void syncKickZones(const KickModelCollection & kmc);
   };
 
   /// Each player has its own custom configuration
@@ -130,17 +132,21 @@ public:
 
   size_t getNbPlayers() const;
 
-  // Import kicker_id and kick_id from action_id
+  /// Import kicker_id and kick_id from action_id
   void analyzeActionId(int action_id, int * kicker_id, int * kick_id) const;
 
-  // Get kick direction [rad] (in field basis)
+  /// Get kick direction [rad] (in field basis)
   double getKickDir(const Eigen::VectorXd & state,
                     const Eigen::VectorXd & action) const;
 
+  /// Return the names of kicks allowed for the given kick_option
+  const std::vector<std::string> & getAllowedKicks(int kicker_id,
+                                                   int kick_option);
+
 private:
-  // Return the limits for the field (row1: field_x, row2: field_y)
+  /// Return the limits for the field (row1: field_x, row2: field_y)
   Eigen::Matrix<double,2,2> getFieldLimits() const;
-  // Return the limits for the field (row1: field_x, row2: field_y, row3: orientation)
+  /// Return the limits for the field (row1: field_x, row2: field_y, row3: orientation)
   Eigen::Matrix<double,3,2> getPlayerLimits() const;
 
   /// Update state limits and names
@@ -249,6 +255,9 @@ private:
   double goalie_thickness;
   /// Goalie size along y-axis
   double goalie_width;
+
+  /// The collection of available kicks
+  KickModelCollection kmc;
 };
 
 }

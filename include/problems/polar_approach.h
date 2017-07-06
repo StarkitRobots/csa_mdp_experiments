@@ -34,6 +34,7 @@ class PolarApproach : public BlackBoxProblem {
 public:
   PolarApproach();
 
+  void clearKickZones();
   void addKickZone(const KickZone & kz);
 
   bool isTerminal(const Eigen::VectorXd & state) const;

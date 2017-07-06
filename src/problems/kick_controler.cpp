@@ -29,28 +29,23 @@ void KickControler::KickOption::to_xml(std::ostream & out) const {
 void KickControler::KickOption::from_xml(TiXmlNode * node)
 {
   kick_decision_model = KickDecisionModelFactory().read(node, "kick_decision_model");
-  KickModelFactory().tryReadVector(node, "kick_models", kick_models);
   approach_model.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
   // Reading kick_model from name if found
-  std::vector<std::string> kick_model_names;
-  try_read_vector(node, "kick_model_names", kick_model_names);
-  if (kick_model_names.size() != 0) {
-    KickModelCollection kmc;
-    kmc.load_file();
-    for (const std::string & name : kick_model_names) {
-      kick_models.push_back(
-        std::unique_ptr<KickModel>(kmc.getKickModel(name).clone()));
-    }
-  }
-  for (size_t km_id = 0; km_id < kick_models.size(); km_id++) {
-    approach_model.addKickZone(kick_models[km_id]->getKickZone());
-  }
+  kick_model_names = read_vector<std::string>(node, "kick_model_names");
 }
 
 std::string KickControler::KickOption::class_name() const
 {
   return "kick_controler_kick_option";
+}
+
+void KickControler::KickOption::syncKickZones(const KickModelCollection & kmc)
+{
+  approach_model.clearKickZones();
+  for (const std::string & name : kick_model_names) {
+    approach_model.addKickZone(kmc.getKickModel(name).getKickZone());
+  }
 }
 
 void KickControler::Player::to_xml(std::ostream & out) const {
@@ -164,21 +159,21 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   Eigen::Vector2d ball_real(ball_real_x, ball_real_y);
   const Eigen::Vector3d & kicker_state =
     getPlayerState(result.successor, kicker_id);
-  int kick_id = -1;
-  if (kick_option.kick_models.size() == 0) {
-    throw std::logic_error("no kick_models for current kick_option");
+  if (kick_option.kick_model_names.size() == 0) {
+    throw std::logic_error("no kick_model_names for current kick_option");
   }
-  for (size_t i = 0; i < kick_option.kick_models.size(); i++) {
-    const KickZone & kick_zone = kick_option.kick_models[i]->getKickZone();
+  std::string kick_name;
+  for (const std::string & name : kick_option.kick_model_names) {
+    const KickZone & kick_zone = kmc.getKickModel(name).getKickZone();
     if (kick_zone.isKickable(ball_real, kicker_state, kick_dir)) {
-      kick_id = i;
+      kick_name = name;
       break;
     }
   }
-  if (kick_id == -1) {
+  if (kick_name == "") {
     return result;
   }
-  const KickModel & kick_model = *(kick_option.kick_models[kick_id]);
+  const KickModel & kick_model = kmc.getKickModel(kick_name);
   // T4.1: Apply kick with noise
   double ball_final_x, ball_final_y;
   double kick_reward;
@@ -457,6 +452,13 @@ void KickControler::analyzeActionId(int action_id, int * kicker_id, int * kick_i
     throw std::logic_error(oss.str());
   }
 }
+
+const std::vector<std::string> & KickControler::getAllowedKicks(int kicker_id,
+                                                                int kick_option)
+{
+  return players[kicker_id]->kick_options[kick_option]->kick_model_names;
+}
+
 double KickControler::getKickDir(const Eigen::VectorXd & state,
                                  const Eigen::VectorXd & action) const
 {
