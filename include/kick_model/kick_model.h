@@ -38,14 +38,6 @@ public:
   /// Return the reward associated to the kick
   double getReward() const;
 
-  // TODO: move to KickDecisionModel
-  ///// For some type of kicks, the direction of the kick might depend on
-  ///// the position of the ball and the kick_parameters
-  ///// return: the target angle for kick [rad]
-  //virtual double getWishedDir(double ball_x, double ball_y,
-  //                            const Eigen::VectorXd & kick_parameters) const = 0;
-
-
   /// Version of the function which uses the default values for the parameters
   /// - ball_pos: field_basis [m]
   /// - kick_dir: The desired kick direction in the field_basis [rad]

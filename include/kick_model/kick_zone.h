@@ -19,8 +19,9 @@ public:
 
   KickZone();
 
-  /// Return the central position for kick
-  /// (x,y,th
+  /// Return the desired position for kick with the given foot
+  /// (wishedX [m], wishedY[m], wishedOffset [rad])
+  Eigen::Vector3d getWishedPos(bool right_foot) const;
   
 
   /// Can the robot shoot with any of the foot?
@@ -69,7 +70,7 @@ protected:
   /// right_kick: kick_dir = robot_dir + kick_theta_offset
   /// left_kick : kick_dir = robot_dir - kick_theta_offset
   /// For forward kicks, value is expected to be 0
-  /// For lateral kicks, value is expected to be pi/2
+  /// For lateral kicks, value is expected to be around pi/2
   double kick_theta_offset;
   /// The maximal angle allowed for kicking
   double kick_theta_tol;
