@@ -28,6 +28,9 @@ public:
                                     const Eigen::VectorXd & kick_parameters,
                                     std::default_random_engine * engine = nullptr) const override;
 
+  virtual Eigen::Vector2d getKickInSelf(const Eigen::Vector2d & ball_pos,
+                                        bool right_kick) const override;
+
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;

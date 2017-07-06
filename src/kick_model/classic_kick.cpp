@@ -52,6 +52,14 @@ Eigen::Vector2d ClassicKick::applyKick(const Eigen::Vector2d & ball_pos,
   return final_pos;
 }
 
+Eigen::Vector2d ClassicKick::getKickInSelf(const Eigen::Vector2d & ball_pos,
+                                           bool right_kick) const
+{
+  double kick_dir = right_kick ? right_kick_dir : -right_kick_dir;
+  return applyKick(ball_pos, kick_dir);
+}
+
+
 void ClassicKick::to_xml(std::ostream & out) const
 {
   KickModel::to_xml(out);

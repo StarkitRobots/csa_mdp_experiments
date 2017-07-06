@@ -19,6 +19,15 @@ const KickModel & KickModelCollection::getKickModel(const std::string & name) co
   }
 }
 
+std::vector<std::string> KickModelCollection::getKickNames() const
+{
+  std::vector<std::string> names;
+  for (const auto & entry : models) {
+    names.push_back(entry.first);
+  }
+  return names;
+}
+
 void KickModelCollection::to_xml(std::ostream & out) const
 {
   (void) out;

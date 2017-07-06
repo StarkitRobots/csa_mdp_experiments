@@ -13,7 +13,11 @@ class KickModelCollection : public rosban_utils::Serializable
 public:
   KickModelCollection();
 
+  /// throw exception if name is not found
   const KickModel & getKickModel(const std::string & name) const;
+
+  /// Return the name of all the kicks inside the collection
+  std::vector<std::string> getKickNames() const;
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;

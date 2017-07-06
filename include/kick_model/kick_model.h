@@ -55,6 +55,10 @@ public:
                             double kick_dir,
                             std::default_random_engine * engine = nullptr) const;
 
+  /// Get average final position for the kick
+  virtual Eigen::Vector2d getKickInSelf(const Eigen::Vector2d & ball_pos,
+                                        bool right_kick) const = 0;
+
   /// Throw an error if kick_parameters size is not adapted
   /// - ball_pos: field_basis [m]
   /// - kick_dir: field_basis [rad]
