@@ -38,6 +38,16 @@ Eigen::Vector3d KickZone::getWishedPos(bool right_foot) const
   return result;
 }
 
+double KickZone::getXRange() const
+{
+  return kick_x_max - kick_x_min;
+}
+
+double KickZone::getYRange() const
+{
+  return kick_y_tol;
+}
+
 bool KickZone::isKickable(const Eigen::Vector3d & state) const
 {
   return canKickLeftFoot(state) || canKickRightFoot(state);

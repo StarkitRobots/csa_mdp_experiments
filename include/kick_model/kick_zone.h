@@ -9,7 +9,7 @@
 namespace csa_mdp
 {
 
-/// Provided states follow this form (inside player_referential
+/// Provided states follow this form (inside player_referential)
 /// 0: ball_x   [m]
 /// 1: ball_y   [m]
 /// 2: kick_wished_dir [rad]
@@ -22,7 +22,11 @@ public:
   /// Return the desired position for kick with the given foot
   /// (wishedX [m], wishedY[m], wishedOffset [rad])
   Eigen::Vector3d getWishedPos(bool right_foot) const;
-  
+
+  /// Return the available margin along x-axis from the center [m]
+  double getXRange() const;
+  /// Return the available margin along x-axis from the center [m]
+  double getYRange() const;
 
   /// Can the robot shoot with any of the foot?
   bool isKickable(const Eigen::Vector3d & state) const;
