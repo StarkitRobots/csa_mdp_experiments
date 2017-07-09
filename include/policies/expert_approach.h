@@ -45,7 +45,9 @@ public:
   // - Step is always step_max in far
   virtual std::unique_ptr<rosban_fa::FATree> extractFATree() const override;
 
-  virtual std::unique_ptr<rosban_fa::FATree> extractLateralFATree() const;
+  std::unique_ptr<rosban_fa::FATree> extractClassicFATree() const;
+  std::unique_ptr<rosban_fa::FATree> extractLateralFATree() const;
+  std::unique_ptr<rosban_fa::FATree> extractOpportunistFATree() const;
 
   // Read type from the given string
   Type loadType(const std::string & type_str);
@@ -58,10 +60,19 @@ private:
   /// What is the current state of the approach
   State memory_state;
 
-  /// Should approach end with a lateral kick or not?
-  bool lateral_kick;
+  /// Currently, there is 3  approach types: classic, lateral and opportunist
+  std::string approach_type;
+
+  /// When approach_type is opportunist, lateral approach is chosen only if angle
+  /// is larger than lateral_threshold
+  double lateral_threshold;
+
+  /// What is the kick direction with the right foot in robot referential [rad]
+  double right_foot_kick_dir;
 
   /// Ball offset for kicking with left foot (opposite for right foot)
+  /// WARNING: always provide positive values, y is inverted automatically for
+  /// lateral kicks
   /// @see PolarApproach:kick_y_offset
   double foot_y_offset;
 

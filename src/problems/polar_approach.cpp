@@ -90,6 +90,15 @@ void PolarApproach::setMaxDist(double dist)
   updateLimits();
 }
 
+const Leph::Odometry & PolarApproach::getOdometry() const
+{
+  return odometry;
+}
+void PolarApproach::setOdometry(const Leph::Odometry & new_odometry)
+{
+  odometry = new_odometry;
+}
+
 bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
 {
   bool collision_terminal = (terminal_collisions && isColliding(state));

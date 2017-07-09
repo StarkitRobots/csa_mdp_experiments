@@ -56,12 +56,12 @@ class KickControler : public BlackBoxProblem
 {
 public:
   /// Several kick options might be available, but each kick options has its own:
-  /// - Kick model     : To determine the eventual results
-  /// - Approach model : To determine in which states it is allowable to kick
-  /// - Approach policy: To choose the orders sent to the walk when simulating the approach
+  /// - Kick decision model: To choose how parameters of the kick are computed
+  /// - Kick model         : To determine the eventual results
+  /// - Approach model     : To determine in which states it is allowable to kick
+  /// - Approach policy    : To choose the orders sent to the walk when simulating the approach
   class KickOption : rosban_utils::Serializable {
   public:
-    //TODO: replace it
     std::unique_ptr<KickDecisionModel> kick_decision_model;
     std::vector<std::string> kick_model_names;
     PolarApproach approach_model;

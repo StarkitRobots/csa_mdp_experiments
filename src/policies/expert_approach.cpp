@@ -5,6 +5,9 @@
 
 using namespace rosban_fa;
 
+static double deg2rad(double deg) { return M_PI * deg / 180; }
+static double rad2deg(double rad) { return 180 * rad / M_PI; }
+
 namespace csa_mdp
 {
 
@@ -13,7 +16,7 @@ const int ExpertApproach::nb_parameters = 15;
 ExpertApproach::ExpertApproach()
   : type(Type::cartesian),
     memory_state(State::far),
-    lateral_kick(false),
+    approach_type("classic"),
     foot_y_offset(0.08),
     step_max(0.04),
     max_rotate_radius(0.6),
@@ -115,16 +118,19 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
   float x_error = ball_x - wished_x;
   float y_error = ball_y - wished_y;
 
+  
   // In lateral mode, target angle and y error change
-  if (lateral_kick) {
+  if ((approach_type == "opportunist" && std::fabs(target_angle) > lateral_threshold)
+      || approach_type == "lateral") {
     // If target is on the left, use right foot, else use left foot
+    // For foot_y_offset, sign is inverted because it is always specified as a positive value
     if (target_angle > 0) {
-      target_angle -= M_PI/2;
-      y_error += foot_y_offset;
+      target_angle -= right_foot_kick_dir;
+      y_error -= foot_y_offset;
     }
     else {
-      target_angle += M_PI/2;
-      y_error -= foot_y_offset;
+      target_angle += right_foot_kick_dir;
+      y_error += foot_y_offset;
     }
   }
   else { 
@@ -208,7 +214,7 @@ void ExpertApproach::to_xml(std::ostream & out) const
   rosban_utils::xml_tools::write<std::string>("type", to_string(type), out);
   rosban_utils::xml_tools::write<double>("step_p", step_p, out);
   rosban_utils::xml_tools::write<double>("near_lateral_p", near_lateral_p, out);
-  rosban_utils::xml_tools::write<bool>  ("lateral_kick" , lateral_kick , out);
+  rosban_utils::xml_tools::write<std::string>  ("approach_type" , approach_type, out);
   rosban_utils::xml_tools::write<double>("foot_y_offset", foot_y_offset, out);
   rosban_utils::xml_tools::write<double>("target_theta_tol", target_theta_tol, out);
   rosban_utils::xml_tools::write<double>("ball_theta_tol"  , ball_theta_tol  , out);
@@ -231,11 +237,35 @@ void ExpertApproach::from_xml(TiXmlNode * node)
   rosban_utils::xml_tools::try_read<double>(node, "step_p", step_p);
   rosban_utils::xml_tools::try_read<double>(node, "near_theta_p", near_theta_p);
   rosban_utils::xml_tools::try_read<double>(node, "near_lateral_p", near_lateral_p);
-  rosban_utils::xml_tools::try_read<bool>  (node, "lateral_kick" , lateral_kick );
   rosban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
   rosban_utils::xml_tools::try_read<double>(node, "wished_x", wished_x);
   rosban_utils::xml_tools::try_read<double>(node, "target_theta_tol", target_theta_tol);
   rosban_utils::xml_tools::try_read<double>(node, "ball_theta_tol", ball_theta_tol);
+  rosban_utils::xml_tools::try_read<std::string>(node, "approach_type" , approach_type);
+  bool valid_type = false;
+  for (const std::string & name : {"lateral", "classic", "opportunist"}) {
+    if (name == approach_type) {
+      valid_type = true;
+      break;
+    }
+  }
+  if (!valid_type) {
+    throw std::runtime_error("ExpertApproach::from_xml: invalid approach_type: '" 
+                             + approach_type + "'");
+  }
+  if (foot_y_offset < 0) {
+    throw std::runtime_error("ExpertApproach::from_xml: foot_y_offset should always be positive");
+  }
+  // Read right_foot_kick_dir (from deg to rad)
+  double right_foot_kick_dir_deg = rad2deg(right_foot_kick_dir);
+  rosban_utils::xml_tools::try_read<double>(node, "right_foot_kick_dir", right_foot_kick_dir_deg);
+  right_foot_kick_dir = deg2rad(right_foot_kick_dir_deg);
+  // Read lateral threshold (from deg to rad)
+  if (approach_type == "opportunist") {
+    double lateral_threshold_deg = rad2deg(lateral_threshold);
+    rosban_utils::xml_tools::try_read<double>(node, "lateral_threshold", lateral_threshold_deg);
+    lateral_threshold = deg2rad(lateral_threshold_deg);
+  }
   // Reading vector list of parameters
   std::vector<double> params_read;
   rosban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);
@@ -269,9 +299,18 @@ std::unique_ptr<FATree> ExpertApproach::extractFATree() const {
   if (type != Type::polar) {
     throw std::logic_error("ExpertApproach::extractFATree: not implemented for non-polar");
   }
-  if (lateral_kick) {
+  if (approach_type == "lateral") {
     return extractLateralFATree();
+  } else if (approach_type == "classic") {
+    return extractClassicFATree();
+  } else if (approach_type == "opportunist") {
+    return extractOpportunistFATree();
   }
+  throw std::logic_error("ExpertApproach::extractFATree: unknown type: '"
+                         + approach_type + "'");
+}
+
+std::unique_ptr<FATree> ExpertApproach::extractClassicFATree() const {
   // Far node parameters
   Eigen::VectorXd far_bias = Eigen::VectorXd::Zero(4);
   Eigen::MatrixXd far_coeffs = getDefaultCoeffs();
@@ -345,7 +384,7 @@ std::unique_ptr<FATree> ExpertApproach::extractFATree() const {
 }
 
 std::unique_ptr<FATree> ExpertApproach::extractLateralFATree() const {
-  double theta_bias = M_PI / 2;
+  double theta_bias = right_foot_kick_dir;
   // Far nodes parameters
   Eigen::VectorXd far_bias = Eigen::VectorXd::Zero(4);
   Eigen::MatrixXd far_coeffs = getDefaultCoeffs();
@@ -363,7 +402,7 @@ std::unique_ptr<FATree> ExpertApproach::extractLateralFATree() const {
   rotate_left_bias(2)  = -rotate_lateral_p * theta_bias;
   rotate_right_bias(2) = rotate_lateral_p * theta_bias;
   // Near node parameters
-  double near_theta_bias = atan2(foot_y_offset, wished_x);
+  double near_theta_bias = atan2(-foot_y_offset, wished_x);
   Eigen::VectorXd near_right_bias = Eigen::VectorXd::Zero(4);
   Eigen::VectorXd near_left_bias = Eigen::VectorXd::Zero(4);
   Eigen::MatrixXd near_coeffs = getDefaultCoeffs();
@@ -450,6 +489,23 @@ std::unique_ptr<FATree> ExpertApproach::extractLateralFATree() const {
   approximators.push_back(std::move(rotate_and_near));
   approximators.push_back(std::move(far_node));
   final_tree.reset(new FATree(std::move(far_split), approximators));
+  // Return final result
+  return std::move(final_tree);
+}
+
+std::unique_ptr<FATree> ExpertApproach::extractOpportunistFATree() const {
+  // Only two splits are required, other approaximators are based on classic
+  // and lateral extraction
+  std::unique_ptr<Split> lateral_split_low (new OrthogonalSplit(2, -lateral_threshold));
+  std::unique_ptr<Split> lateral_split_high(new OrthogonalSplit(2,  lateral_threshold));
+  // Build the final tree
+  std::vector<std::unique_ptr<FunctionApproximator>> approximators;
+  approximators.push_back(extractLateralFATree());
+  approximators.push_back(extractClassicFATree());
+  std::unique_ptr<FATree> tmp(new FATree(std::move(lateral_split_low), approximators));
+  approximators.push_back(std::move(tmp));
+  approximators.push_back(extractLateralFATree());
+  std::unique_ptr<FATree> final_tree(new FATree(std::move(lateral_split_high), approximators));
   // Return final result
   return std::move(final_tree);
 }
