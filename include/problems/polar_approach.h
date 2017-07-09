@@ -70,6 +70,9 @@ public:
   /// Update maximal distance at which the ball is accepted
   void setMaxDist(double dist);
 
+  const Leph::Odometry & getOdometry() const;
+  void setOdometry(const Leph::Odometry & odometry);
+
 protected:
   /// The displacement and noise model
   Leph::Odometry odometry;

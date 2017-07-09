@@ -67,6 +67,10 @@ void KickControler::Player::from_xml(TiXmlNode * node)
   }
   navigation_approach.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
+  // Update odometry on all kick_options models
+  for (size_t kick_id = 0; kick_id < kick_options.size(); kick_id++) {
+    kick_options[kick_id]->approach_model.setOdometry(navigation_approach.getOdometry());
+  }
 }
 
 std::string KickControler::Player::class_name() const
