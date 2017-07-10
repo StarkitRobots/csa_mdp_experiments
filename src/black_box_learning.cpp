@@ -24,9 +24,8 @@ int main() {
                                       []() {return std::unique_ptr<Policy>(new ExpertApproach);});
   PolicyFactory::registerExtraBuilder("OKSeed",
                                       []() {return std::unique_ptr<Policy>(new OKSeed);});
-// TODO: fix custom policies
-//  PolicyFactory::registerExtraBuilder("mixed_approach",
-//                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
+  PolicyFactory::registerExtraBuilder("mixed_approach",
+                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
 //  PolicyFactory::registerExtraBuilder("opk_expert_approach",
 //                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
 

@@ -57,15 +57,17 @@ void KickControler::Player::to_xml(std::ostream & out) const {
 void KickControler::Player::from_xml(TiXmlNode * node)
 {
   name = rosban_utils::xml_tools::read<std::string>(node, "name");
+  navigation_approach.from_xml(node->FirstChild("approach_model"));
   TiXmlNode* values = node->FirstChild("kick_options");
   kick_options.clear();
   for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())
   {
-    std::unique_ptr<KickOption> ko(new KickOption);
+    std::unique_ptr<KickOption> ko(new KickOption());
+    // default values for approach_model are provided by navigation_approach
+    ko->approach_model = navigation_approach;
     ko->from_xml(child);
     kick_options.push_back(std::move(ko));
   }
-  navigation_approach.from_xml(node->FirstChild("approach_model"));
   approach_policy = PolicyFactory().read(node, "policy");
   // Update odometry on all kick_options models
   for (size_t kick_id = 0; kick_id < kick_options.size(); kick_id++) {
@@ -95,6 +97,7 @@ KickControler::KickControler()
     goalie_thickness(0.2),
     goalie_width(0.4)
 {
+  kmc.load_file();
 }
 
 Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
@@ -294,6 +297,8 @@ void KickControler::runSteps(int max_steps,
     std::ostringstream oss;
     oss << "KickControler::performApproach: kickable state not reached after "
         << max_steps << std::endl
+        << "kicker: " << kicker_id << std::endl
+        << "kick_option: " << kick_option << std::endl
         << "state: " << approach_status[kicker_id].successor.transpose() << std::endl;
     throw std::runtime_error(oss.str());
   }
@@ -419,6 +424,9 @@ void KickControler::from_xml(TiXmlNode * node)
   {
     std::unique_ptr<Player> p(new Player);
     p->from_xml(child);
+    for (size_t kick_id = 0; kick_id < p->kick_options.size(); kick_id++) {
+      p->kick_options[kick_id]->syncKickZones(kmc);
+    }
     players.push_back(std::move(p));
   }
   updateStateLimits();
