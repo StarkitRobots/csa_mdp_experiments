@@ -22,17 +22,17 @@ then
     exit -1
 fi
 
-configFile="${folder}/BlackBoxLearner.xml"
-if [ ! -f $configFile ]
+configFolder="${folder}"
+if [ ! -d $configFolder ]
 then
-    echo "ERROR: Failed to find '$configFile'"
+    echo "ERROR: Failed to find '$configFolder'"
     exit -1
 fi
 
 i=$first_test
 while [[ i -le $2 ]]
 do
-    newFolder="${folder}$i"
+    newFolder=$(printf '%s_%.3d' ${folder} $i)
     mkdir $newFolder
     if [ $? -eq 0 ]
     then
@@ -41,7 +41,7 @@ do
         echo "ERROR: failed to create folder '${newFolder}'"
         exit -1
     fi
-    cp $configFile ${newFolder}/BlackBoxLearner.xml
+    cp -r ${configFolder}/*.xml ${newFolder}/
     # Jumping in the folder
     cd ${newFolder}
     # Running the experiment
