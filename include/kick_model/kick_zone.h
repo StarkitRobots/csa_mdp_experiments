@@ -27,6 +27,8 @@ public:
   double getXRange() const;
   /// Return the available margin along x-axis from the center [m]
   double getYRange() const;
+  /// Return the theta tolerance [rad]
+  double getThetaTol() const;
 
   /// Can the robot shoot with any of the foot?
   bool isKickable(const Eigen::Vector3d & state) const;

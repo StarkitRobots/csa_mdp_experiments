@@ -48,6 +48,11 @@ double KickZone::getYRange() const
   return kick_y_tol;
 }
 
+double KickZone::getThetaTol() const
+{
+  return kick_theta_tol;
+}
+
 bool KickZone::isKickable(const Eigen::Vector3d & state) const
 {
   return canKickLeftFoot(state) || canKickRightFoot(state);
