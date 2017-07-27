@@ -19,11 +19,15 @@ public:
   /// Return the name of all the kicks inside the collection
   std::vector<std::string> getKickNames() const;
 
+  /// Setting the grass cone offset [deg]
+  void setGrassConeOffset(double offset);
+
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
 
 protected:
+  GrassModel grassModel;
 
   std::map<std::string, std::unique_ptr<KickModel>> models;
 

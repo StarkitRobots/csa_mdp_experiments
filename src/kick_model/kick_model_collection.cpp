@@ -41,6 +41,19 @@ void KickModelCollection::from_xml(TiXmlNode * node)
                                                 [&kmf](TiXmlNode * node) {
                                                   return kmf.build(node);
                                                 });
+
+  grassModel.read(node, "grassModel");
+  for (auto & entry : models) {
+    entry.second->setGrassModel(grassModel);
+  }
+}
+
+void KickModelCollection::setGrassConeOffset(double offset)
+{
+  grassModel.setConeOffset(offset);
+  for (auto & entry : models) {
+    entry.second->setGrassModel(grassModel);
+  }
 }
 
 std::string KickModelCollection::class_name() const

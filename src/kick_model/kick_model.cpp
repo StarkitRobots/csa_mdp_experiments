@@ -44,6 +44,11 @@ Eigen::Vector2d KickModel::applyKick(const Eigen::Vector2d & ball_pos,
   return applyKick(ball_pos, kick_dir, getDefaultParameters(), engine);
 }
 
+void KickModel::setGrassModel(GrassModel grassModel_)
+{
+  grassModel = grassModel_;
+}
+
 void KickModel::to_xml(std::ostream & out) const
 {
   out << "<kick_zone>";

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kick_model/kick_zone.h"
-
+#include "kick_model/grass_model.h"
 #include "rosban_utils/serializable.h"
 
 #include <Eigen/Core>
@@ -62,6 +62,9 @@ public:
                                     const Eigen::VectorXd & kick_parameters,
                                     std::default_random_engine * engine = nullptr) const = 0;
 
+  /// Setting the grass model
+  virtual void setGrassModel(GrassModel grassModel);
+
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
 
@@ -84,6 +87,9 @@ protected:
 
   /// Default parameters for the kick (should be initialized by the children class)
   Eigen::VectorXd default_parameters;
+
+  /// Model of the grass
+  GrassModel grassModel;
 };
 
 }

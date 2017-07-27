@@ -10,4 +10,5 @@ set(SOURCES
   kick_model_collection.cpp
   kick_model_factory.cpp
   kick_zone.cpp
+  grass_model.cpp
 )

@@ -42,10 +42,11 @@ Eigen::Vector2d ClassicKick::applyKick(const Eigen::Vector2d & ball_pos,
     // Distance relative noise
     std::normal_distribution<double> kick_factor_dist(1.0, rel_dist_stddev);
     // Apply noise
-    kick_real_dist *= kick_factor_dist(*engine);
     kick_real_dir  += kick_dir_dist(*engine);
     kick_real_dir  += player_dir_dist(*engine);
+    kick_real_dist *= kick_factor_dist(*engine);
   }
+  kick_real_dist *= grassModel.kickReduction(rad2deg(kick_real_dir));
   Eigen::Vector2d final_pos = ball_pos;
   final_pos(0) += kick_real_dist * cos(kick_real_dir);
   final_pos(1) += kick_real_dist * sin(kick_real_dir);
