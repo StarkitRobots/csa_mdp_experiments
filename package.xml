@@ -13,9 +13,9 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>rosban_control</build_depend> <!-- optional git@bitbucket.org:rhoban/rosban_control.git -->
-  <build_depend>rosban_csa_mdp</build_depend> <!-- git@bitbucket.org:rhoban/rosban_csa_mdp.git -->
-  <build_depend>model</build_depend> <!-- git@bitbucket.org:rhobanproject/model.git -->
+  <build_depend>rosban_control</build_depend> <!-- optional rhoban/rosban_control.git -->
+  <build_depend>rosban_csa_mdp</build_depend> <!-- rhoban/rosban_csa_mdp.git -->
+  <build_depend>model</build_depend> <!-- rhobanproject/model.git -->
 
   <run_depend>rosban_control</run_depend>
   <run_depend>rosban_csa_mdp</run_depend>
