@@ -2,89 +2,91 @@
   <PolicyMutationLearner>
     <problem>
       <kick_controler>
+        <step_initial_stddev>0.25</step_initial_stddev>
+        <field_width>6</field_width>
+        <field_length>8</field_length>
+        <goalie_x>3.9</goalie_x>
+        <goal_area_size_x>1.0</goal_area_size_x>
+        <goal_area_size_y>5.0</goal_area_size_y>
         <players>
           <v>
-            <name>django</name>
-            <approach_model/>
+            <name>olive</name>
             <policy>
-              <expert_approach>
-                <type>polar</type>
-              </expert_approach>
+              <mixed_approach>
+                <nearby_policy>
+                  <fa_policy>
+                    <path>classic.bin</path>
+                  </fa_policy>
+                </nearby_policy>
+              </mixed_approach>
             </policy>
+            <approach_model>
+              <odometry_path>odometry.params</odometry_path>
+              <min_step_x>-0.02</min_step_x>
+              <max_step_x>0.06</max_step_x>
+              <max_step_y>0.03</max_step_y>
+              <max_step_theta>0.349</max_step_theta>
+              <max_step_x_diff>0.01</max_step_x_diff>
+              <max_step_y_diff>0.005</max_step_y_diff>
+              <max_step_theta_diff>0.0436</max_step_theta_diff>
+            </approach_model>
             <kick_options>
               <v>
-                <kick_model>
-                  <FullPowerKick>
-                    <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
-                    <kick_direction_noise>0.3</kick_direction_noise>
-                    <kick_reward>-10</kick_reward>
-                    <kick_power>1.0</kick_power>
-                  </FullPowerKick>
-                </kick_model>
+                <kick_decision_model>
+                  <FinalKick>
+                    <max_y>1.3</max_y>
+                    <goal_x>4</goal_x>
+                  </FinalKick>
+                </kick_decision_model>
+                <kick_model_names>
+                  <v>classic</v>
+                </kick_model_names>
                 <approach_model/>
                 <policy>
-                  <expert_approach>
-                    <type>polar</type>
-                  </expert_approach>
+                  <mixed_approach>
+                    <nearby_policy>
+                      <fa_policy>
+                        <path>classic.bin</path>
+                      </fa_policy>
+                    </nearby_policy>
+                  </mixed_approach>
                 </policy>
               </v>
               <v>
-                <kick_model>
-                  <FullPowerKick>
-                    <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
-                    <kick_direction_noise>0.3</kick_direction_noise>
-                    <kick_reward>-10</kick_reward>
-                    <kick_power>3.5</kick_power>
-                  </FullPowerKick>
-                </kick_model>
+                <kick_decision_model>
+                  <DirectedKick/>
+                </kick_decision_model>
+                <kick_model_names>
+                  <v>small</v>
+                </kick_model_names>
                 <approach_model/>
                 <policy>
-                  <expert_approach>
-                    <type>polar</type>
-                  </expert_approach>
-                </policy>
-              </v>
-            </kick_options>
-          </v>
-          <v>
-            <name>mowgly</name>
-            <approach_model/>
-            <policy>
-              <expert_approach>
-                <type>polar</type>
-              </expert_approach>
-            </policy>
-            <kick_options>
-              <v>
-                <kick_model>
-                  <FullPowerKick>
-                    <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
-                    <kick_direction_noise>0.3</kick_direction_noise>
-                    <kick_reward>-10</kick_reward>
-                    <kick_power>1.0</kick_power>
-                  </FullPowerKick>
-                </kick_model>
-                <approach_model/>
-                <policy>
-                  <expert_approach>
-                    <type>polar</type>
-                  </expert_approach>
+                  <mixed_approach>
+                    <nearby_policy>
+                      <fa_policy>
+                        <path>classic.bin</path>
+                      </fa_policy>
+                    </nearby_policy>
+                  </mixed_approach>
                 </policy>
               </v>
               <v>
-                <kick_model>
-                  <FullPowerKick>
-                    <kick_pow_rel_noise>0.3</kick_pow_rel_noise>
-                    <kick_direction_noise>0.3</kick_direction_noise>
-                    <kick_reward>-10</kick_reward>
-                    <kick_power>3.5</kick_power>
-                  </FullPowerKick>
-                </kick_model>
+                <kick_decision_model>
+                  <DirectedKick/>
+                </kick_decision_model>
+                <kick_model_names>
+                  <v>classic</v>
+                  <v>lateral</v>
+                </kick_model_names>
                 <approach_model/>
                 <policy>
-                  <expert_approach>
-                    <type>polar</type>
-                  </expert_approach>
+                  <mixed_approach>
+                    <nearby_policy>
+                      <fa_policy>
+                        <path>opportunist.bin</path>
+                      </fa_policy>
+                    </nearby_policy>
+                  </mixed_approach>
                 </policy>
               </v>
             </kick_options>
@@ -92,17 +94,22 @@
         </players>
       </kick_controler>
     </problem>
-    <nb_threads>20</nb_threads>
+    <policy>OKSeed</policy>
+    <nb_threads>4</nb_threads>
     <trial_length>50</trial_length>
     <training_evaluations>40</training_evaluations>
     <training_evaluations_growth>0.2</training_evaluations_growth>
-    <split_probability>0.1</split_probability>
+    <split_probability>0.15</split_probability>
     <change_action_probability>0.2</change_action_probability>
-    <nb_evaluation_trials>1000</nb_evaluation_trials>
+    <narrow_probability>0.5</narrow_probability>
+    <local_probability>0.5</local_probability>
+    <nb_evaluation_trials>25000</nb_evaluation_trials>
     <evaluations_ratio>10</evaluations_ratio>
     <evaluations_growth>20</evaluations_growth>
     <avoid_growing_slopes>false</avoid_growing_slopes>
-    <shared_initial_states>false</shared_initial_states>
+    <age_basis>1.1</age_basis>
+    <use_visited_states>true</use_visited_states>
+    <use_density_score>true</use_density_score>
     <time_budget>7200</time_budget>
     <discount>1.0</discount>
     <optimizer>
@@ -129,7 +136,7 @@
           </v>
           <v>
             <SimulatedAnnealing>
-              <initial_temperature>2</initial_temperature>
+              <initial_temperature>50</initial_temperature>
             </SimulatedAnnealing>
           </v>
         </optimizers>
