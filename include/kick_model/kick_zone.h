@@ -19,13 +19,20 @@ public:
 
   KickZone();
 
-  /// Return the desired position for kick with the given foot
+  /// Return the desired state for kicks with the given foot
   /// (wishedX [m], wishedY[m], wishedOffset [rad])
   Eigen::Vector3d getWishedPos(bool right_foot) const;
 
+  /// Return the desired position for the robot (in field referential) to kick a
+  /// ball at ball_pos (fieldX[m],fieldY[m]) with the given foot toward provided
+  /// direction
+  Eigen::Vector3d getWishedPosInField(const Eigen::Vector2d & ball_pos,
+                                      double kick_wished_dir,
+                                      bool right_foot) const;
+
   /// Return the available margin along x-axis from the center [m]
   double getXRange() const;
-  /// Return the available margin along x-axis from the center [m]
+  /// Return the available margin along y-axis from the center [m]
   double getYRange() const;
   /// Return the theta tolerance [rad]
   double getThetaTol() const;

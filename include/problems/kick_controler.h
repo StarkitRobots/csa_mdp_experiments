@@ -126,6 +126,16 @@ public:
                 Problem::Result * status,
                 std::default_random_engine * engine) const;
 
+  double getApproximatedTime(const Eigen::VectorXd & src,
+                             const Eigen::VectorXd & dst) const;
+
+  void approximateKickerApproach(const Eigen::Vector2d & ball_real_pos,
+                                 const Eigen::VectorXd & action,
+                                 int kicker_id,
+                                 int kick_option_id,
+                                 Problem::Result * status,
+                                 std::default_random_engine * engine) const;
+
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;
   std::string class_name() const override;
@@ -253,6 +263,8 @@ private:
   double ball_radius;
 
   /// #GOALKEEPER PROPERTIES
+  /// Is goalie collision activated ?
+  bool use_goalie;  
   /// Goal area: size along x-axis [m]
   double goal_area_size_x;
   /// Goal area: size along y-axis [m]

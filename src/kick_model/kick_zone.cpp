@@ -38,6 +38,23 @@ Eigen::Vector3d KickZone::getWishedPos(bool right_foot) const
   return result;
 }
 
+Eigen::Vector3d KickZone::getWishedPosInField(const Eigen::Vector2d & ball_pos,
+                                              double kick_wished_dir,
+                                              bool right_foot) const
+{
+  // 1. Get wished state
+  Eigen::Vector3d wished_state = getWishedPos(right_foot);
+  // 1. Get desired direction for the robot:
+  double robot_dir = kick_wished_dir + wished_state(2);
+  // 2. Get desired position in field
+  double dx = -wished_state(0);
+  double dy = -wished_state(1);
+  double wished_x = ball_pos(0) + dx * cos(robot_dir) - dy * sin(robot_dir);
+  double wished_y = ball_pos(1) + dx * sin(robot_dir) + dy * cos(robot_dir);
+  // Return result
+  return Eigen::Vector3d(wished_x, wished_y, robot_dir);
+}
+
 double KickZone::getXRange() const
 {
   return kick_x_max - kick_x_min;

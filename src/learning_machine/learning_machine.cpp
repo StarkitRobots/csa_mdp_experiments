@@ -375,11 +375,18 @@ void LearningMachine::to_xml(std::ostream &out) const
 void LearningMachine::from_xml(TiXmlNode *node)
 {
   // First: read problem
-  TiXmlNode * problem_node = node->FirstChild("problem");
-  if(!problem_node) {
-    throw std::runtime_error("Failed to find node 'problem' in '" + node->ValueStr() + "'");
+  std::unique_ptr<Problem> tmp_problem;
+  std::string problem_path;
+  rosban_utils::xml_tools::try_read<std::string>(node, "problem_path", problem_path);
+  if (problem_path != "") {
+    tmp_problem = ProblemFactory().buildFromXmlFile(problem_path, "Problem");
+  } else {
+    tmp_problem = ProblemFactory().read(node, "problem");
   }
-  setProblem(std::unique_ptr<Problem>(ProblemFactory().build(problem_node)));
+  if(!tmp_problem) {
+    throw std::runtime_error("LearningMachine::from_xml: Failed to load a problem in '" + node->ValueStr() + "'");
+  }
+  setProblem(std::move(tmp_problem));
   // Override learning dimensions if custom config is provided
   std::vector<int> new_learning_dims;
   rosban_utils::xml_tools::try_read_vector<int>(node, "learning_dimensions", new_learning_dims);
