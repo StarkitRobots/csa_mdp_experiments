@@ -219,6 +219,18 @@ private:
   /// Which KickOptions are available?
   std::vector<std::unique_ptr<Player>> players;
 
+  /// If enabled, then real motions of the players are simulated, otherwise a
+  /// simple heuristic based on approximation of the robot speed are used
+  bool simulate_approaches;
+
+  /// Approximation of cartesian speed [m/s] for the robot when
+  /// 'simulate_approaches' is false
+  double cartesian_speed;
+  
+  /// Approximation of angular speed [rad/s] for the robot when
+  /// 'simulate_approaches' is false
+  double angular_speed;
+
   /// Noise added on ball position at the beginning of every step
   double step_initial_stddev;
 
@@ -258,6 +270,10 @@ private:
 
   /// The collection of available kicks
   KickModelCollection kmc;
+
+  /// #KICK PROPERTIES
+  /// Default kicks used when there is no player considered
+  std::vector<std::unique_ptr<KickOption>> kick_options;
 };
 
 }

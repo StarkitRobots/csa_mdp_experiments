@@ -3,6 +3,7 @@
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
 #include "policies/opk_expert_approach.h"
+#include "policies/ok_seed.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 
@@ -22,6 +23,8 @@ int main()
                                       []() {return std::unique_ptr<Policy>(new MixedApproach);});
   PolicyFactory::registerExtraBuilder("opk_expert_approach",
                                       []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
+  PolicyFactory::registerExtraBuilder("OKSeed",
+                                      []() {return std::unique_ptr<Policy>(new OKSeed);});
 
   ExtendedProblemFactory::registerExtraProblems();
 

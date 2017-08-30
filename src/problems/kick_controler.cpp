@@ -29,8 +29,8 @@ void KickControler::KickOption::to_xml(std::ostream & out) const {
 void KickControler::KickOption::from_xml(TiXmlNode * node)
 {
   kick_decision_model = KickDecisionModelFactory().read(node, "kick_decision_model");
-  approach_model.from_xml(node->FirstChild("approach_model"));
-  approach_policy = PolicyFactory().read(node, "policy");
+  approach_model.tryRead(node,"approach_model");
+  PolicyFactory().tryRead(node, "policy", approach_policy);
   // Reading kick_model from name if found
   kick_model_names = read_vector<std::string>(node, "kick_model_names");
 }
@@ -81,7 +81,10 @@ std::string KickControler::Player::class_name() const
 }
 
 KickControler::KickControler()
-  : step_initial_stddev(0.25),
+  : simulate_approaches(true),
+    cartesian_speed(0.2),
+    angular_speed(M_PI/4),
+    step_initial_stddev(0.25),
     goal_reward(0),
     approach_step_reward(-1),
     failure_reward(-500),
@@ -111,25 +114,31 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
         << state.rows() << " (expected " << (2+3*players.size()) << ")";
     throw std::logic_error(oss.str());
   }
+  // Initializing result properties
+  Problem::Result result;
+  result.successor = state;
+  result.reward = 0;
+  result.terminal = false;
   // Getting player_id and kick_id:
   int action_id = (int)action(0);
   int kicker_id, kick_option_id;
   analyzeActionId(action_id, &kicker_id, &kick_option_id);
-  const KickOption & kick_option = *(players[kicker_id]->kick_options[kick_option_id]);
+  // If there is a kicker specifed, use its own kick, otherwise, use default kick
+  const KickOption & kick_option =
+    kicker_id == -1 ? *(kick_options[kick_option_id])
+    : *(players[kicker_id]->kick_options[kick_option_id]);
   // Checking action dimension (depending on kick_option)
   int kick_dims = kick_option.kick_decision_model->getActionsLimits().rows();
-  int expected_action_dimension = 1 + kick_dims + 3 * (players.size()-1);
+  int expected_action_dimension = 1 + kick_dims;
+  if (players.size() > 1) {//TODO: soon to be deprecated
+    expected_action_dimension += 3 * (players.size()-1);
+  }
   if (action.rows() != expected_action_dimension) {
     std::ostringstream oss;
     oss << "KickControler::getSuccessor: invalid dimension for action: "
         << action.rows() << " (expected " << expected_action_dimension << ")";
     throw std::logic_error(oss.str());
   }
-  // Initializing result properties
-  Problem::Result result;
-  result.successor = state;
-  result.reward = 0;
-  result.terminal = false;
   // Importing the parameters of the state and action
   Eigen::Vector2d ball_seen = state.segment(0,2);
   Eigen::VectorXd decision_actions = action.segment(1, kick_dims);
@@ -156,29 +165,40 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
     return result;
   }
   // T3: Simulate players approach (end approach if one of the robot commited illegal attack)
-  int max_steps = 500;
-  runSteps(max_steps, action, kicker_id, kick_option_id, true, &result, engine);
-  if (result.terminal) {
-    return result;
+  if (kicker_id != -1) {
+    int max_steps = 500;
+    runSteps(max_steps, action, kicker_id, kick_option_id, true, &result, engine);
+    if (result.terminal) {
+      return result;
+    }
   }
   // T4.0: Find the kick which need to be applied
   //       (or return if none can be applied)
-  Eigen::Vector2d ball_real(ball_real_x, ball_real_y);
-  const Eigen::Vector3d & kicker_state =
-    getPlayerState(result.successor, kicker_id);
+  //       if no players are available, then only one kick should be available
   if (kick_option.kick_model_names.size() == 0) {
     throw std::logic_error("no kick_model_names for current kick_option");
   }
+  Eigen::Vector2d ball_real(ball_real_x, ball_real_y);
   std::string kick_name;
-  for (const std::string & name : kick_option.kick_model_names) {
-    const KickZone & kick_zone = kmc.getKickModel(name).getKickZone();
-    if (kick_zone.isKickable(ball_real, kicker_state, kick_dir)) {
-      kick_name = name;
-      break;
+  if (kicker_id == -1) {
+    if (kick_option.kick_model_names.size() > 1) {
+      // Another choice could be to choose name randomly
+      throw std::logic_error("With no players, kick_model only support a single kick_model_name");
     }
-  }
-  if (kick_name == "") {
-    return result;
+    kick_name = kick_option.kick_model_names[0];
+  } else {
+    const Eigen::Vector3d & kicker_state =
+      getPlayerState(result.successor, kicker_id);
+    for (const std::string & name : kick_option.kick_model_names) {
+      const KickZone & kick_zone = kmc.getKickModel(name).getKickZone();
+      if (kick_zone.isKickable(ball_real, kicker_state, kick_dir)) {
+        kick_name = name;
+        break;
+      }
+    }
+    if (kick_name == "") {
+      return result;
+    }
   }
   const KickModel & kick_model = kmc.getKickModel(kick_name);
   // T4.1: Apply kick with noise
@@ -186,16 +206,28 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   double kick_reward;
   Eigen::Vector2d ball_final;
   ball_final = kick_model.applyKick(ball_real, kick_dir, kick_parameters, engine);
+  ball_final_x = ball_final(0);
+  ball_final_y = ball_final(1);
   kick_reward = kick_model.getReward();
   // T5: move other robots
-  int extra_steps = (int)-kick_reward;
-  runSteps(extra_steps, action, kicker_id, kick_option_id, false, &result, engine);
-  // T6: Testing if ball left the field after kick
+  // TODO: is the 'extra steps' adapted? Require a check on implementation + more detail
+  if (kicker_id != -1) {
+    int extra_steps = (int)-kick_reward;
+    runSteps(extra_steps, action, kicker_id, kick_option_id, false, &result, engine);
+  }
+  // T6: Testing if ball left the field after kick (scoring or not scoring goal is computed)
   bool late_terminal = false;
   moveBall(ball_real_x, ball_real_y, &ball_final_x, &ball_final_y, &late_terminal, &result.reward);
   result.successor(0) = ball_final_x;
   result.successor(1) = ball_final_y;
   result.terminal = late_terminal;
+  // When there is no robot considered, and ball is not out, extra-cost depends
+  // on cartesian distance between source and target
+  if (kicker_id == -1 && !late_terminal) {
+    double traveled_dist = (ball_real - ball_final).norm();
+    kick_reward -= traveled_dist / cartesian_speed;
+  }
+  result.reward += kick_reward;
   return result;
 }
 
@@ -406,6 +438,9 @@ void KickControler::to_xml(std::ostream & out) const
 
 void KickControler::from_xml(TiXmlNode * node)
 {
+  xml_tools::try_read<bool>  (node, "simulate_approaches"    , simulate_approaches    );
+  xml_tools::try_read<double>(node, "cartesian_speed"        , cartesian_speed        );
+  xml_tools::try_read<double>(node, "angular_speed"          , angular_speed          );
   xml_tools::try_read<double>(node, "step_initial_stddev"    , step_initial_stddev    );
   xml_tools::try_read<double>(node, "goal_reward"            , goal_reward            );
   xml_tools::try_read<double>(node, "approach_step_reward"   , approach_step_reward   );
@@ -413,6 +448,7 @@ void KickControler::from_xml(TiXmlNode * node)
   xml_tools::try_read<double>(node, "field_width"            , field_width            );
   xml_tools::try_read<double>(node, "field_length"           , field_length           );
   xml_tools::try_read<double>(node, "goal_width"             , goal_width             );
+  xml_tools::try_read<double>(node, "goalie_x"               , goalie_x               );
   xml_tools::try_read<double>(node, "goal_area_size_x"       , goal_area_size_x       );
   xml_tools::try_read<double>(node, "goal_area_size_y"       , goal_area_size_y       );
   xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
@@ -429,6 +465,25 @@ void KickControler::from_xml(TiXmlNode * node)
     }
     players.push_back(std::move(p));
   }
+
+  // Loading kick options if found
+  kick_options.clear();
+  TiXmlNode* ko_values = node->FirstChild("kick_options");
+  if (ko_values != nullptr) {
+    for ( TiXmlNode* child = ko_values->FirstChild(); child != NULL; child = child->NextSibling())
+    {
+      std::unique_ptr<KickOption> ko(new KickOption());
+      // no default values for approach_model
+      ko->from_xml(child);
+      kick_options.push_back(std::move(ko));
+    }
+  }
+
+  // Consistency check
+  if (players.size() == 0 && simulate_approaches) {
+    throw std::runtime_error("KickControler::from_xml: no players is incompatible with enabling simulated approaches");
+  }
+  
   updateStateLimits();
   updateApproachesLimits();
   updateActionsLimits();
@@ -447,6 +502,13 @@ size_t KickControler::getNbPlayers() const
 void KickControler::analyzeActionId(int action_id, int * kicker_id, int * kick_id) const
 {
   int cpt = 0;
+  // Specific case when there is no player considered
+  if (players.size() == 0) {
+    *kicker_id = -1;
+    *kick_id = action_id;
+    cpt = kick_options.size();
+  }
+  // Determining which player kicks and with which kind of kick
   for (int player_id = 0; player_id < (int) players.size(); player_id++) {
     for (size_t opt_id = 0 ; opt_id < players[player_id]->kick_options.size(); opt_id++) {
       if (cpt == action_id) {
@@ -576,12 +638,24 @@ void KickControler::updateActionsLimits()
           action_names.push_back(oss.str());
         }
       }
-//      std::cout << "Action_limits: " << kick_action_limits.size() << std::endl
-//                << action_limits << std::endl;
       kick_action_limits.push_back(action_limits);
       kick_action_names.push_back(action_names);
     }
   }
+  // If no players, add global kick options
+  if (players.size() == 0) {
+    for (size_t ko_id = 0; ko_id < kick_options.size(); ko_id++) {
+      // kick_model
+      const KickDecisionModel & kdm = *(kick_options[ko_id]->kick_decision_model);
+      // Getting informations from kdm
+      Eigen::MatrixXd action_limits = kdm.getActionsLimits();
+      std::vector<std::string> action_names = kdm.getActionsNames();
+      // Filling actions
+      kick_action_limits.push_back(action_limits);
+      kick_action_names.push_back(action_names);
+    }
+  }
+  
   setActionLimits(kick_action_limits);
   setActionsNames(kick_action_names);
 }

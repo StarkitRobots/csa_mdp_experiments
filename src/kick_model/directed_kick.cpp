@@ -7,7 +7,7 @@ namespace csa_mdp
 
 DirectedKick::DirectedKick()
 {
-  action_names.push_back("target_y");
+  action_names.push_back("target_dir");
   action_limits = Eigen::MatrixXd(1,2);
   action_limits << -M_PI, M_PI;
 }
