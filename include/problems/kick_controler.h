@@ -51,7 +51,8 @@ namespace csa_mdp
 ///    - *ball_final* is computed from *ball_real* using the kick_model and the parameters
 /// 5. Simulate motions of the non-kicker robots
 /// 6. If *ball_final* is outside of the field, the same process as in 2. is used
-/// TODO: kicker and non-kickers should be simulated at the same time and collisions checked
+///
+/// DISCLAIMER: using the simulate_approaches is currently unsupported
 class KickControler : public BlackBoxProblem
 {
 public:
@@ -129,12 +130,33 @@ public:
   double getApproximatedTime(const Eigen::VectorXd & src,
                              const Eigen::VectorXd & dst) const;
 
+  /// Use the provided parameters to update 'status' by:
+  /// - Updating the kicker position
+  /// - Updating reward according to time spent moving toward the ball
+  /// - Updating all non-kickers position
+  ///   (they move during the time require for the kicker to reach its position)
   void approximateKickerApproach(const Eigen::Vector2d & ball_real_pos,
                                  const Eigen::VectorXd & action,
                                  int kicker_id,
                                  int kick_option_id,
                                  Problem::Result * status,
                                  std::default_random_engine * engine) const;
+
+  /// Move all non kickers to prepare reception of the specified shoot
+  /// each robot has the same amount of time to move
+  void moveNonKickers(double allowed_time,
+                      const Eigen::Vector2d & ball_start,
+                      const Eigen::Vector2d & ball_expected_end,
+                      int kicker_id,
+                      Problem::Result * status) const;
+
+  /// Place a single robot according to the predicted shoot, robot chooses the
+  /// closest position to receive the ball
+  void moveRobot(double allowed_time,
+                 const Eigen::Vector2d & ball_start,
+                 const Eigen::Vector2d & ball_end,
+                 int robot_id,
+                 Problem::Result * status) const;
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;

@@ -12,6 +12,7 @@
 using namespace rosban_utils;
 using namespace rosban_utils::xml_tools;
 
+// Normalize angle in [-pi,pi]
 static double normalizeAngle(double angle)
 {
   return angle - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
@@ -108,6 +109,10 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
                                             const Eigen::VectorXd & action,
                                             std::default_random_engine * engine) const
 {
+  if (simulate_approaches) {
+    // Deep check required to get back to simulate_approaches
+    throw std::logic_error("KickControler::getSuccessor: simulate_approaches is not supported anymore");
+  }
   // Checking state dimension
   if (state.rows() != 2 + 3 * (int)players.size()) {
     std::ostringstream oss;
@@ -131,9 +136,6 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   // Checking action dimension (depending on kick_option)
   int kick_dims = kick_option.kick_decision_model->getActionsLimits().rows();
   int expected_action_dimension = 1 + kick_dims;
-  if (players.size() > 1) {//TODO: soon to be deprecated
-    expected_action_dimension += 3 * (players.size()-1);
-  }
   if (action.rows() != expected_action_dimension) {
     std::ostringstream oss;
     oss << "KickControler::getSuccessor: invalid dimension for action: "
@@ -215,11 +217,12 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   kick_reward = kick_model.getReward();
   // T5: move other robots
   if (kicker_id != -1) {
-    int extra_steps = (int)-kick_reward;
+    int extra_time = (int)-kick_reward;
     if (simulate_approaches) {
-      runSteps(extra_steps, action, kicker_id, kick_option_id, false, &result, engine);
+      runSteps(extra_time, action, kicker_id, kick_option_id, false, &result, engine);
     } else {
-      //TODO: move other robots
+      Eigen::Vector2d expected_ball_pos = kick_model.applyKick(ball_real, kick_dir);
+      moveNonKickers(extra_time, ball_real, expected_ball_pos, kicker_id, &result);
     }
   }
   // T6: Testing if ball left the field after kick (scoring or not scoring goal is computed)
@@ -376,7 +379,8 @@ void KickControler::approximateKickerApproach(const Eigen::Vector2d & ball_real_
     throw std::logic_error("Cannot approximateKickerApproach for problems with multiple kicks available");
   }
   std::string kick_name = kick_option.kick_model_names[0];
-  const KickZone & kick_zone = kmc.getKickModel(kick_name).getKickZone();
+  const KickModel & kick_model = kmc.getKickModel(kick_name);
+  const KickZone & kick_zone = kick_model.getKickZone();
   double kick_wished_dir = getKickDir(status->successor, action);
   // Compute target and time for kicker (best between left and right)
   double min_time = std::numeric_limits<double>::max();
@@ -392,10 +396,81 @@ void KickControler::approximateKickerApproach(const Eigen::Vector2d & ball_real_
   // Set player state in status and add cost
   status->reward -= min_time;
   status->successor.segment(2+3*kicker_id, 3) = kicker_target;
-  // TODO: Move all remaining players
-  // moveNonKickers(...)
+  // Move all remaining players
+  Eigen::Vector2d expected_ball_pos = kick_model.applyKick(ball_real_pos, kick_wished_dir);
+  moveNonKickers(min_time, ball_real_pos, expected_ball_pos, kicker_id, status);
 }
-                                              
+
+void KickControler::moveNonKickers(double allowed_time,
+                                   const Eigen::Vector2d & ball_start,
+                                   const Eigen::Vector2d & ball_end,
+                                   int kicker_id,
+                                   Problem::Result * status) const
+{
+  for (int robot_id = 0; robot_id < (int)players.size(); robot_id++) {
+    if (kicker_id != robot_id) {
+      moveRobot(allowed_time, ball_start, ball_end, robot_id, status);
+    }
+  }
+}
+
+void KickControler::moveRobot(double allowed_time,
+                              const Eigen::Vector2d & ball_start,
+                              const Eigen::Vector2d & ball_end,
+                              int robot_id,
+                              Problem::Result * status) const
+{
+  // Precomputing data
+  Eigen::Vector2d ball_move = ball_end - ball_start;
+  double kick_dir = atan2(ball_move(1), ball_move(0));
+  Eigen::Vector3d robot_state = getPlayerState(status->successor, robot_id);
+  // Heuristic parameters
+  double kick_dist_ratio = 0.85;
+  double intercept_dist = 0.75;//[m]
+  // Heuristic used to place the non-kickers
+  Eigen::Vector2d ball_intercept = ball_start + kick_dist_ratio * ball_move;
+  // Choose best of available targets
+  Eigen::Vector3d best_target;
+  double min_time = std::numeric_limits<double>::max();  
+  for (double dir_offset : {-M_PI/2, M_PI/2}) {
+    Eigen::Vector2d intercept_offset(intercept_dist * cos(kick_dir + dir_offset),
+                                     intercept_dist * sin(kick_dir + dir_offset));
+    Eigen::Vector3d target;
+    target.segment(0,2) = ball_intercept + intercept_offset;
+    target(2) = normalizeAngle(kick_dir - dir_offset);// Robot is facing the ball
+    double time = getApproximatedTime(robot_state,target);
+    if (time < min_time) {
+      min_time = time;
+      best_target = target;
+    }
+  }
+  // First, move toward desired point
+  Eigen::Vector2d required_move = best_target.segment(0,2) - robot_state.segment(0,2);
+  double move_time = required_move.norm() / cartesian_speed;
+  if (move_time > allowed_time) {
+    Eigen::Vector2d normalized_move = required_move / required_move.norm();
+    double traveled_dist = cartesian_speed * allowed_time;
+    Eigen::Vector2d move = traveled_dist * normalized_move;
+    Eigen::Vector2d new_pos = robot_state.segment(0,2) + move;
+    status->successor.segment(2+3*robot_id,2) = new_pos;
+    return;
+  } else {
+    status->successor.segment(2+3*robot_id,2) = best_target.segment(0,2);
+    allowed_time -= move_time;
+  }
+  // Then, turn toward desired direction
+  double required_turn = normalizeAngle(best_target(2) - robot_state(2));
+  double turn_time = std::fabs(required_turn) / angular_speed;
+  if (turn_time > allowed_time) {
+    double turn = angular_speed * allowed_time;
+    if (required_turn < 0) turn *= -1;
+    double new_dir = normalizeAngle(robot_state(2) + turn);
+    status->successor(2+3*robot_id+2) = new_dir;
+  } else {
+    status->successor(2+3*robot_id+2) = best_target(2);
+  }
+}
+
 
 Eigen::Vector3d KickControler::getPlayerState(const Eigen::VectorXd & state,
                                               int player_id) const
@@ -685,21 +760,10 @@ void KickControler::updateActionsLimits()
       Eigen::MatrixXd kick_limits = kdm.getActionsLimits();
       int kick_dims = kick_limits.rows();
       // Filling action spaces and names for this problem
-      Eigen::MatrixXd action_limits(kick_dims + 3 * (players.size()-1),2);
+      Eigen::MatrixXd action_limits(kick_dims,2);
       action_limits.block(0,0,kick_dims,2) = kick_limits;
       std::vector<std::string> action_names = kdm.getActionsNames();
-      // A target is provided for each robot
-      for (size_t non_kicker_id = 0; non_kicker_id < players.size(); non_kicker_id++) {
-        int start_row = kick_dims + non_kicker_id * 3;
-        if (non_kicker_id == p_id) continue;
-        if (non_kicker_id > p_id) start_row -= 3;
-        action_limits.block(start_row,0,3,2) = getPlayerLimits();
-        for (const std::string & suffix : {"x","y","dir"}) {
-          std::ostringstream oss;
-          oss << players[non_kicker_id]->name << "_" << suffix;
-          action_names.push_back(oss.str());
-        }
-      }
+      // Adding action limits and names
       kick_action_limits.push_back(action_limits);
       kick_action_names.push_back(action_names);
     }
