@@ -15,10 +15,17 @@ then
     first_test=$3
 fi
 
-# Forbidding situations where the folder is not a child of current directory
 if [[ "$string" == *\/* ]]
 then
     echo "<folder> must be a child of current directory"
+    exit -1
+fi
+
+
+configFolder="${folder}"
+if [ ! -d $configFolder ]
+then
+    echo "ERROR: Failed to find '$configFolder'"
     exit -1
 fi
 
@@ -32,7 +39,7 @@ fi
 i=$first_test
 while [[ i -le $2 ]]
 do
-    newFolder="${folder}$i"
+    newFolder=$(printf '%s_%.3d' ${folder} $i)
     mkdir $newFolder
     if [ $? -eq 0 ]
     then
@@ -41,11 +48,11 @@ do
         echo "ERROR: failed to create folder '${newFolder}'"
         exit -1
     fi
-    cp $configFile ${newFolder}/LearningMachine.xml
+    cp -r ${configFolder}/*.xml ${newFolder}/
     # Jumping in the folder
     cd ${newFolder}
     # Running the experiment
-    rosrun csa_mdp_experiments learning_machine > lm.out
+    ~/learning_machine > lm.out 2> lm.err
     # back to previous folder
     cd ..
     ((i++))
