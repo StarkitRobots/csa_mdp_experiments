@@ -102,7 +102,6 @@ KickControler::KickControler()
     goalie_thickness(0.2),
     goalie_width(0.4)
 {
-  kmc.load_file();
 }
 
 Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
