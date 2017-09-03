@@ -17,13 +17,14 @@ public:
   const std::vector<std::string> & getActionsNames() const;
 
   /// Get the parameters of the kick
-  /// ball_pos is in field referential [m]
-  virtual Eigen::VectorXd computeKickParameters(const Eigen::Vector2d & ball_pos,
+  /// informations can be used to provide several informations such as ball
+  /// position or position of another player
+  virtual Eigen::VectorXd computeKickParameters(const Eigen::VectorXd & informations,
                                                 const Eigen::VectorXd & actions) const = 0;
 
   /// Get the direction of the kick in the field basis [rad]
   /// ball_pos is in field referential [m]
-  virtual double computeKickDirection(const Eigen::Vector2d & ball_pos,
+  virtual double computeKickDirection(const Eigen::VectorXd & informations,
                                       const Eigen::VectorXd & actions) const = 0;
 
 protected:

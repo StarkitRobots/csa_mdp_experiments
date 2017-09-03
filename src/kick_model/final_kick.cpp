@@ -18,20 +18,26 @@ void FinalKick::updateActionLimits()
   action_limits << -max_y, max_y;
 }
 
-Eigen::VectorXd FinalKick::computeKickParameters(const Eigen::Vector2d & ball_pos,
+Eigen::VectorXd FinalKick::computeKickParameters(const Eigen::VectorXd & ball_pos,
                                                  const Eigen::VectorXd & actions) const
 {
   (void) ball_pos; (void) actions;
   return Eigen::VectorXd();
 }
 
-double FinalKick::computeKickDirection(const Eigen::Vector2d & ball_pos,
+double FinalKick::computeKickDirection(const Eigen::VectorXd & ball_pos,
                                        const Eigen::VectorXd & actions) const
 {
   if (actions.rows() != 1) {
     std::ostringstream oss;
     oss << "FinalKick::computeKickDirection: actions has invalid dimension: "
         << "(" << actions.rows() << " while expecting " << 1 << ")" << std::endl;
+    throw std::logic_error(oss.str());
+  }
+  if (ball_pos.rows() < 2) {
+    std::ostringstream oss;
+    oss << "FinalKick::computeKickDirection: ball_pos has invalid dimension: "
+        << "(" << ball_pos.rows() << " while expecting 2 or more)" << std::endl;
     throw std::logic_error(oss.str());
   }
   double target_y = actions(0);

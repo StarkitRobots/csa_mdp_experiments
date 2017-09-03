@@ -11,9 +11,12 @@ public:
 
   DirectedKick();
 
-  Eigen::VectorXd computeKickParameters(const Eigen::Vector2d & ball_pos,
+  /// informations content is not used (no need for additional informations)
+  Eigen::VectorXd computeKickParameters(const Eigen::VectorXd & informations,
                                         const Eigen::VectorXd & actions) const override;
-  double computeKickDirection(const Eigen::Vector2d & ball_pos,
+
+  /// informations content is not used (no need for additional informations)
+  double computeKickDirection(const Eigen::VectorXd & informations,
                               const Eigen::VectorXd & actions) const override;
 
   void to_xml(std::ostream & out) const override;

@@ -12,17 +12,17 @@ DirectedKick::DirectedKick()
   action_limits << -M_PI, M_PI;
 }
 
-Eigen::VectorXd DirectedKick::computeKickParameters(const Eigen::Vector2d & ball_pos,
+Eigen::VectorXd DirectedKick::computeKickParameters(const Eigen::VectorXd & unused,
                                                     const Eigen::VectorXd & actions) const
 {
-  (void) ball_pos; (void) actions;
+  (void) unused; (void) actions;
   return Eigen::VectorXd();
 }
 
-double DirectedKick::computeKickDirection(const Eigen::Vector2d & ball_pos,
+double DirectedKick::computeKickDirection(const Eigen::VectorXd & unused,
                                           const Eigen::VectorXd & actions) const
 {
-  (void) ball_pos;
+  (void) unused;
   if (actions.rows() != 1) {
     std::ostringstream oss;
     oss << "DirectedKick::computeKickDirection: actions has invalid dimension: "

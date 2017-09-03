@@ -173,7 +173,7 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
     if (simulate_approaches) {
       runSteps(max_steps, action, kicker_id, kick_option_id, true, &result, engine);
     } else {
-      approximateKickerApproach(ball_real, action, kicker_id, kick_option_id, &result, engine);
+      approximateKickerApproach(ball_real, action, kicker_id, kick_option_id, &result);
     }
     if (result.terminal) {
       return result;
@@ -369,8 +369,7 @@ void KickControler::approximateKickerApproach(const Eigen::Vector2d & ball_real_
                                               const Eigen::VectorXd & action,
                                               int kicker_id,
                                               int kick_option_id,
-                                              Problem::Result * status,
-                                              std::default_random_engine * engine) const
+                                              Problem::Result * status) const
 {
   // Importing variables
   Eigen::Vector3d kicker_state = getPlayerState(status->successor, kicker_id);
@@ -585,6 +584,10 @@ void KickControler::from_xml(TiXmlNode * node)
   xml_tools::try_read<double>(node, "goal_area_size_x"       , goal_area_size_x       );
   xml_tools::try_read<double>(node, "goal_area_size_y"       , goal_area_size_y       );
   xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
+
+  /// Reading optional path
+  std::string kmc_path = xml_tools::read<std::string>(node, "kmc_path");
+  kmc.load_file(kmc_path);
 
   //TODO: improve format, currently very verbose and redundant
   TiXmlNode* values = node->FirstChild("players");

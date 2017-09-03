@@ -16,9 +16,12 @@ public:
 
   void updateActionLimits();
 
-  Eigen::VectorXd computeKickParameters(const Eigen::Vector2d & ball_pos,
+  /// ball_pos: position in the field referential [m]
+  Eigen::VectorXd computeKickParameters(const Eigen::VectorXd & ball_pos,
                                         const Eigen::VectorXd & actions) const override;
-  double computeKickDirection(const Eigen::Vector2d & ball_pos,
+
+  /// ball_pos: position in the field referential [m]
+  double computeKickDirection(const Eigen::VectorXd & ball_pos,
                               const Eigen::VectorXd & actions) const override;
 
   void to_xml(std::ostream & out) const override;

@@ -139,8 +139,7 @@ public:
                                  const Eigen::VectorXd & action,
                                  int kicker_id,
                                  int kick_option_id,
-                                 Problem::Result * status,
-                                 std::default_random_engine * engine) const;
+                                 Problem::Result * status) const;
 
   /// Move all non kickers to prepare reception of the specified shoot
   /// each robot has the same amount of time to move
