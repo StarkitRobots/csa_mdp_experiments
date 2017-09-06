@@ -32,7 +32,7 @@ fi
 i=$first_test
 while [[ i -le $2 ]]
 do
-    newFolder=$(printf '%s_%.3d' ${folder} $i)
+    newFolder=$(printf '%s/%.3d' ${folder} $i)
     mkdir $newFolder
     if [ $? -eq 0 ]
     then

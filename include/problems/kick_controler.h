@@ -246,6 +246,11 @@ private:
                                        const Eigen::VectorXd & prev_kc_state,
                                        int player_id,
                                        const Eigen::Vector3d & target) const;
+
+  /// #INITIAL STATE
+  /// Maximal distance allowed from robots to ball in initial position
+  double max_initial_dist;
+
   /// #TRANSITION FUNCTION
   /// Which KickOptions are available?
   std::vector<std::unique_ptr<Player>> players;
@@ -268,9 +273,11 @@ private:
   /// #REWARD FUNCTION
   /// Goal reward
   double goal_reward;
+  /// Reward when colliding with the goal
+  double goal_collision_reward;
   /// Approach step reward
   double approach_step_reward;
-  /// Failure reward (ball out of field or goalkeeper collision)
+  /// Failure reward (ball out of field)
   double failure_reward;
 
   /// #FIELD PROPERTIES
@@ -307,6 +314,13 @@ private:
   /// #KICK PROPERTIES
   /// Default kicks used when there is no player considered
   std::vector<std::unique_ptr<KickOption>> kick_options;
+
+  /// #PASS RECEPTION PROPERTIES
+  /// Proportion of the distance at which the robot is waiting
+  double kick_dist_ratio;
+
+  /// Distance to estimated position for ball [m]
+  double intercept_dist;
 };
 
 }

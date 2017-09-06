@@ -82,11 +82,13 @@ std::string KickControler::Player::class_name() const
 }
 
 KickControler::KickControler()
-  : simulate_approaches(true),
+  : max_initial_dist(20.0),
+    simulate_approaches(true),
     cartesian_speed(0.2),
     angular_speed(M_PI/4),
     step_initial_stddev(0.25),
     goal_reward(0),
+    goal_collision_reward(-500),
     approach_step_reward(-1),
     failure_reward(-500),
     field_width(6),
@@ -100,7 +102,9 @@ KickControler::KickControler()
     goalie_x(field_length/2 - 0.1),
     goalie_y(0),
     goalie_thickness(0.2),
-    goalie_width(0.4)
+    goalie_width(0.4),
+    kick_dist_ratio(0.85),
+    intercept_dist(0.75)
 {
 }
 
@@ -242,13 +246,21 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
 
 Eigen::VectorXd KickControler::getStartingState(std::default_random_engine * engine) const
 {
-  Eigen::Matrix<double,3,2> limits = getPlayerLimits();
-  std::vector<Eigen::VectorXd> random_positions;
-  random_positions = rosban_random::getUniformSamples(limits, players.size()+1, engine);
   Eigen::VectorXd state(2 + 3 * players.size());
-  state.segment(0,2) = random_positions[0].segment(0,2);// Ball pos
+  // Getting ball position
+  Eigen::VectorXd ball_pos =
+    rosban_random::getUniformSample(getFieldLimits(), engine);
+  state.segment(0,2) = ball_pos;
+  // Sampling player position
   for (size_t player = 0; player < players.size(); player++) {
-    state.segment(2 + player * 3,3) = random_positions[player+1];// Player pos
+    int start_idx = 2 + player * 3;
+    // Ensuring that distance from players to ball is below max_initial_dist
+    bool valid = false;
+    while (!valid) {
+      state.segment(start_idx,3) = 
+        rosban_random::getUniformSample(getPlayerLimits(), engine);
+      valid = (state.segment(start_idx,2) - ball_pos).norm() < max_initial_dist;
+    }
   }
   return state;
 }
@@ -422,9 +434,6 @@ void KickControler::moveRobot(double allowed_time,
   Eigen::Vector2d ball_move = ball_end - ball_start;
   double kick_dir = atan2(ball_move(1), ball_move(0));
   Eigen::Vector3d robot_state = getPlayerState(status->successor, robot_id);
-  // Heuristic parameters
-  double kick_dist_ratio = 0.85;
-  double intercept_dist = 0.75;//[m]
   // Heuristic used to place the non-kickers
   Eigen::Vector2d ball_intercept = ball_start + kick_dist_ratio * ball_move;
   // Choose best of available targets
@@ -566,10 +575,12 @@ void KickControler::to_xml(std::ostream & out) const
 void KickControler::from_xml(TiXmlNode * node)
 {
   xml_tools::try_read<bool>  (node, "simulate_approaches"    , simulate_approaches    );
+  xml_tools::try_read<double>(node, "max_initial_dist"       , max_initial_dist       );
   xml_tools::try_read<double>(node, "cartesian_speed"        , cartesian_speed        );
   xml_tools::try_read<double>(node, "angular_speed"          , angular_speed          );
   xml_tools::try_read<double>(node, "step_initial_stddev"    , step_initial_stddev    );
   xml_tools::try_read<double>(node, "goal_reward"            , goal_reward            );
+  xml_tools::try_read<double>(node, "goal_collision_reward"  , goal_collision_reward  );
   xml_tools::try_read<double>(node, "approach_step_reward"   , approach_step_reward   );
   xml_tools::try_read<double>(node, "failure_reward"         , failure_reward         );
   xml_tools::try_read<double>(node, "field_width"            , field_width            );
@@ -583,6 +594,8 @@ void KickControler::from_xml(TiXmlNode * node)
   xml_tools::try_read<double>(node, "goal_area_size_x"       , goal_area_size_x       );
   xml_tools::try_read<double>(node, "goal_area_size_y"       , goal_area_size_y       );
   xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
+  xml_tools::try_read<double>(node, "kick_dist_ratio"        , kick_dist_ratio        );
+  xml_tools::try_read<double>(node, "intercept_dist"         , intercept_dist         );
 
   /// Reading optional path
   std::string kmc_path = xml_tools::read<std::string>(node, "kmc_path");
@@ -802,7 +815,7 @@ void KickControler::moveBall(double src_x, double src_y,
                              bool * terminal, double * reward) const
 {
   if (use_goalie && isCollidingGoalie(src_x,src_y,dst_x,dst_y)) {
-    *reward = *reward + failure_reward;
+    *reward = *reward + goal_collision_reward;
     *terminal = true;
     return;
   }
