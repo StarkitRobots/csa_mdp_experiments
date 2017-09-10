@@ -112,6 +112,10 @@ public:
   ///            and the others start at a random position but above max_dist
   Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
+  /// Return the most adapted approach policy for the specified settings, 
+  const csa_mdp::Policy & getPolicy(int player_id,
+                                    int kicker_id,
+                                    int kick_option_id) const;
 
   /// Run up to 'max_steps' of simulation on all players using the provided action.
   /// if kicker is enabled, cost is increased according to the number of steps and the
@@ -156,6 +160,17 @@ public:
                  const Eigen::Vector2d & ball_end,
                  int robot_id,
                  Problem::Result * status) const;
+
+  /// Return the best placing target for the robot at the provided state for the
+  /// predicted ball trajectory
+  Eigen::Vector3d getBestTarget(const Eigen::Vector2d & ball_start,
+                                const Eigen::Vector2d & ball_end,
+                                const Eigen::Vector3d & robot_state) const;
+
+  /// Return a list of potential placing for the predicted ball trajectory
+  std::vector<Eigen::Vector3d> getTargets(const Eigen::Vector2d & ball_start,
+                                          const Eigen::Vector2d & ball_end) const;
+
 
   void to_xml(std::ostream & out) const override;
   void from_xml(TiXmlNode * node) override;

@@ -31,6 +31,7 @@ void KickControler::KickOption::from_xml(TiXmlNode * node)
 {
   kick_decision_model = KickDecisionModelFactory().read(node, "kick_decision_model");
   approach_model.tryRead(node,"approach_model");
+  // Replace approach_policy if found
   PolicyFactory().tryRead(node, "policy", approach_policy);
   // Reading kick_model from name if found
   kick_model_names = read_vector<std::string>(node, "kick_model_names");
@@ -59,6 +60,9 @@ void KickControler::Player::from_xml(TiXmlNode * node)
 {
   name = rosban_utils::xml_tools::read<std::string>(node, "name");
   navigation_approach.tryRead(node, "approach_model");
+  // Replace approach_policy if found
+  PolicyFactory().tryRead(node, "policy", approach_policy);
+  // Reading kick options
   TiXmlNode* values = node->FirstChild("kick_options");
   kick_options.clear();
   for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())
@@ -69,7 +73,6 @@ void KickControler::Player::from_xml(TiXmlNode * node)
     ko->from_xml(child);
     kick_options.push_back(std::move(ko));
   }
-  PolicyFactory().tryRead(node, "policy", approach_policy);
   // Update odometry on all kick_options models
   for (size_t kick_id = 0; kick_id < kick_options.size(); kick_id++) {
     kick_options[kick_id]->approach_model.setOdometry(navigation_approach.getOdometry());
@@ -112,10 +115,6 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
                                             const Eigen::VectorXd & action,
                                             std::default_random_engine * engine) const
 {
-  if (simulate_approaches) {
-    // Deep check required to get back to simulate_approaches
-    throw std::logic_error("KickControler::getSuccessor: simulate_approaches is not supported anymore");
-  }
   // Checking state dimension
   if (state.rows() != 2 + 3 * (int)players.size()) {
     std::ostringstream oss;
@@ -265,10 +264,30 @@ Eigen::VectorXd KickControler::getStartingState(std::default_random_engine * eng
   return state;
 }
 
+const csa_mdp::Policy & KickControler::getPolicy(int player_id,
+                                                 int kicker_id,
+                                                 int kick_option_id) const
+{
+  const Player & player = *(players[player_id]);
+  // For kickers, try to use a policy specific to kick option if available
+  if (player_id == kicker_id) {
+    const KickOption & ko = *(player.kick_options[kick_option_id]);
+    if (ko.approach_policy) return *(ko.approach_policy);
+  }
+  // Otherwise, use custom player approach policy if provided
+  if (player.approach_policy) return *(player.approach_policy);
+  // If none policy has been found, throw an explicit error
+  std::ostringstream oss;
+  oss << "KickControler::getPolicy: no policy found for player "
+      << player_id
+      << "(kicker_id: " << kicker_id << " & kick_option_id: " << kick_option_id << ")";
+  throw std::logic_error(oss.str());
+}
+
 void KickControler::runSteps(int max_steps,
                              const Eigen::VectorXd & action,
                              int kicker_id,
-                             int kick_option,
+                             int kick_option_id,
                              bool kicker_enabled,
                              Problem::Result * status,
                              std::default_random_engine * engine) const
@@ -278,6 +297,7 @@ void KickControler::runSteps(int max_steps,
   }
   // Variables used globally in the function
   std::uniform_real_distribution<double> failure_distrib(0,1);
+  const KickOption & kick_option = *(players[kicker_id]->kick_options[kick_option_id]);
   // Step 1: gather all players states according to their polar_approach
   std::vector<Problem::Result> approach_status;
   std::vector<Eigen::Vector3d> targets;
@@ -285,7 +305,7 @@ void KickControler::runSteps(int max_steps,
     // Build player_state and target
     Eigen::Vector3d player_state, target;
     player_state = getPlayerState(status->successor, player_id);
-    target = getTarget(status->successor, action, player_id, kicker_id, kick_option);
+    target = getTarget(status->successor, action, player_id, kicker_id, kick_option_id);
     // Build player_status
     Problem::Result player_status;
     player_status.successor = toPolarApproachState(player_state, target);
@@ -307,13 +327,14 @@ void KickControler::runSteps(int max_steps,
     for (int player_id = 0; player_id < (int)players.size(); player_id++) {
       // Skip player who have already reached destination
       if (reached_target[player_id]) continue;
+      // Import policy
+      const csa_mdp::Policy & policy = getPolicy(player_id, kicker_id, kick_option_id);
+      // Get action 
+      Eigen::VectorXd pa_action = policy.getAction(approach_status[player_id].successor, engine);
       // TODO: avoid code duplication between kickers and non kickers
       if (player_id == kicker_id) {
         if (!kicker_enabled) continue;//Skip kicker if disabled
-        const PolarApproach & model = players[player_id]->kick_options[kick_option]->approach_model;
-        const csa_mdp::Policy & policy = *(players[player_id]->kick_options[kick_option]->approach_policy);
-        // Get action 
-        Eigen::VectorXd pa_action = policy.getAction(approach_status[player_id].successor, engine);
+        const PolarApproach & model = kick_option.approach_model;
         // Simulate approach action
         approach_status[player_id] = model.getSuccessor(approach_status[player_id].successor,
                                                         pa_action, engine);
@@ -323,9 +344,6 @@ void KickControler::runSteps(int max_steps,
       else {
         // Retrieve model
         const PolarApproach & model = players[player_id]->navigation_approach;
-        const csa_mdp::Policy & policy = *(players[player_id]->approach_policy);
-        // Get action 
-        Eigen::VectorXd pa_action = policy.getAction(approach_status[player_id].successor, engine);
         // Simulate approach action
         approach_status[player_id] = model.getSuccessor(approach_status[player_id].successor,
                                                         pa_action, engine);
@@ -354,7 +372,7 @@ void KickControler::runSteps(int max_steps,
     oss << "KickControler::performApproach: kickable state not reached after "
         << max_steps << std::endl
         << "kicker: " << kicker_id << std::endl
-        << "kick_option: " << kick_option << std::endl
+        << "kick_option: " << kick_option_id << std::endl
         << "state: " << approach_status[kicker_id].successor.transpose() << std::endl;
     throw std::runtime_error(oss.str());
   }
@@ -430,27 +448,9 @@ void KickControler::moveRobot(double allowed_time,
                               int robot_id,
                               Problem::Result * status) const
 {
-  // Precomputing data
-  Eigen::Vector2d ball_move = ball_end - ball_start;
-  double kick_dir = atan2(ball_move(1), ball_move(0));
+  // Get placing targets
   Eigen::Vector3d robot_state = getPlayerState(status->successor, robot_id);
-  // Heuristic used to place the non-kickers
-  Eigen::Vector2d ball_intercept = ball_start + kick_dist_ratio * ball_move;
-  // Choose best of available targets
-  Eigen::Vector3d best_target;
-  double min_time = std::numeric_limits<double>::max();  
-  for (double dir_offset : {-M_PI/2, M_PI/2}) {
-    Eigen::Vector2d intercept_offset(intercept_dist * cos(kick_dir + dir_offset),
-                                     intercept_dist * sin(kick_dir + dir_offset));
-    Eigen::Vector3d target;
-    target.segment(0,2) = ball_intercept + intercept_offset;
-    target(2) = normalizeAngle(kick_dir - dir_offset);// Robot is facing the ball
-    double time = getApproximatedTime(robot_state,target);
-    if (time < min_time) {
-      min_time = time;
-      best_target = target;
-    }
-  }
+  Eigen::Vector3d best_target = getBestTarget(ball_start, ball_end, robot_state);
   // First, move toward desired point
   Eigen::Vector2d required_move = best_target.segment(0,2) - robot_state.segment(0,2);
   double move_time = required_move.norm() / cartesian_speed;
@@ -478,6 +478,42 @@ void KickControler::moveRobot(double allowed_time,
   }
 }
 
+Eigen::Vector3d KickControler::getBestTarget(const Eigen::Vector2d & ball_start,
+                                             const Eigen::Vector2d & ball_end,
+                                             const Eigen::Vector3d & robot_state) const
+{
+  double min_time = std::numeric_limits<double>::max();
+  Eigen::Vector3d best_target;
+  for (const Eigen::Vector3d & target :getTargets(ball_start, ball_end)) {
+    double time = getApproximatedTime(robot_state, target);
+    if (time < min_time) {
+      best_target = target;
+      min_time = time;
+    }
+  }
+  return best_target;
+}
+
+std::vector<Eigen::Vector3d> KickControler::getTargets(const Eigen::Vector2d & ball_start,
+                                                       const Eigen::Vector2d & ball_end) const
+{
+  // Precomputing data
+  Eigen::Vector2d ball_move = ball_end - ball_start;
+  double kick_dir = atan2(ball_move(1), ball_move(0));
+  // Heuristic used to place the non-kickers
+  Eigen::Vector2d ball_intercept = ball_start + kick_dist_ratio * ball_move;
+  // Get the placing targets
+  std::vector<Eigen::Vector3d> targets;
+  for (double dir_offset : {-M_PI/2, M_PI/2}) {
+    Eigen::Vector2d intercept_offset(intercept_dist * cos(kick_dir + dir_offset),
+                                     intercept_dist * sin(kick_dir + dir_offset));
+    Eigen::Vector3d target;
+    target.segment(0,2) = ball_intercept + intercept_offset;
+    target(2) = normalizeAngle(kick_dir - dir_offset);// Robot is facing the ball
+    targets.push_back(target);
+  }
+  return targets;
+}
 
 Eigen::Vector3d KickControler::getPlayerState(const Eigen::VectorXd & state,
                                               int player_id) const
@@ -492,26 +528,33 @@ Eigen::Vector3d KickControler::getTarget(const Eigen::VectorXd & state,
                                          int kick_option) const
 {
   // Importing basic kick properties
-  const KickDecisionModel & kdm =
-    *(players[kicker_id]->kick_options[kick_option]->kick_decision_model);
+  const KickOption & ko = *(players[kicker_id]->kick_options[kick_option]);
+  const KickDecisionModel & kdm = *(ko.kick_decision_model);
+  if (ko.kick_model_names.size() != 1) {
+    throw std::logic_error(
+      "KickControler::getTarget: only single kick types are supported");
+  }
+  std::string kick_name = (ko.kick_model_names[0]);
+  const KickModel & km = kmc.getKickModel(kick_name);
   int kick_dims = kdm.getActionsLimits().rows();
+  // Renaming variables to improve readability
+  Eigen::Vector2d ball_seen = state.segment(0,2);
+  Eigen::VectorXd kick_actions = action.segment(1, kick_dims);
+  // Using kick decision model to determine direction of the kick
+  double kick_dir = kdm.computeKickDirection(ball_seen, kick_actions);
   // Computing target
   Eigen::Vector3d target;
   // If player is a kicker, target depend on chosen kick
   if (player_id == kicker_id) {
-    // Renaming variables to improve readability
-    Eigen::Vector2d ball_seen = state.segment(0,2);
-    // Target is the ball
+    // Target is the ball and direction of the kick as computed previously
     target.segment(0,2) = ball_seen;
-    // Importing kick_action
-    Eigen::VectorXd kick_actions = action.segment(1, kick_dims);
-    // Using kick decision model to determine direction of the kick
-    target(2) = kdm.computeKickDirection(ball_seen, kick_actions);
+    target(2) = kick_dir;
   }
+  // If player is not a kicker, determine best target using approximation of speed
   else {
-    int start_row = 1 + kick_dims + 3 * player_id;
-    if (player_id > kicker_id) start_row -= 3;
-    target = action.segment(start_row, 3);
+    Eigen::Vector2d expected_ball_pos = km.applyKick(ball_seen, kick_dir);
+    Eigen::Vector3d robot_state = getPlayerState(state, player_id);
+    target = getBestTarget(ball_seen, expected_ball_pos, robot_state);
   }
   return target;
 }
