@@ -89,3 +89,6 @@ target_link_libraries(black_box_learning ${catkin_LIBRARIES} csa_mdp_experiments
 
 add_executable(extract_fa_tree src/extract_fa_tree.cpp)
 target_link_libraries(extract_fa_tree ${catkin_LIBRARIES} csa_mdp_experiments)
+
+add_executable(blackbox_value_estimator src/blackbox_value_estimator.cpp)
+target_link_libraries(blackbox_value_estimator ${catkin_LIBRARIES} csa_mdp_experiments)
