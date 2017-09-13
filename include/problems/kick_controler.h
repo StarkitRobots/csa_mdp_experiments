@@ -5,8 +5,8 @@
 #include "kick_model/kick_model_collection.h"
 
 #include "rosban_csa_mdp/core/black_box_problem.h"
-
 #include "rosban_csa_mdp/core/policy.h"
+#include "rosban_fa/function_approximator.h"
 
 #include <memory>
 
@@ -273,6 +273,17 @@ private:
   /// If enabled, then real motions of the players are simulated, otherwise a
   /// simple heuristic based on approximation of the robot speed are used
   bool simulate_approaches;
+
+  /// If 'approach_steps_approximator' is declared and 'simulate_approaches' set
+  /// to false, then the function approximator is used to predict the number of
+  /// steps required to reach the position
+  ///
+  /// NOTE: Applying the KISS principle, we use only one approximator here.
+  ///       However, in order to improve similarity with reality, what should
+  ///       be done is to have an approximator for each option (i.e couple
+  ///       kick_name and kick_foot). Then this approximator could also be used
+  ///       to choose which type of kick and which foot is used to kick.
+  std::unique_ptr<rosban_fa::FunctionApproximator> approach_steps_approximator;
 
   /// Approximation of cartesian speed [m/s] for the robot when
   /// 'simulate_approaches' is false

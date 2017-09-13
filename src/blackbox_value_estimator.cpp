@@ -55,11 +55,12 @@ public:
             const Eigen::VectorXd & state = inputs.col(idx);
             double total_reward = 0;
             for (int eval = 0; eval < evals_per_sample; eval++) {
-              total_reward += problem->sampleRolloutReward(state,
-                                                           *policy,
-                                                           horizon,
-                                                           discount,
-                                                           thread_engine);
+              double eval_reward = problem->sampleRolloutReward(state,
+                                                                *policy,
+                                                                horizon,
+                                                                discount,
+                                                                thread_engine);
+              total_reward += eval_reward;
             }
             observations(idx,0) = total_reward / evals_per_sample;
           }      

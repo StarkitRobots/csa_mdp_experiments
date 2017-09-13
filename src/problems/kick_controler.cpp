@@ -5,7 +5,7 @@
 #include "kick_model/kick_model_factory.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
-
+#include "rosban_fa/function_approximator_factory.h"
 #include "rosban_random/tools.h"
 #include "rosban_utils/xml_tools.h"
 
@@ -413,12 +413,32 @@ void KickControler::approximateKickerApproach(const Eigen::Vector2d & ball_real_
   // Compute target and time for kicker (best between left and right)
   double min_time = std::numeric_limits<double>::max();
   Eigen::Vector3d kicker_target;
-  for (bool use_right_foot : {true, false}) {
-    Eigen::Vector3d target = kick_zone.getWishedPosInField(ball_real_pos, kick_wished_dir, use_right_foot);
-    double time = getApproximatedTime(kicker_state,target);
-    if (time < min_time) {
-      min_time = time;
-      kicker_target = target;
+  if (approach_steps_approximator) {
+    // Getting the equivalent state for polar_approach
+    Eigen::Vector3d kick_target;
+    kick_target.segment(0,2) = ball_real_pos;
+    kick_target(2) = kick_wished_dir;
+    Eigen::VectorXd polar_state = toPolarApproachState(kicker_state, kick_target);
+    min_time = -approach_steps_approximator->predict(polar_state, 0);
+    // Getting Use kicking left position as next position for the robot:
+    // approach_steps_approximator does not provide enough information to choose
+    // the side
+    kicker_target = kick_zone.getWishedPosInField(ball_real_pos,
+                                                  kick_wished_dir,
+                                                  false);
+  }
+  // In case there is no approach_steps_approximator, use cartesian_speed and
+  // angular_speed to determine how much time will be spent
+  else {
+    for (bool use_right_foot : {true, false}) {
+      Eigen::Vector3d target = kick_zone.getWishedPosInField(ball_real_pos,
+                                                             kick_wished_dir,
+                                                             use_right_foot);
+      double time = getApproximatedTime(kicker_state,target);
+      if (time < min_time) {
+        min_time = time;
+        kicker_target = target;
+      }
     }
   }
   // Set player state in status and add cost
@@ -668,6 +688,15 @@ void KickControler::from_xml(TiXmlNode * node)
       ko->from_xml(child);
       kick_options.push_back(std::move(ko));
     }
+  }
+
+  // Loading the function approximator for number of steps (optional)
+  // Function approximator are always stored at a given location
+  std::string approach_approximator_path;
+  xml_tools::try_read<std::string>(node, "approach_approximator_path", approach_approximator_path);
+  if (approach_approximator_path != "") {
+    rosban_fa::FunctionApproximatorFactory().loadFromFile(approach_approximator_path,
+                                                          approach_steps_approximator);
   }
 
   // Consistency check
