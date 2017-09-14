@@ -92,7 +92,7 @@ KickControler::KickControler()
     step_initial_stddev(0.25),
     goal_reward(0),
     goal_collision_reward(-500),
-    approach_step_reward(-1),
+    walk_frequency(1.7),
     failure_reward(-500),
     field_width(6),
     field_length(9),
@@ -219,8 +219,10 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   kick_reward = kick_model.getReward();
   // T5: move other robots
   if (kicker_id != -1) {
-    int extra_time = (int)-kick_reward;
+    double extra_time = -kick_reward;
     if (simulate_approaches) {
+      // Robots perform 2 * walk_frequency steps per second
+      int extra_steps = (int) extra_time * 2 * walk_frequency;
       runSteps(extra_time, action, kicker_id, kick_option_id, false, &result, engine);
     } else {
       Eigen::Vector2d expected_ball_pos = kick_model.applyKick(ball_real, kick_dir);
@@ -382,7 +384,7 @@ void KickControler::runSteps(int max_steps,
     status->terminal = true;
   }
   // If kicker is enabled, increase status cost
-  if (kicker_enabled) status->reward += nb_steps * approach_step_reward;
+  if (kicker_enabled) status->reward += nb_steps / (2 * walk_frequency);
 }
 
 double KickControler::getApproximatedTime(const Eigen::VectorXd & src,
@@ -644,7 +646,7 @@ void KickControler::from_xml(TiXmlNode * node)
   xml_tools::try_read<double>(node, "step_initial_stddev"    , step_initial_stddev    );
   xml_tools::try_read<double>(node, "goal_reward"            , goal_reward            );
   xml_tools::try_read<double>(node, "goal_collision_reward"  , goal_collision_reward  );
-  xml_tools::try_read<double>(node, "approach_step_reward"   , approach_step_reward   );
+  xml_tools::try_read<double>(node, "walk_frequency"         , walk_frequency         );
   xml_tools::try_read<double>(node, "failure_reward"         , failure_reward         );
   xml_tools::try_read<double>(node, "field_width"            , field_width            );
   xml_tools::try_read<double>(node, "field_length"           , field_length           );

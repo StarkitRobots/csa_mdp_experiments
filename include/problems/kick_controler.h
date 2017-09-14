@@ -301,8 +301,8 @@ private:
   double goal_reward;
   /// Reward when colliding with the goal
   double goal_collision_reward;
-  /// Approach step reward
-  double approach_step_reward;
+  /// Walk frequency defines the reward receives at each step when performing simulation
+  double walk_frequency;
   /// Failure reward (ball out of field)
   double failure_reward;
 
