@@ -223,7 +223,7 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
     if (simulate_approaches) {
       // Robots perform 2 * walk_frequency steps per second
       int extra_steps = (int) extra_time * 2 * walk_frequency;
-      runSteps(extra_time, action, kicker_id, kick_option_id, false, &result, engine);
+      runSteps(extra_steps, action, kicker_id, kick_option_id, false, &result, engine);
     } else {
       Eigen::Vector2d expected_ball_pos = kick_model.applyKick(ball_real, kick_dir);
       moveNonKickers(extra_time, ball_real, expected_ball_pos, kicker_id, &result);
