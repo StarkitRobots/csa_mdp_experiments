@@ -384,7 +384,7 @@ void KickControler::runSteps(int max_steps,
     status->terminal = true;
   }
   // If kicker is enabled, increase status cost
-  if (kicker_enabled) status->reward += nb_steps / (2 * walk_frequency);
+  if (kicker_enabled) status->reward -= nb_steps / (2 * walk_frequency);
 }
 
 double KickControler::getApproximatedTime(const Eigen::VectorXd & src,
