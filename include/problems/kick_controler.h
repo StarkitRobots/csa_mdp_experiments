@@ -347,6 +347,10 @@ private:
 
   /// Distance to estimated position for ball [m]
   double intercept_dist;
+
+  /// If enabled, then player can also face the direction from which the ball is
+  /// coming. This position is more adapted for lateral kick.
+  bool use_opposite_placing;
 };
 
 }

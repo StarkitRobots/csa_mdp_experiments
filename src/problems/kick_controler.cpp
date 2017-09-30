@@ -107,7 +107,8 @@ KickControler::KickControler()
     goalie_thickness(0.2),
     goalie_width(0.4),
     kick_dist_ratio(0.85),
-    intercept_dist(0.75)
+    intercept_dist(0.75),
+    use_opposite_placing(false)
 {
 }
 
@@ -526,6 +527,10 @@ std::vector<Eigen::Vector3d> KickControler::getTargets(const Eigen::Vector2d & b
   Eigen::Vector2d ball_intercept = ball_start + kick_dist_ratio * ball_move;
   // Get the placing targets
   std::vector<Eigen::Vector3d> targets;
+  std::vector<double> dir_offsets = {-M_PI/2, M_PI/2};
+  if (use_opposite_placing) {
+    dir_offsets.push_back(M_PI);
+  }
   for (double dir_offset : {-M_PI/2, M_PI/2}) {
     Eigen::Vector2d intercept_offset(intercept_dist * cos(kick_dir + dir_offset),
                                      intercept_dist * sin(kick_dir + dir_offset));
@@ -661,6 +666,7 @@ void KickControler::from_xml(TiXmlNode * node)
   xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
   xml_tools::try_read<double>(node, "kick_dist_ratio"        , kick_dist_ratio        );
   xml_tools::try_read<double>(node, "intercept_dist"         , intercept_dist         );
+  xml_tools::try_read<bool  >(node, "use_opposite_placing"   , use_opposite_placing   );
 
   /// Reading optional path
   std::string kmc_path = xml_tools::read<std::string>(node, "kmc_path");
