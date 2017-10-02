@@ -162,10 +162,12 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   bool early_terminal = false;
   moveBall(ball_x, ball_y, &ball_real_x, &ball_real_y, &early_terminal, &result.reward);
   Eigen::Vector2d ball_real(ball_real_x, ball_real_y);
+  // Update ball position in result.successor
+  // Warning: this is mandatory for further access to the position of the ball in runSteps
+  result.successor.segment(0,2) = ball_real;
   if (early_terminal)
   {
     // Update ball position and force it to be terminal
-    result.successor.segment(0,2) = ball_real;
     result.terminal = true;
     // No need to perform additional computations
     return result;
@@ -198,6 +200,8 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
   } else {
     const Eigen::Vector3d & kicker_state =
       getPlayerState(result.successor, kicker_id);
+    // Actualise kick_dir to use the real position of the ball now, in order to match evaluation in runSteps
+    kick_dir = kdm.computeKickDirection(ball_real, decision_actions);
     for (const std::string & name : kick_option.kick_model_names) {
       const KickZone & kick_zone = kmc.getKickModel(name).getKickZone();
       if (kick_zone.isKickable(ball_real, kicker_state, kick_dir)) {
@@ -206,7 +210,12 @@ Problem::Result KickControler::getSuccessor(const Eigen::VectorXd & state,
       }
     }
     if (kick_name == "") {
-      return result;
+      std::ostringstream oss;
+      oss << "No kick terminal in KickControler::getSuccessor()" << std::endl;
+      oss << "ball real: " << ball_real.transpose() << std::endl;
+      oss << "kick_dir: " << kick_dir << std::endl;
+      oss << "kicker state: " << kicker_state.transpose() << std::endl;
+      throw std::logic_error(oss.str());
     }
   }
   const KickModel & kick_model = kmc.getKickModel(kick_name);
@@ -565,23 +574,23 @@ Eigen::Vector3d KickControler::getTarget(const Eigen::VectorXd & state,
   const KickModel & km = kmc.getKickModel(kick_name);
   int kick_dims = kdm.getActionsLimits().rows();
   // Renaming variables to improve readability
-  Eigen::Vector2d ball_seen = state.segment(0,2);
+  Eigen::Vector2d ball = state.segment(0,2);
   Eigen::VectorXd kick_actions = action.segment(1, kick_dims);
   // Using kick decision model to determine direction of the kick
-  double kick_dir = kdm.computeKickDirection(ball_seen, kick_actions);
+  double kick_dir = kdm.computeKickDirection(ball, kick_actions);
   // Computing target
   Eigen::Vector3d target;
   // If player is a kicker, target depend on chosen kick
   if (player_id == kicker_id) {
     // Target is the ball and direction of the kick as computed previously
-    target.segment(0,2) = ball_seen;
+    target.segment(0,2) = ball;
     target(2) = kick_dir;
   }
   // If player is not a kicker, determine best target using approximation of speed
   else {
-    Eigen::Vector2d expected_ball_pos = km.applyKick(ball_seen, kick_dir);
+    Eigen::Vector2d expected_ball_pos = km.applyKick(ball, kick_dir);
     Eigen::Vector3d robot_state = getPlayerState(state, player_id);
-    target = getBestTarget(ball_seen, expected_ball_pos, robot_state);
+    target = getBestTarget(ball, expected_ball_pos, robot_state);
   }
   return target;
 }
