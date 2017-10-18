@@ -92,3 +92,6 @@ target_link_libraries(extract_fa_tree ${catkin_LIBRARIES} csa_mdp_experiments)
 
 add_executable(blackbox_value_estimator src/blackbox_value_estimator.cpp)
 target_link_libraries(blackbox_value_estimator ${catkin_LIBRARIES} csa_mdp_experiments)
+
+add_executable(robot_kick_comparator src/robot_kick_comparator.cpp)
+target_link_libraries(robot_kick_comparator ${catkin_LIBRARIES} csa_mdp_experiments)
