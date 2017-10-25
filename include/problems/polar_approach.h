@@ -4,7 +4,7 @@
 
 #include "rosban_csa_mdp/core/black_box_problem.h"
 
-#include "Odometry/Odometry.hpp"
+#include "odometry/odometry.h"
 
 #include <Eigen/Core>
 
@@ -70,12 +70,12 @@ public:
   /// Update maximal distance at which the ball is accepted
   void setMaxDist(double dist);
 
-  const Leph::Odometry & getOdometry() const;
-  void setOdometry(const Leph::Odometry & odometry);
+  const Odometry & getOdometry() const;
+  void setOdometry(const Odometry & odometry);
 
 protected:
   /// The displacement and noise model
-  Leph::Odometry odometry;
+  Odometry odometry;
 
   // STATE LIMITS
   /// The maximal distance to the ball along one of the axis

@@ -8,7 +8,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rosban_csa_mdp
-  model
 )
 
 find_package(rosban_control QUIET)
@@ -46,6 +45,7 @@ include_directories(
 set(DIRECTORIES
   src/kick_model
   src/learning_machine
+  src/odometry
   src/policies
   src/problems
   )

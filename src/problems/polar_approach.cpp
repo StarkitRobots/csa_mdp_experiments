@@ -90,11 +90,11 @@ void PolarApproach::setMaxDist(double dist)
   updateLimits();
 }
 
-const Leph::Odometry & PolarApproach::getOdometry() const
+const Odometry & PolarApproach::getOdometry() const
 {
   return odometry;
 }
-void PolarApproach::setOdometry(const Leph::Odometry & new_odometry)
+void PolarApproach::setOdometry(const Odometry & new_odometry)
 {
   odometry = new_odometry;
 }
