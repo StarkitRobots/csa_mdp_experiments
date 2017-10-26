@@ -3,7 +3,7 @@
 //#include "problems/approach.h"
 #include "problems/polar_approach.h"
 //#include "problems/cart_pole.h"
-//#include "problems/cart_pole_stabilization.h"
+#include "problems/cart_pole_stabilization.h"
 //#include "problems/simulated_cart_pole.h"
 #include "problems/double_integrator.h"
 //#include "problems/inverted_pendulum.h"
@@ -34,8 +34,8 @@ void ExtendedProblemFactory::registerExtraProblems()
 //  registerExtraBuilder("cart_pole", [](){return std::unique_ptr<Problem>(new CartPole);});
 //  registerExtraBuilder("simulated_cart_pole",
 //                       [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
-//  registerExtraBuilder("cart_pole_stabilization",
-//                       [](){return std::unique_ptr<Problem>(new CartPoleStabilization);});
+  registerExtraBuilder("cart_pole_stabilization",
+                       [](){return std::unique_ptr<Problem>(new CartPoleStabilization);});
 //  registerExtraBuilder("inverted_pendulum",
 //                       [](){return std::unique_ptr<Problem>(new InvertedPendulum);}, false);
 //  registerExtraBuilder("double_inverted_pendulum",

@@ -1,0 +1,25 @@
+<Problem>
+  <polar_approach>
+    <odometry_coefficients>
+      <v>0.0</v>
+      <v>0.0</v>
+      <v>0.0</v>
+      <v>1.0</v>
+      <v>0.0</v>
+      <v>0.0</v>
+      <v>0.0</v>
+      <v>1.0</v>
+      <v>0.0</v>
+      <v>0.0</v>
+      <v>0.0</v>
+      <v>1.0</v>
+    </odometry_coefficients>
+    <max_step_theta>0.2</max_step_theta>
+    <kick_zones>
+      <v>
+        <kick_theta_tol>5</kick_theta_tol>
+        <kick_theta_offset>0</kick_theta_offset>
+      </v>
+    </kick_zones>
+  </polar_approach>
+</Problem>

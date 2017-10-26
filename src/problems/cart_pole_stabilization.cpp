@@ -39,9 +39,9 @@ CartPoleStabilization::CartPoleStabilization()
   action_limits(0,1) =  action_max;
 
   setStateLimits(state_limits);
-  setActionLimits(action_limits);
+  setActionLimits({action_limits});
   setStateNames({"theta","omega","cos(theta)","sin(theta)"});
-  setActionNames({"torque"});
+  setActionNames(0,{"torque"});
 }
 
 bool CartPoleStabilization::isTerminal(const Eigen::VectorXd& state) const
@@ -55,18 +55,16 @@ bool CartPoleStabilization::isTerminal(const Eigen::VectorXd& state) const
   return false;
 }
 
-double CartPoleStabilization::getReward(const Eigen::VectorXd &src,
-                                        const Eigen::VectorXd &action,
+double CartPoleStabilization::getReward(const Eigen::VectorXd &action,
                                         const Eigen::VectorXd &result) const
 {
   Eigen::VectorXd result_full = whateverToFull(result);
-  (void)src;//Unused
   if (isTerminal(result_full)) {
     return -1000;
   }
   double pos_cost   = std::pow(result_full(0) / theta_max , 2);
   double speed_cost = std::pow(result_full(1)             , 2);
-  double force_cost = std::pow(action(0) / action_max, 2);
+  double force_cost = std::pow(action(1) / action_max, 2);
   return - (pos_cost + speed_cost + force_cost);
 }
 
@@ -81,17 +79,28 @@ std::vector<int> CartPoleStabilization::getLearningDimensions() const
   throw std::runtime_error("CartPoleStabilization::getLearningDimensions: unknown learning_space");
 }
 
-Eigen::VectorXd CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state,
+Problem::Result CartPoleStabilization::getSuccessor(const Eigen::VectorXd &state,
                                                     const Eigen::VectorXd &action,
                                                     std::default_random_engine * engine) const
 {
+  Result r;
   switch (detectSpace(state))
   {
-    case LearningSpace::Full: return getFullSuccessor(state, action, engine);
-    case LearningSpace::Angular: return getAngularSuccessor(state, action, engine);
-    case LearningSpace::Cartesian: return getCartesianSuccessor(state, action, engine);
+    case LearningSpace::Full:
+      r.successor = getFullSuccessor(state, action, engine);
+      break;
+    case LearningSpace::Angular:
+      r.successor = getAngularSuccessor(state, action, engine);
+      break;
+    case LearningSpace::Cartesian:
+      r.successor = getCartesianSuccessor(state, action, engine);
+      break;
+    default:
+      throw std::logic_error("CartPoleStabilization::getSuccessor: Unhandled learning space");
   }
-  throw std::logic_error("CartPoleStabilization::getSuccessor: Unhandled learning space");
+  r.reward = getReward(action,r.successor);
+  r.terminal = isTerminal(r.successor);
+  return r;
 }
 
 Eigen::VectorXd CartPoleStabilization::getFullSuccessor(const Eigen::VectorXd &state,
@@ -100,7 +109,7 @@ Eigen::VectorXd CartPoleStabilization::getFullSuccessor(const Eigen::VectorXd &s
 {
   std::uniform_real_distribution<double> noise_distribution(-noise_max, noise_max);
   // Adding noise to action
-  double noisy_action = action(0) + noise_distribution(*engine);
+  double noisy_action = action(1) + noise_distribution(*engine);
   // Integrating action with the system dynamics
   double elapsed = 0;
   Eigen::VectorXd current_state = state;
