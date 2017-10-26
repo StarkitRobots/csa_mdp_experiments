@@ -25,10 +25,10 @@ void CartPole::updateLimits()
     -max_axis_vel, max_axis_vel;
   action_limits << -max_torque, max_torque;
   setStateLimits(state_limits);
-  setActionLimits(action_limits);
+  setActionLimits({action_limits});
 
   setStateNames({"cart_pos", "cart_speed", "theta", "omega"});
-  setActionNames({"cart_cmd"});
+  setActionNames(0,{"cart_cmd"});
 }
 
 bool CartPole::isTerminal(const Eigen::VectorXd & state) const
@@ -50,7 +50,6 @@ double CartPole::getReward(const Eigen::VectorXd &state,
                            const Eigen::VectorXd &action,
                            const Eigen::VectorXd &dst) const
 {
-  (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
     return -200;
   }

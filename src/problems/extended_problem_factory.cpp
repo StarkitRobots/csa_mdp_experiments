@@ -4,14 +4,11 @@
 #include "problems/polar_approach.h"
 //#include "problems/cart_pole.h"
 #include "problems/cart_pole_stabilization.h"
-//#include "problems/simulated_cart_pole.h"
 #include "problems/double_integrator.h"
 //#include "problems/inverted_pendulum.h"
 //#include "problems/double_inverted_pendulum.h"
-//#include "problems/kick_optimizer.h"
-//#include "problems/multi_kick_single_player.h"
-//#include "problems/one_player_kick.h"
 #include "problems/kick_controler.h"
+#include "problems/simulated_cart_pole.h"
 
 namespace csa_mdp
 {
@@ -32,8 +29,6 @@ void ExtendedProblemFactory::registerExtraProblems()
   registerExtraBuilder("polar_approach",
                        [](){return std::unique_ptr<Problem>(new PolarApproach);});
 //  registerExtraBuilder("cart_pole", [](){return std::unique_ptr<Problem>(new CartPole);});
-//  registerExtraBuilder("simulated_cart_pole",
-//                       [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
   registerExtraBuilder("cart_pole_stabilization",
                        [](){return std::unique_ptr<Problem>(new CartPoleStabilization);});
 //  registerExtraBuilder("inverted_pendulum",
@@ -42,14 +37,10 @@ void ExtendedProblemFactory::registerExtraProblems()
 //                       [](){return std::unique_ptr<Problem>(new DoubleInvertedPendulum);}, false);
   registerExtraBuilder("double_integrator",
                        [](){return std::unique_ptr<Problem>(new DoubleIntegrator);});
-//  registerExtraBuilder("kick_optimizer",
-//                       [](){return std::unique_ptr<Problem>(new KickOptimizer);}, false);
-//  registerExtraBuilder("multi_kick_single_player",
-//                       [](){return std::unique_ptr<Problem>(new MultiKickSinglePlayer);});
-//  registerExtraBuilder("one_player_kick",
-//                       [](){return std::unique_ptr<Problem>(new OnePlayerKick);});
   registerExtraBuilder("kick_controler",
                        [](){return std::unique_ptr<Problem>(new KickControler);});
+  registerExtraBuilder("simulated_cart_pole",
+                       [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)

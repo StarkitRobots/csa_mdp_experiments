@@ -28,10 +28,10 @@ void SimulatedCartPole::updateLimits()
     -1, 1;
   action_limits << -max_torque, max_torque;
   setStateLimits(state_limits);
-  setActionLimits(action_limits);
+  setActionLimits({action_limits});
 
   setStateNames({"cart_pos", "cart_vel", "theta", "omega", "cos(theta)", "sin(theta)"});
-  setActionNames({"cart_cmd"});
+  setActionNames(0,{"cart_cmd"});
 }
 
 std::vector<int> SimulatedCartPole::getLearningDimensions() const
@@ -62,10 +62,8 @@ bool SimulatedCartPole::isTerminal(const Eigen::VectorXd & state) const
 }
 
 double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
-                                    const Eigen::VectorXd &action,
                                     const Eigen::VectorXd &dst) const
 {
-  (void) action;
   if (isTerminal(dst) || isTerminal(state)) {
     return -100;
   }
@@ -108,16 +106,27 @@ double SimulatedCartPole::getReward(const Eigen::VectorXd &state,
   throw std::runtime_error("Unkown reward_type in SimulatedCartPole");
 }
 
-Eigen::VectorXd SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
+Problem::Result SimulatedCartPole::getSuccessor(const Eigen::VectorXd & state,
                                                 const Eigen::VectorXd & action,
                                                 std::default_random_engine * engine) const
 {
+  Result r;
   switch(detectSpace(state)) {
-    case LearningSpace::Angular: return getAngularSuccessor(state, action, engine);
-    case LearningSpace::Cartesian: return getCartesianSuccessor(state, action, engine);
-    case LearningSpace::Full: return getFullSuccessor(state, action, engine);
+    case LearningSpace::Angular:
+      r.successor = getAngularSuccessor(state, action, engine);
+      break;
+    case LearningSpace::Cartesian:
+      r.successor = getCartesianSuccessor(state, action, engine);
+      break;
+    case LearningSpace::Full:
+      r.successor = getFullSuccessor(state, action, engine);
+      break;
+    default:
+      throw std::logic_error("SimulatedCartPole::getSuccessor: unknown space");
   }
-  throw std::logic_error("SimulatedCartPole::getSuccessor: unknown space");
+  r.reward = getReward(state, r.successor);
+  r.terminal = isTerminal(r.successor);
+  return r;
 }
 
 Eigen::VectorXd SimulatedCartPole::getFullSuccessor(const Eigen::VectorXd & state,

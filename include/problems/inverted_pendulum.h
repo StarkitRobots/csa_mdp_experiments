@@ -8,7 +8,7 @@ namespace csa_mdp
 /// States are:
 /// theta, omega
 /// Action is:
-/// torque: (applied on axi)
+/// torque: (applied on axis)
 class InvertedPendulum : public ControlProblem
 {
 public:

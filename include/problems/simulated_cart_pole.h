@@ -36,15 +36,14 @@ public:
 
   void updateLimits();
 
-  bool isTerminal(const Eigen::VectorXd & state) const override;
+  bool isTerminal(const Eigen::VectorXd & state) const;
 
   double getReward(const Eigen::VectorXd & state,
-                   const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) const override;
+                   const Eigen::VectorXd & dst) const;
 
-  Eigen::VectorXd getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action,
-                               std::default_random_engine * engine) const override;
+  Result getSuccessor(const Eigen::VectorXd & state,
+                      const Eigen::VectorXd & action,
+                      std::default_random_engine * engine) const override;
 
   Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
