@@ -4,7 +4,7 @@
 #include "rosban_csa_mdp/core/problem_factory.h"
 #include "rosban_csa_mdp/solvers/learner_factory.h"
 
-#include "rhoban_utils/benchmark.h"
+#include "rhoban_utils/timing/benchmark.h"
 
 #include <sys/stat.h>
 
@@ -346,74 +346,66 @@ std::string LearningMachine::getClassName() const
   return "LearningMachine";
 }
 
-void LearningMachine::toJson(std::ostream &out) const
+Json::Value LearningMachine::toJson() const
 {
-  if (learner)
-  {
-    out << "<learner>";
-    learner->write(problem->getClassName(), out);
-    out << "</learner>";
+  Json::Value v;
+  if (learner) {
+    v["learner"] = learner->toFactoryJson();
   }
-  if (problem)
-  {
-    out << "<problem>";
-    problem->write(problem->getClassName(), out);
-    out << "</problem>";
+  if (problem) {
+    v["problem"] = problem->toFactoryJson();
   }
-  rhoban_utils::xml_tools::write<std::string>("update_rule", to_string(update_rule), out);
-  rhoban_utils::xml_tools::write<int>("nb_runs", nb_runs, out);
-  rhoban_utils::xml_tools::write<int>("nb_steps", nb_steps, out);
-  rhoban_utils::xml_tools::write<int>("nb_threads", nb_threads, out);
-  rhoban_utils::xml_tools::write<double>("discount", discount, out);
-  rhoban_utils::xml_tools::write<double>("time_budget", time_budget, out);
-  rhoban_utils::xml_tools::write<bool>("save_details", save_details, out);
-  rhoban_utils::xml_tools::write<bool>("save_run_logs", save_run_logs, out);
-  rhoban_utils::xml_tools::write<bool>("save_best_policy", save_best_policy, out);
-  rhoban_utils::xml_tools::write_vector<int>("learning_dimensions", learning_dimensions, out);
+  v["update_rule"     ] =  to_string(update_rule);
+  v["nb_runs"         ] =  nb_runs;
+  v["nb_steps"        ] =  nb_steps;
+  v["nb_threads"      ] =  nb_threads;
+  v["discount"        ] =  discount;
+  v["time_budget"     ] =  time_budget;
+  v["save_details"    ] =  save_details;
+  v["save_run_logs"   ] =  save_run_logs;
+  v["save_best_policy"] =  save_best_policy;
+  v["learning_dimensions"] = rhoban_utils::vector2Json(learning_dimensions);
+  return v;
 }
 
-void LearningMachine::fromJson(TiXmlNode *node)
+void LearningMachine::fromJson(const Json::Value & v, const std::string & dir_name)
 {
   // First: read problem
   std::unique_ptr<Problem> tmp_problem;
   std::string problem_path;
-  rhoban_utils::xml_tools::try_read<std::string>(node, "problem_path", problem_path);
+  rhoban_utils::tryRead(v, "problem_path", &problem_path);
   if (problem_path != "") {
-    tmp_problem = ProblemFactory().buildFromXmlFile(problem_path, "Problem");
+    tmp_problem = ProblemFactory().buildFromJsonFile(dir_name + problem_path);
   } else {
-    tmp_problem = ProblemFactory().read(node, "problem");
+    tmp_problem = ProblemFactory().read(v, "problem", dir_name);
   }
   if(!tmp_problem) {
-    throw std::runtime_error("LearningMachine::fromJson: Failed to load a problem in '" + node->ValueStr() + "'");
+    throw rhoban_utils::JsonParsingError("LearningMachine::fromJson: No problem found");
   }
   setProblem(std::move(tmp_problem));
   // Override learning dimensions if custom config is provided
   std::vector<int> new_learning_dims;
-  rhoban_utils::xml_tools::try_read_vector<int>(node, "learning_dimensions", new_learning_dims);
+  rhoban_utils::tryReadVector(v, "learning_dimensions", &new_learning_dims);
   if (new_learning_dims.size() > 0) setLearningDimensions(new_learning_dims);
   // Then: read learner
-  TiXmlNode * learner_node = node->FirstChild("learner");
-  if(!learner_node) {
-    throw std::runtime_error("Failed to find node 'learner' in '" + node->ValueStr() + "'");
-  }
-  setLearner(std::unique_ptr<Learner>(LearnerFactory().build(learner_node)));
+  setLearner(LearnerFactory().read(v, "learner", dir_name));
   // Then... read everything else
   std::string update_rule_str;
-  rhoban_utils::xml_tools::try_read<std::string>(node, "update_rule", update_rule_str);
+  rhoban_utils::tryRead(v, "update_rule", &update_rule_str);
   if (update_rule_str != "")
   {
     update_rule = loadUpdateRule(update_rule_str);
   }
-  nb_runs  = rhoban_utils::xml_tools::read<int>(node, "nb_runs");
-  nb_steps = rhoban_utils::xml_tools::read<int>(node, "nb_steps");
-  rhoban_utils::xml_tools::try_read<int>   (node, "nb_threads", nb_threads);
-  rhoban_utils::xml_tools::try_read<double>(node, "discount", discount);
+  nb_runs  = rhoban_utils::read<int>(v, "nb_runs");
+  nb_steps = rhoban_utils::read<int>(v, "nb_steps");
+  rhoban_utils::tryRead(v, "nb_threads"      , &nb_threads      );
+  rhoban_utils::tryRead(v, "discount"        , &discount        );
+  rhoban_utils::tryRead(v, "time_budget"     , &time_budget     );
+  rhoban_utils::tryRead(v, "save_details"    , &save_details    );
+  rhoban_utils::tryRead(v, "save_run_logs"   , &save_run_logs   );
+  rhoban_utils::tryRead(v, "save_best_policy", &save_best_policy);
+  rhoban_utils::tryRead(v, "seed_path"       , &seed_path       );
   setDiscount(discount);
-  rhoban_utils::xml_tools::try_read<double>(node, "time_budget", time_budget);
-  rhoban_utils::xml_tools::try_read<bool>(node, "save_details", save_details);
-  rhoban_utils::xml_tools::try_read<bool>(node, "save_run_logs", save_run_logs);
-  rhoban_utils::xml_tools::try_read<bool>(node, "save_best_policy", save_best_policy);
-  rhoban_utils::xml_tools::try_read<std::string>(node, "seed_path", seed_path);
 }
 
 std::string to_string(LearningMachine::UpdateRule rule)

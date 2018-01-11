@@ -2,6 +2,8 @@
 
 #include "rosban_random/tools.h"
 
+#include <iostream>
+
 namespace csa_mdp
 {
 
@@ -212,15 +214,20 @@ Eigen::VectorXd CartPoleStabilization::getStartingState(std::default_random_engi
   return state;
 }
 
-void CartPoleStabilization::toJson(std::ostream & out) const
+Json::Value CartPoleStabilization::toJson() const
 {
-  rhoban_utils::xml_tools::write("learning_space", to_string(learning_space), out);
+  Json::Value v;
+  v["learning_space"] = to_string(learning_space);
+  return v;
 }
-void CartPoleStabilization::fromJson(TiXmlNode * node)
+void CartPoleStabilization::fromJson(const Json::Value & v, const std::string & dir_name)
 {
+  (void)dir_name;
   std::string learning_space_str;
-  rhoban_utils::xml_tools::try_read(node, "learning_space", learning_space_str);
-  if (learning_space_str != "") { learning_space = loadLearningSpace(learning_space_str); }
+  rhoban_utils::tryRead(v, "learning_space", &learning_space_str);
+  if (learning_space_str != "") {
+    learning_space = loadLearningSpace(learning_space_str);
+  }
 }
 
 std::string CartPoleStabilization::getClassName() const

@@ -42,16 +42,16 @@ void FullPowerKick::applyKick(double ball_start_x, double ball_start_y,
             engine, final_ball_x, final_ball_y, reward);
 }
 
-void FullPowerKick::toJson(std::ostream & out) const
+Json::Value FullPowerKick::toJson() const
 {
   KickModel::toJson(out);
-  rhoban_utils::xml_tools::write<double>("kick_power", kick_power, out);
+  v["kick_power"] =  kick_power, out);
 }
 
-void FullPowerKick::fromJson(TiXmlNode * node)
+void FullPowerKick::fromJson(const Json::Value & v, const std::string & dir_name)
 {
   KickModel::fromJson(node);
-  kick_power = rhoban_utils::xml_tools::read<double>(node, "kick_power");
+  kick_power = rhoban_utils::read<double>(v, "kick_power");
 }
 
 std::string FullPowerKick::getClassName() const

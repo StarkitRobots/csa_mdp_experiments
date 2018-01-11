@@ -2,8 +2,6 @@
 
 #include "kick_model/kick_model_factory.h"
 
-using namespace rhoban_utils::xml_tools;
-
 namespace csa_mdp
 {
 
@@ -28,21 +26,21 @@ std::vector<std::string> KickModelCollection::getKickNames() const
   return names;
 }
 
-void KickModelCollection::toJson(std::ostream & out) const
+Json::Value KickModelCollection::toJson() const
 {
-  (void) out;
   throw std::logic_error("KickModelCollection::toJson: not implemented");
 }
 
-void KickModelCollection::fromJson(TiXmlNode * node)
+void KickModelCollection::fromJson(const Json::Value & v, const std::string & dir_name)
 {
   KickModelFactory kmf;
-  models = read_map<std::unique_ptr<KickModel>>(node, "map", 
-                                                [&kmf](TiXmlNode * node) {
-                                                  return kmf.build(node);
-                                                });
+  models = rhoban_utils::readMap<std::unique_ptr<KickModel>>(
+    v, "map", dir_name,
+    [&kmf](const Json::Value & v, const std::string & dir_name) {
+      return kmf.build(v, dir_name);
+    });
 
-  grassModel.read(node, "grassModel");
+  grassModel.read(v, "grassModel", dir_name);
   for (auto & entry : models) {
     entry.second->setGrassModel(grassModel);
   }

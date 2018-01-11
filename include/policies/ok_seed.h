@@ -24,8 +24,8 @@ public:
   /// Side should be -1 (right) or 1 (left)
   Eigen::VectorXd finishKick(int side) const;
 
-  void toJson(std::ostream & out) const override;
-  void fromJson(TiXmlNode * node) override;
+  Json::Value toJson() const override;
+  void fromJson(const Json::Value & v, const std::string & dir_name) override;
   std::string getClassName() const override;
 
   /// If X < back_limit:

@@ -65,8 +65,8 @@ public:
   /// Setting the grass model
   virtual void setGrassModel(GrassModel grassModel);
 
-  void toJson(std::ostream & out) const override;
-  void fromJson(TiXmlNode * node) override;
+  Json::Value toJson() const override;
+  void fromJson(const Json::Value & v, const std::string & dir_name) override;
 
   virtual KickModel * clone() const = 0;
 

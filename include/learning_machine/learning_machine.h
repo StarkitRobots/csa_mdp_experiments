@@ -88,8 +88,8 @@ public:
   Eigen::VectorXd getLearningState(const Eigen::VectorXd & state);
 
   virtual std::string getClassName() const override;
-  void toJson(std::ostream &out) const override;
-  void fromJson(TiXmlNode *node) override;
+  Json::Value toJson() const override;
+  void fromJson(const Json::Value & v, const std::string & dir_name) override;
 
 protected:
   /// The online explorator

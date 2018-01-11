@@ -51,18 +51,18 @@ void CustomPowerKick::applyKick(double ball_start_x, double ball_start_y,
             engine, final_ball_x, final_ball_y, reward);
 }
 
-void CustomPowerKick::toJson(std::ostream & out) const
+Json::Value CustomPowerKick::toJson() const
 {
   KickModel::toJson(out);
-  rhoban_utils::xml_tools::write<double>("min_kick_power", min_kick_power, out);
-  rhoban_utils::xml_tools::write<double>("max_kick_power", max_kick_power, out);
+  v["min_kick_power"] =  min_kick_power, out);
+  v["max_kick_power"] =  max_kick_power, out);
 }
 
-void CustomPowerKick::fromJson(TiXmlNode * node)
+void CustomPowerKick::fromJson(const Json::Value & v, const std::string & dir_name)
 {
   KickModel::fromJson(node);
-  min_kick_power = rhoban_utils::xml_tools::read<double>(node, "min_kick_power");
-  max_kick_power = rhoban_utils::xml_tools::read<double>(node, "max_kick_power");
+  min_kick_power = rhoban_utils::read<double>(v, "min_kick_power");
+  max_kick_power = rhoban_utils::read<double>(v, "max_kick_power");
 }
 
 std::string CustomPowerKick::getClassName() const

@@ -47,18 +47,18 @@ void KickModel::setGrassModel(GrassModel grassModel_)
   grassModel = grassModel_;
 }
 
-void KickModel::toJson(std::ostream & out) const
+Json::Value KickModel::toJson() const
 {
-  out << "<kick_zone>";
-  kick_zone.toJson(out);
-  out << "</kick_zone>";
-  rhoban_utils::xml_tools::write<double>("kick_reward", kick_reward, out);
+  Json::Value v;
+  v["kick_zone"] = kick_zone.toJson();
+  v["kick_reward"] = kick_reward;
+  return v;
 }
 
-void KickModel::fromJson(TiXmlNode * node)
+void KickModel::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  kick_zone.read(node, "kick_zone");
-  rhoban_utils::xml_tools::try_read<double>(node, "kick_reward", kick_reward);  
+  kick_zone.read(v, "kick_zone", dir_name);
+  rhoban_utils::tryRead(v, "kick_reward", &kick_reward);  
 }
 
 }

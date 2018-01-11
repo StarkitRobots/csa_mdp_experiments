@@ -7,10 +7,8 @@
 #include "rosban_csa_mdp/core/policy_factory.h"
 #include "rosban_fa/function_approximator_factory.h"
 #include "rosban_random/tools.h"
-#include "rhoban_utils/xml_tools.h"
 
 using namespace rhoban_utils;
-using namespace rhoban_utils::xml_tools;
 
 // Normalize angle in [-pi,pi]
 static double normalizeAngle(double angle)
@@ -21,20 +19,18 @@ static double normalizeAngle(double angle)
 namespace csa_mdp
 {
 
-void KickControler::KickOption::toJson(std::ostream & out) const {
-  (void) out;
-  //TODO
+Json::Value KickControler::KickOption::toJson() const {
   throw std::logic_error("KickControler::KickOption::toJson: not implemented");
 }
 
-void KickControler::KickOption::fromJson(TiXmlNode * node)
+void KickControler::KickOption::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  kick_decision_model = KickDecisionModelFactory().read(node, "kick_decision_model");
-  approach_model.tryRead(node,"approach_model");
+  kick_decision_model = KickDecisionModelFactory().read(v, "kick_decision_model", dir_name);
+  approach_model.tryRead(v,"approach_model", dir_name);
   // Replace approach_policy if found
-  PolicyFactory().tryRead(node, "policy", approach_policy);
+  PolicyFactory().tryRead(v, "policy", dir_name, &approach_policy);
   // Reading kick_model from name if found
-  kick_model_names = read_vector<std::string>(node, "kick_model_names");
+  kick_model_names = rhoban_utils::readVector<std::string>(v, "kick_model_names");
 }
 
 std::string KickControler::KickOption::getClassName() const
@@ -50,27 +46,28 @@ void KickControler::KickOption::syncKickZones(const KickModelCollection & kmc)
   }
 }
 
-void KickControler::Player::toJson(std::ostream & out) const {
-  (void) out;
-  //TODO
+Json::Value KickControler::Player::toJson() const {
   throw std::logic_error("KickControler::Player::toJson: not implemented");
 }
 
-void KickControler::Player::fromJson(TiXmlNode * node)
+void KickControler::Player::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  name = rhoban_utils::xml_tools::read<std::string>(node, "name");
-  navigation_approach.tryRead(node, "approach_model");
+  name = rhoban_utils::read<std::string>(v, "name");
+  navigation_approach.tryRead(v, "approach_model", dir_name);
   // Replace approach_policy if found
-  PolicyFactory().tryRead(node, "policy", approach_policy);
+  PolicyFactory().tryRead(v, "policy", dir_name, &approach_policy);
   // Reading kick options
-  TiXmlNode* values = node->FirstChild("kick_options");
   kick_options.clear();
-  for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())
-  {
+  rhoban_utils::checkMember(v,"kick_options");
+  const Json::Value & ko_value = v["kick_options"];
+  if (!ko_value.isArray()) {
+    throw rhoban_utils::JsonParsingError("KickControler::Player: expecting an array for kick_options");
+  }
+  for (Json::ArrayIndex idx = 0; idx < ko_value.size(); idx++) {
     std::unique_ptr<KickOption> ko(new KickOption());
     // default values for approach_model are provided by navigation_approach
     ko->approach_model = navigation_approach;
-    ko->fromJson(child);
+    ko->fromJson(ko_value[idx], dir_name);
     kick_options.push_back(std::move(ko));
   }
   // Update odometry on all kick_options models
@@ -645,49 +642,51 @@ KickControler::toKickControlerState(const Eigen::VectorXd & pa_state,
   return kc_state;
 }
 
-void KickControler::toJson(std::ostream & out) const
+Json::Value KickControler::toJson() const
 {
-  (void) out;
   throw std::logic_error("KickControler::toJson: unimplemented");
 }
 
-void KickControler::fromJson(TiXmlNode * node)
+void KickControler::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  xml_tools::try_read<bool>  (node, "simulate_approaches"    , simulate_approaches    );
-  xml_tools::try_read<double>(node, "max_initial_dist"       , max_initial_dist       );
-  xml_tools::try_read<double>(node, "cartesian_speed"        , cartesian_speed        );
-  xml_tools::try_read<double>(node, "angular_speed"          , angular_speed          );
-  xml_tools::try_read<double>(node, "step_initial_stddev"    , step_initial_stddev    );
-  xml_tools::try_read<double>(node, "goal_reward"            , goal_reward            );
-  xml_tools::try_read<double>(node, "goal_collision_reward"  , goal_collision_reward  );
-  xml_tools::try_read<double>(node, "walk_frequency"         , walk_frequency         );
-  xml_tools::try_read<double>(node, "failure_reward"         , failure_reward         );
-  xml_tools::try_read<double>(node, "field_width"            , field_width            );
-  xml_tools::try_read<double>(node, "field_length"           , field_length           );
-  xml_tools::try_read<double>(node, "goal_width"             , goal_width             );
-  xml_tools::try_read<bool>  (node, "use_goalie"             , use_goalie             );
-  xml_tools::try_read<double>(node, "goalie_x"               , goalie_x               );
-  xml_tools::try_read<double>(node, "goalie_y"               , goalie_y               );
-  xml_tools::try_read<double>(node, "goalie_thickness"       , goalie_thickness       );
-  xml_tools::try_read<double>(node, "goalie_width"           , goalie_width           );
-  xml_tools::try_read<double>(node, "goal_area_size_x"       , goal_area_size_x       );
-  xml_tools::try_read<double>(node, "goal_area_size_y"       , goal_area_size_y       );
-  xml_tools::try_read<double>(node, "goalkeeper_success_rate", goalkeeper_success_rate);
-  xml_tools::try_read<double>(node, "kick_dist_ratio"        , kick_dist_ratio        );
-  xml_tools::try_read<double>(node, "intercept_dist"         , intercept_dist         );
-  xml_tools::try_read<bool  >(node, "use_opposite_placing"   , use_opposite_placing   );
+  rhoban_utils::tryRead(v, "simulate_approaches"    , &simulate_approaches    );
+  rhoban_utils::tryRead(v, "max_initial_dist"       , &max_initial_dist       );
+  rhoban_utils::tryRead(v, "cartesian_speed"        , &cartesian_speed        );
+  rhoban_utils::tryRead(v, "angular_speed"          , &angular_speed          );
+  rhoban_utils::tryRead(v, "step_initial_stddev"    , &step_initial_stddev    );
+  rhoban_utils::tryRead(v, "goal_reward"            , &goal_reward            );
+  rhoban_utils::tryRead(v, "goal_collision_reward"  , &goal_collision_reward  );
+  rhoban_utils::tryRead(v, "walk_frequency"         , &walk_frequency         );
+  rhoban_utils::tryRead(v, "failure_reward"         , &failure_reward         );
+  rhoban_utils::tryRead(v, "field_width"            , &field_width            );
+  rhoban_utils::tryRead(v, "field_length"           , &field_length           );
+  rhoban_utils::tryRead(v, "goal_width"             , &goal_width             );
+  rhoban_utils::tryRead(v, "use_goalie"             , &use_goalie             );
+  rhoban_utils::tryRead(v, "goalie_x"               , &goalie_x               );
+  rhoban_utils::tryRead(v, "goalie_y"               , &goalie_y               );
+  rhoban_utils::tryRead(v, "goalie_thickness"       , &goalie_thickness       );
+  rhoban_utils::tryRead(v, "goalie_width"           , &goalie_width           );
+  rhoban_utils::tryRead(v, "goal_area_size_x"       , &goal_area_size_x       );
+  rhoban_utils::tryRead(v, "goal_area_size_y"       , &goal_area_size_y       );
+  rhoban_utils::tryRead(v, "goalkeeper_success_rate", &goalkeeper_success_rate);
+  rhoban_utils::tryRead(v, "kick_dist_ratio"        , &kick_dist_ratio        );
+  rhoban_utils::tryRead(v, "intercept_dist"         , &intercept_dist         );
+  rhoban_utils::tryRead(v, "use_opposite_placing"   , &use_opposite_placing   );
 
   /// Reading optional path
-  std::string kmc_path = xml_tools::read<std::string>(node, "kmc_path");
-  kmc.load_file(kmc_path);
+  std::string kmc_path = rhoban_utils::read<std::string>(v, "kmc_path");
+  kmc.loadFile(kmc_path);
 
   //TODO: improve format, currently very verbose and redundant
-  TiXmlNode* values = node->FirstChild("players");
+  checkMember(v, "players");
+  Json::Value players_json = v["players"];
   players.clear();
-  for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())
-  {
+  if (!players_json.isArray()) {
+    throw rhoban_utils::JsonParsingError("KickControler::fromJson: players should be an array");
+  }
+  for (Json::ArrayIndex idx = 0; idx < players_json.size(); idx++) {
     std::unique_ptr<Player> p(new Player);
-    p->fromJson(child);
+    p->fromJson(players_json[idx], dir_name);
     for (size_t kick_id = 0; kick_id < p->kick_options.size(); kick_id++) {
       p->kick_options[kick_id]->syncKickZones(kmc);
     }
@@ -696,13 +695,15 @@ void KickControler::fromJson(TiXmlNode * node)
 
   // Loading kick options if found
   kick_options.clear();
-  TiXmlNode* ko_values = node->FirstChild("kick_options");
-  if (ko_values != nullptr) {
-    for ( TiXmlNode* child = ko_values->FirstChild(); child != NULL; child = child->NextSibling())
-    {
+  if (v.isMember("kick_options")) {
+    Json::Value kick_options_json = v["kick_options"];
+    if (!kick_options_json.isArray()) {
+      throw rhoban_utils::JsonParsingError("KickControler::fromJson: kick_options should be an array");
+    }
+    for (Json::ArrayIndex idx = 0; idx < players_json.size(); idx++) {
       std::unique_ptr<KickOption> ko(new KickOption());
       // no default values for approach_model
-      ko->fromJson(child);
+      ko->fromJson(kick_options_json[idx], dir_name);
       kick_options.push_back(std::move(ko));
     }
   }
@@ -710,7 +711,7 @@ void KickControler::fromJson(TiXmlNode * node)
   // Loading the function approximator for number of steps (optional)
   // Function approximator are always stored at a given location
   std::string approach_approximator_path;
-  xml_tools::try_read<std::string>(node, "approach_approximator_path", approach_approximator_path);
+  rhoban_utils::tryRead(v, "approach_approximator_path", &approach_approximator_path);
   if (approach_approximator_path != "") {
     rosban_fa::FunctionApproximatorFactory().loadFromFile(approach_approximator_path,
                                                           approach_steps_approximator);

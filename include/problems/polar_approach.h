@@ -58,8 +58,8 @@ public:
   /// Can the robot see the ball?
   bool seeBall(const Eigen::VectorXd & state) const;
 
-  void toJson(std::ostream & out) const override;
-  void fromJson(TiXmlNode * node) override;
+  Json::Value toJson() const override;
+  void fromJson(const Json::Value & v, const std::string & dir_name) override;
   std::string getClassName() const override;
 
   static double getBallX(const Eigen::VectorXd & state);

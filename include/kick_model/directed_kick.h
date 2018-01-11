@@ -19,8 +19,8 @@ public:
   double computeKickDirection(const Eigen::VectorXd & informations,
                               const Eigen::VectorXd & actions) const override;
 
-  void toJson(std::ostream & out) const override;
-  void fromJson(TiXmlNode * node) override;
+  Json::Value toJson() const override;
+  void fromJson(const Json::Value & v, const std::string & dir_name) override;
   std::string getClassName() const override;
 };
 

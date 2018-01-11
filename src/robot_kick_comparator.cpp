@@ -17,7 +17,7 @@ int thetaSteps = 10;
 int nb_evaluations = 10000;
 int horizon = 100;
 
-int main(int argc, char ** argv)
+int main()
 {
   // Abort if error are found
   feenableexcept(FE_DIVBYZERO| FE_INVALID | FE_OVERFLOW);
@@ -30,11 +30,11 @@ int main(int argc, char ** argv)
   KickControler problem_1p;
   KickControler problem_2p;
 
-  problem_1p.load_file("Problem1P.xml");
-  problem_2p.load_file("Problem2P.xml");
+  problem_1p.loadFile("Problem1P.xml");
+  problem_2p.loadFile("Problem2P.xml");
 
-  std::unique_ptr<Policy> policy_1p = PolicyFactory().buildFromXmlFile("Policy1P.xml","policy");
-  std::unique_ptr<Policy> policy_2p = PolicyFactory().buildFromXmlFile("Policy2P.xml","policy");
+  std::unique_ptr<Policy> policy_1p = PolicyFactory().buildFromJsonFile("Policy1P.xml");
+  std::unique_ptr<Policy> policy_2p = PolicyFactory().buildFromJsonFile("Policy2P.xml");
 
   policy_1p->setActionLimits(problem_1p.getActionsLimits());
   policy_2p->setActionLimits(problem_2p.getActionsLimits());

@@ -46,16 +46,19 @@ double FinalKick::computeKickDirection(const Eigen::VectorXd & ball_pos,
 
 
 
-void FinalKick::toJson(std::ostream & out) const
+Json::Value FinalKick::toJson() const
 {
-  rhoban_utils::xml_tools::write<double>("goal_x"    , goal_x    , out);
-  rhoban_utils::xml_tools::write<double>("max_y"     , max_y     , out);
+  Json::Value v;
+  v["goal_x"] =  goal_x;
+  v["max_y" ] =  max_y ;
+  return v;
 }
 
-void FinalKick::fromJson(TiXmlNode * node)
+void FinalKick::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  goal_x     = rhoban_utils::xml_tools::read<double>(node, "goal_x"    );
-  max_y      = rhoban_utils::xml_tools::read<double>(node, "max_y"     );
+  (void)dir_name;
+  goal_x = rhoban_utils::read<double>(v, "goal_x");
+  max_y  = rhoban_utils::read<double>(v, "max_y" );
   updateActionLimits();
 }
 

@@ -1,5 +1,7 @@
 #include "problems/simulated_cart_pole.h"
 
+#include <iostream>
+
 namespace csa_mdp
 {
 
@@ -253,46 +255,49 @@ Eigen::VectorXd SimulatedCartPole::getStartingState(std::default_random_engine *
   return state;
 }
 
-void SimulatedCartPole::toJson(std::ostream & out) const
+Json::Value SimulatedCartPole::toJson() const
 {
-  rhoban_utils::xml_tools::write<double>("max_pos"            , max_pos                  , out);
-  rhoban_utils::xml_tools::write<double>("max_vel"            , max_vel                  , out);
-  rhoban_utils::xml_tools::write<double>("max_torque"         , max_torque               , out);
-  rhoban_utils::xml_tools::write<double>("max_axis_vel"       , max_axis_vel             , out);
-  rhoban_utils::xml_tools::write<double>("pole_length"        , pole_length              , out);
-  rhoban_utils::xml_tools::write<double>("cart_mass"          , cart_mass                , out);
-  rhoban_utils::xml_tools::write<double>("pendulum_mass"      , pendulum_mass            , out);
-  rhoban_utils::xml_tools::write<double>("friction"           , friction                 , out);
-  rhoban_utils::xml_tools::write<double>("gravity"            , gravity                  , out);
-  rhoban_utils::xml_tools::write<double>("integration_step"   , integration_step         , out);
-  rhoban_utils::xml_tools::write<double>("simulation_step"    , simulation_step          , out);
-  rhoban_utils::xml_tools::write<double>("torque_stddev"      , torque_stddev            , out);
-  rhoban_utils::xml_tools::write<std::string>("reward_type"   , to_string(reward_type)   , out);
-  rhoban_utils::xml_tools::write<std::string>("learning_space", to_string(learning_space), out);
+  Json::Value v;
+  v["max_pos"         ] =  max_pos                  ;
+  v["max_vel"         ] =  max_vel                  ;
+  v["max_torque"      ] =  max_torque               ;
+  v["max_axis_vel"    ] =  max_axis_vel             ;
+  v["pole_length"     ] =  pole_length              ;
+  v["cart_mass"       ] =  cart_mass                ;
+  v["pendulum_mass"   ] =  pendulum_mass            ;
+  v["friction"        ] =  friction                 ;
+  v["gravity"         ] =  gravity                  ;
+  v["integration_step"] =  integration_step         ;
+  v["simulation_step" ] =  simulation_step          ;
+  v["torque_stddev"   ] =  torque_stddev            ;
+  v["reward_type"     ] =  to_string(reward_type)   ;
+  v["learning_space"  ] =  to_string(learning_space);
+  return v;
 }
 
-void SimulatedCartPole::fromJson(TiXmlNode * node)
+void SimulatedCartPole::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  rhoban_utils::xml_tools::try_read<double>(node, "max_pos"           , max_pos           );
-  rhoban_utils::xml_tools::try_read<double>(node, "max_vel"           , max_vel           );
-  rhoban_utils::xml_tools::try_read<double>(node, "max_torque"        , max_torque        );
-  rhoban_utils::xml_tools::try_read<double>(node, "max_axis_vel"      , max_axis_vel      );
-  rhoban_utils::xml_tools::try_read<double>(node, "pole_length"       , pole_length       );
-  rhoban_utils::xml_tools::try_read<double>(node, "cart_mass"         , cart_mass         );
-  rhoban_utils::xml_tools::try_read<double>(node, "pendulum_mass"     , pendulum_mass     );
-  rhoban_utils::xml_tools::try_read<double>(node, "friction"          , friction          );
-  rhoban_utils::xml_tools::try_read<double>(node, "gravity"           , gravity           );
-  rhoban_utils::xml_tools::try_read<double>(node, "integration_step"  , integration_step  );
-  rhoban_utils::xml_tools::try_read<double>(node, "simulation_step"   , simulation_step   );
-  rhoban_utils::xml_tools::try_read<double>(node, "torque_stddev"     , torque_stddev     );
+  (void)dir_name;
   std::string reward_type_str;
-  rhoban_utils::xml_tools::try_read<std::string>(node, "reward_type", reward_type_str);
+  std::string learning_space_str;
+  rhoban_utils::tryRead(v, "max_pos"           , &max_pos           );
+  rhoban_utils::tryRead(v, "max_vel"           , &max_vel           );
+  rhoban_utils::tryRead(v, "max_torque"        , &max_torque        );
+  rhoban_utils::tryRead(v, "max_axis_vel"      , &max_axis_vel      );
+  rhoban_utils::tryRead(v, "pole_length"       , &pole_length       );
+  rhoban_utils::tryRead(v, "cart_mass"         , &cart_mass         );
+  rhoban_utils::tryRead(v, "pendulum_mass"     , &pendulum_mass     );
+  rhoban_utils::tryRead(v, "friction"          , &friction          );
+  rhoban_utils::tryRead(v, "gravity"           , &gravity           );
+  rhoban_utils::tryRead(v, "integration_step"  , &integration_step  );
+  rhoban_utils::tryRead(v, "simulation_step"   , &simulation_step   );
+  rhoban_utils::tryRead(v, "torque_stddev"     , &torque_stddev     );
+  rhoban_utils::tryRead(v, "reward_type"       , &reward_type_str   );
+  rhoban_utils::tryRead(v, "learning_space"    , &learning_space_str);
   if (reward_type_str != "")
   {
     reward_type =  loadRewardType(reward_type_str);
   }
-  std::string learning_space_str;
-  rhoban_utils::xml_tools::try_read<std::string>(node, "learning_space", learning_space_str);
   if (learning_space_str != "")
   {
     learning_space = loadLearningSpace(learning_space_str);

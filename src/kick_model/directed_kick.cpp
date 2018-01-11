@@ -29,14 +29,15 @@ double DirectedKick::computeKickDirection(const Eigen::VectorXd & unused,
   }
   return actions(0);
 }
-void DirectedKick::toJson(std::ostream & out) const
+Json::Value DirectedKick::toJson() const
 {
-  (void)out;
+  return Json::Value();
 }
 
-void DirectedKick::fromJson(TiXmlNode * node)
+void DirectedKick::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  (void)node;
+  (void)v;
+  (void)dir_name;
 }
 
 std::string DirectedKick::getClassName() const

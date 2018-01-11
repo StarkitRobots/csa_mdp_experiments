@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
   std::string input_path(argv[1]);
   std::string output_path(argv[2]);
 
-  std::unique_ptr<Policy> p = PolicyFactory().buildFromXmlFile(input_path, "policy");
+  std::unique_ptr<Policy> p = PolicyFactory().buildFromJsonFile(input_path);
 
   std::unique_ptr<FATree> tree = p->extractFATree();
 

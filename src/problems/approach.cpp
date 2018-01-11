@@ -195,9 +195,9 @@ bool Approach::seeBall(const Eigen::VectorXd & state) const
   return angle < viewing_angle && angle > -viewing_angle;
 }
 
-void Approach::toJson(std::ostream & out) const {(void)out;}
+Json::Value Approach::toJson() const {(void)out;}
 
-void Approach::fromJson(TiXmlNode * node) {(void)node;}
+void Approach::fromJson(const Json::Value & v, const std::string & dir_name) {(void)node;}
 
 std::string Approach::getClassName() const
 {

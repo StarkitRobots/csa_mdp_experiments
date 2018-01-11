@@ -61,26 +61,27 @@ Eigen::Vector2d ClassicKick::getKickInSelf(const Eigen::Vector2d & ball_pos,
 }
 
 
-void ClassicKick::toJson(std::ostream & out) const
+Json::Value ClassicKick::toJson() const
 {
-  KickModel::toJson(out);
+  Json::Value v = KickModel::toJson();
   // Using human readable values in xml
   double kick_dir_deg   = rad2deg(right_kick_dir);
   double dir_stddev_deg = rad2deg(dir_stddev);
-  xml_tools::write<double>("kick_power"     , kick_power     , out);
-  xml_tools::write<double>("right_kick_dir" , kick_dir_deg   , out);
-  xml_tools::write<double>("rel_dist_stddev", rel_dist_stddev, out);
-  xml_tools::write<double>("dir_stddev"     , dir_stddev_deg , out);
+  v["kick_power"     ] =  kick_power     ;
+  v["right_kick_dir" ] =  kick_dir_deg   ;
+  v["rel_dist_stddev"] =  rel_dist_stddev;
+  v["dir_stddev"     ] =  dir_stddev_deg ;
+  return v;
 }
 
-void ClassicKick::fromJson(TiXmlNode * node)
+void ClassicKick::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  KickModel::fromJson(node);
+  KickModel::fromJson(v, dir_name);
   double kick_dir_deg, dir_stddev_deg;
-  kick_power      = xml_tools::read<double>(node, "kick_power"     );
-  kick_dir_deg    = xml_tools::read<double>(node, "right_kick_dir" );
-  rel_dist_stddev = xml_tools::read<double>(node, "rel_dist_stddev");
-  dir_stddev_deg  = xml_tools::read<double>(node, "dir_stddev"     );
+  kick_power      = rhoban_utils::read<double>(v, "kick_power"     );
+  kick_dir_deg    = rhoban_utils::read<double>(v, "right_kick_dir" );
+  rel_dist_stddev = rhoban_utils::read<double>(v, "rel_dist_stddev");
+  dir_stddev_deg  = rhoban_utils::read<double>(v, "dir_stddev"     );
   // Stored informations are [rad], but xml values are [deg]
   right_kick_dir = deg2rad(kick_dir_deg);
   dir_stddev = deg2rad(dir_stddev_deg);

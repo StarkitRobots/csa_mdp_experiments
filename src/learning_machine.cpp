@@ -2,7 +2,6 @@
 #include "problems/extended_problem_factory.h"
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
-#include "policies/opk_expert_approach.h"
 #include "policies/ok_seed.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
@@ -21,8 +20,6 @@ int main()
                                       []() {return std::unique_ptr<Policy>(new ExpertApproach);});
   PolicyFactory::registerExtraBuilder("mixed_approach",
                                       []() {return std::unique_ptr<Policy>(new MixedApproach);});
-  PolicyFactory::registerExtraBuilder("opk_expert_approach",
-                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
   PolicyFactory::registerExtraBuilder("OKSeed",
                                       []() {return std::unique_ptr<Policy>(new OKSeed);});
 
@@ -31,7 +28,7 @@ int main()
   // Loading the learning Machine
   LearningMachineFactory lmf;
   std::shared_ptr<LearningMachine> lm;
-  lm = lmf.buildFromXmlFile("LearningMachine.xml", "LearningMachine");
+  lm = lmf.buildFromJsonFile("LearningMachine.xml");
 
 #ifndef NO_ROSBAN_CONTROL
   // If we need a controller, init ros link

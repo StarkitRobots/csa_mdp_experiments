@@ -2,7 +2,6 @@
 
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
-#include "policies/opk_expert_approach.h"
 #include "policies/ok_seed.h"
 #include "problems/extended_problem_factory.h"
 
@@ -79,37 +78,36 @@ public:
                                  problem->getStateLimits());
     }
 
-  void toJson(std::ostream & out) const override
+  Json::Value toJson() const override
     {
-      (void) out;
       throw std::logic_error("BlackboxValueEstimator::toJson: not implemented");
     }
 
-  void fromJson(TiXmlNode * node) override
+  void fromJson(const Json::Value & v, const std::string & dir_name) override
     {
       // Reading basic properties
-      rhoban_utils::xml_tools::try_read<int>   (node, "nb_samples"       , nb_samples      );
-      rhoban_utils::xml_tools::try_read<int>   (node, "evals_per_sample" , evals_per_sample);
-      rhoban_utils::xml_tools::try_read<int>   (node, "nb_threads"       , nb_threads      );
-      rhoban_utils::xml_tools::try_read<int>   (node, "horizon"          , horizon         );
-      rhoban_utils::xml_tools::try_read<double>(node, "discount"         , discount        );
+      rhoban_utils::tryRead(v, "nb_samples"       , &nb_samples      );
+      rhoban_utils::tryRead(v, "evals_per_sample" , &evals_per_sample);
+      rhoban_utils::tryRead(v, "nb_threads"       , &nb_threads      );
+      rhoban_utils::tryRead(v, "horizon"          , &horizon         );
+      rhoban_utils::tryRead(v, "discount"         , &discount        );
       // Getting problem (mandatory)
       std::shared_ptr<const Problem> tmp_problem;
       std::string problem_path;
-      rhoban_utils::xml_tools::try_read<std::string>(node, "problem_path", problem_path);
+      rhoban_utils::tryRead(v, "problem_path", &problem_path);
       if (problem_path != "") {
-        tmp_problem = ProblemFactory().buildFromXmlFile(problem_path, "Problem");
+        tmp_problem = ProblemFactory().buildFromJsonFile(dir_name + problem_path);
       } else {
-        tmp_problem = ProblemFactory().read(node, "problem");
+        tmp_problem = ProblemFactory().read(v, "problem", dir_name);
       }
       problem = std::dynamic_pointer_cast<const BlackBoxProblem>(tmp_problem);
       if (!problem) {
         throw std::runtime_error("BlackBoxLearner::fromJson: problem is not a BlackBoxProblem");
       }
       // Reading approximator (mandatory)
-      approximator = rosban_fa::TrainerFactory().read(node, "approximator");
+      approximator = rosban_fa::TrainerFactory().read(v, "approximator", dir_name);
       // Reading policy (mandatory)
-      policy = PolicyFactory().read(node, "policy");
+      policy = PolicyFactory().read(v, "policy", dir_name);
       // Updating the number of threads to use to build the approximator
       approximator->setNbThreads(nb_threads);
       // updating action limits for policy
@@ -165,14 +163,12 @@ int main() {
                                       []() {return std::unique_ptr<Policy>(new OKSeed);});
   PolicyFactory::registerExtraBuilder("mixed_approach",
                                       []() {return std::unique_ptr<Policy>(new MixedApproach);});
-//  PolicyFactory::registerExtraBuilder("opk_expert_approach",
-//                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
 
   ExtendedProblemFactory::registerExtraProblems();
 
   BlackboxValueEstimator estimator;
 
-  estimator.load_file();
+  estimator.loadFile();
 
   std::default_random_engine engine = rosban_random::getRandomEngine();
 

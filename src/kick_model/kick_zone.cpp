@@ -1,7 +1,6 @@
 #include "kick_model/kick_zone.h"
 
 using namespace rhoban_utils;
-using namespace xml_tools;
 
 static double deg2rad(double deg) { return M_PI * deg / 180; }
 static double rad2deg(double rad) { return 180 * rad / M_PI; }
@@ -134,28 +133,31 @@ Eigen::Vector3d KickZone::convertWorldStateToKickState(
   return state_in_self;
 }
 
-void KickZone::toJson(std::ostream & out) const
+Json::Value KickZone::toJson() const
 {
-  xml_tools::write<double>("kick_x_min"       , kick_x_min       , out);
-  xml_tools::write<double>("kick_x_max"       , kick_x_max       , out);
-  xml_tools::write<double>("kick_y_tol"       , kick_y_tol       , out);
-  xml_tools::write<double>("kick_y_offset"    , kick_y_offset    , out);
+  Json::Value v;
   // For angles: write human values
   double kick_theta_tol_deg    = rad2deg(kick_theta_tol   );
   double kick_theta_offset_deg = rad2deg(kick_theta_offset);
-  xml_tools::write<double>("kick_theta_tol"   , kick_theta_tol_deg   , out);
-  xml_tools::write<double>("kick_theta_offset", kick_theta_offset_deg, out);
+  v["kick_x_min"       ] =  kick_x_min           ;
+  v["kick_x_max"       ] =  kick_x_max           ;
+  v["kick_y_tol"       ] =  kick_y_tol           ;
+  v["kick_y_offset"    ] =  kick_y_offset        ;
+  v["kick_theta_tol"   ] =  kick_theta_tol_deg   ;
+  v["kick_theta_offset"] =  kick_theta_offset_deg;
+  return v;
 }
 
-void KickZone::fromJson(TiXmlNode * node)
+void KickZone::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  try_read<double>(node, "kick_x_min"       , kick_x_min       );
-  try_read<double>(node, "kick_x_max"       , kick_x_max       );
-  try_read<double>(node, "kick_y_tol"       , kick_y_tol       );
-  try_read<double>(node, "kick_y_offset"    , kick_y_offset    );
+  (void)dir_name;
+  rhoban_utils::tryRead(v, "kick_x_min"       , &kick_x_min   );
+  rhoban_utils::tryRead(v, "kick_x_max"       , &kick_x_max   );
+  rhoban_utils::tryRead(v, "kick_y_tol"       , &kick_y_tol   );
+  rhoban_utils::tryRead(v, "kick_y_offset"    , &kick_y_offset);
   // For angles: read human values
-  double kick_theta_tol_deg    = xml_tools::read<double>(node, "kick_theta_tol");
-  double kick_theta_offset_deg = xml_tools::read<double>(node, "kick_theta_offset");
+  double kick_theta_tol_deg    = rhoban_utils::read<double>(v, "kick_theta_tol");
+  double kick_theta_offset_deg = rhoban_utils::read<double>(v, "kick_theta_offset");
   kick_theta_tol    = deg2rad(kick_theta_tol_deg   );
   kick_theta_offset = deg2rad(kick_theta_offset_deg);
 }

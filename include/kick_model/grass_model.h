@@ -21,8 +21,8 @@ public:
   /// Setting the cone offset [deg]
   void setConeOffset(double cone_offset);
 
-  void toJson(std::ostream & out) const override;
-  void fromJson(TiXmlNode * node) override;
+  Json::Value toJson() const override;
+  void fromJson(const Json::Value & v, const std::string & dir_name) override;
   std::string getClassName() const override;
 
 protected:

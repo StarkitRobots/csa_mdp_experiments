@@ -2,11 +2,7 @@
 
 #include "kick_model/kick_model_collection.h"
 
-#include "rhoban_utils/xml_tools.h"
-
 #include <cmath>
-
-using namespace rhoban_utils::xml_tools;
 
 namespace csa_mdp
 {
@@ -253,15 +249,14 @@ bool PolarApproach::seeBall(const Eigen::VectorXd & state) const
   return angle < viewing_angle && angle > -viewing_angle;
 }
 
-void PolarApproach::toJson(std::ostream & out) const {
-  (void)out;
+Json::Value PolarApproach::toJson() const {
   throw std::logic_error("PolarApproach::toJson: not implemented");
 }
 
-void PolarApproach::fromJson(TiXmlNode * node)
+void PolarApproach::fromJson(const Json::Value & v, const std::string & dir_name)
 {
   std::string odometry_path;
-  try_read<std::string>(node, "odometry_path", odometry_path);
+  tryRead(v, "odometry_path", odometry_path);
 
   // If coefficients have been properly read, use them
   if (odometry_path != "")
@@ -277,36 +272,42 @@ void PolarApproach::fromJson(TiXmlNode * node)
     }
   }
   // Read kicks
-  try_read_serializable_vector<KickZone>(node, "kick_zones", kick_zones);
+  auto kick_zone_builder = [](const Json::Value & v, const std::string & dir_name)
+    {
+      KickZone kz;
+      kz.fromJson(v,dir_name);
+      return kz;
+    };
+  rhoban_utils::tryReadVector<KickZone>(v, "kick_zones", dir_name, kick_zone_builder, &kick_zones);
   // Read internal properties
-  try_read<double>(node,"max_dist", max_dist);
-  try_read<double>(node,"min_step_x", min_step_x);
-  try_read<double>(node,"max_step_x", max_step_x);
-  try_read<double>(node,"max_step_y", max_step_y);
-  try_read<double>(node,"max_step_theta", max_step_theta);
-  try_read<double>(node,"max_step_x_diff", max_step_x_diff);
-  try_read<double>(node,"max_step_y_diff", max_step_y_diff);
-  try_read<double>(node,"max_step_theta_diff", max_step_theta_diff);
-  try_read<double>(node,"kick_reward", kick_reward);
-  try_read<double>(node,"kick_terminal_speed_factor", kick_terminal_speed_factor);
-  try_read<double>(node,"viewing_angle", viewing_angle);
-  try_read<double>(node,"no_view_reward", no_view_reward);
-  try_read<double>(node,"collision_x_front", collision_x_front);
-  try_read<double>(node,"collision_x_back", collision_x_back);
-  try_read<double>(node,"collision_y", collision_y);
-  try_read<double>(node,"collision_reward", collision_reward);
-  try_read<bool>  (node,"terminal_collisions", terminal_collisions);
-  try_read<double>(node,"out_of_space_reward", out_of_space_reward);
-  try_read<double>(node,"walk_frequency", walk_frequency);
-  try_read<double>(node,"init_min_dist", init_min_dist);
-  try_read<double>(node,"init_max_dist", init_max_dist);
+  rhoban_utils::tryRead(v,"max_dist"                  , &max_dist);
+  rhoban_utils::tryRead(v,"min_step_x"                , &min_step_x);
+  rhoban_utils::tryRead(v,"max_step_x"                , &max_step_x);
+  rhoban_utils::tryRead(v,"max_step_y"                , &max_step_y);
+  rhoban_utils::tryRead(v,"max_step_theta"            , &max_step_theta);
+  rhoban_utils::tryRead(v,"max_step_x_diff"           , &max_step_x_diff);
+  rhoban_utils::tryRead(v,"max_step_y_diff"           , &max_step_y_diff);
+  rhoban_utils::tryRead(v,"max_step_theta_diff"       , &max_step_theta_diff);
+  rhoban_utils::tryRead(v,"kick_reward"               , &kick_reward);
+  rhoban_utils::tryRead(v,"kick_terminal_speed_factor", &kick_terminal_speed_factor);
+  rhoban_utils::tryRead(v,"viewing_angle"             , &viewing_angle);
+  rhoban_utils::tryRead(v,"no_view_reward"            , &no_view_reward);
+  rhoban_utils::tryRead(v,"collision_x_front"         , &collision_x_front);
+  rhoban_utils::tryRead(v,"collision_x_back"          , &collision_x_back);
+  rhoban_utils::tryRead(v,"collision_y"               , &collision_y);
+  rhoban_utils::tryRead(v,"collision_reward"          , &collision_reward);
+  rhoban_utils::tryRead(v,"terminal_collisions"       , &terminal_collisions);
+  rhoban_utils::tryRead(v,"out_of_space_reward"       , &out_of_space_reward);
+  rhoban_utils::tryRead(v,"walk_frequency"            , &walk_frequency);
+  rhoban_utils::tryRead(v,"init_min_dist"             , &init_min_dist);
+  rhoban_utils::tryRead(v,"init_max_dist"             , &init_max_dist);
 
   std::vector<std::string> kick_zone_names;
-  try_read_vector<std::string>(node, "kick_zone_names", kick_zone_names);
+  rhoban_utils::tryReadVector(v, "kick_zone_names", &kick_zone_names);
 
   if (kick_zone_names.size() > 0) {
     KickModelCollection kmc;
-    kmc.load_file();
+    kmc.loadFile();
     for (const std::string & name : kick_zone_names) {
       kick_zones.push_back(kmc.getKickModel(name).getKickZone());
     }

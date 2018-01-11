@@ -2,7 +2,6 @@
 
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
-#include "policies/opk_expert_approach.h"
 #include "policies/ok_seed.h"
 #include "problems/extended_problem_factory.h"
 
@@ -26,13 +25,11 @@ int main() {
                                       []() {return std::unique_ptr<Policy>(new OKSeed);});
   PolicyFactory::registerExtraBuilder("mixed_approach",
                                       []() {return std::unique_ptr<Policy>(new MixedApproach);});
-//  PolicyFactory::registerExtraBuilder("opk_expert_approach",
-//                                      []() {return std::unique_ptr<Policy>(new OPKExpertApproach);});
 
   ExtendedProblemFactory::registerExtraProblems();
 
   std::shared_ptr<BlackBoxLearner> bbl;
-  bbl = BlackBoxLearnerFactory().buildFromXmlFile("BlackBoxLearner.xml", "BlackBoxLearner");
+  bbl = BlackBoxLearnerFactory().buildFromJsonFile("BlackBoxLearner.xml");
 
   std::default_random_engine engine = rosban_random::getRandomEngine();
 

@@ -74,9 +74,9 @@ Eigen::VectorXd InvertedPendulum::getResetCmd(const Eigen::VectorXd &state) cons
   return cmd;
 }
 
-void InvertedPendulum::toJson(std::ostream & out) const {(void)out;}
+Json::Value InvertedPendulum::toJson() const {(void)out;}
 
-void InvertedPendulum::fromJson(TiXmlNode * node) {(void)node;}
+void InvertedPendulum::fromJson(const Json::Value & v, const std::string & dir_name) {(void)node;}
 
 std::string InvertedPendulum::getClassName() const
 {

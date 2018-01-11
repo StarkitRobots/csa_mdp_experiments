@@ -209,39 +209,36 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
   return getRawAction(state, (State *)nullptr);
 }
 
-void ExpertApproach::toJson(std::ostream & out) const
+Json::Value ExpertApproach::toJson() const
 {
-  rhoban_utils::xml_tools::write<std::string>("type", to_string(type), out);
-  rhoban_utils::xml_tools::write<double>("step_p", step_p, out);
-  rhoban_utils::xml_tools::write<double>("near_lateral_p", near_lateral_p, out);
-  rhoban_utils::xml_tools::write<std::string>  ("approach_type" , approach_type, out);
-  rhoban_utils::xml_tools::write<double>("foot_y_offset", foot_y_offset, out);
-  rhoban_utils::xml_tools::write<double>("target_theta_tol", target_theta_tol, out);
-  rhoban_utils::xml_tools::write<double>("ball_theta_tol"  , ball_theta_tol  , out);
-  Eigen::VectorXd config = getConfig();
-  std::vector<double> params;
-  for (int i = 0; i < config.size(); i++)
-  {
-    params.push_back(config(i));
-  }
-  rhoban_utils::xml_tools::write_vector<double>("params", params, out);
+  Json::Value v;
+  v["type"            ] = to_string(type) ;
+  v["step_p"          ] = step_p          ;
+  v["near_lateral_p"  ] = near_lateral_p  ;
+  v["approach_type"   ] = approach_type   ;
+  v["foot_y_offset"   ] = foot_y_offset   ;
+  v["target_theta_tol"] = target_theta_tol;
+  v["ball_theta_tol"  ] = ball_theta_tol  ;
+  v["params"          ] = rhoban_utils::vector2Json(getConfig());
+  return v;
 }
 
-void ExpertApproach::fromJson(TiXmlNode * node)
+void ExpertApproach::fromJson(const Json::Value & v, const std::string & dir_name)
 {
+  (void)dir_name;
   std::string type_str;
-  rhoban_utils::xml_tools::try_read<std::string>(node, "type", type_str);
+  rhoban_utils::tryRead(v, "type"            , &type_str        );
+  rhoban_utils::tryRead(v, "step_p"          , &step_p          );
+  rhoban_utils::tryRead(v, "near_theta_p"    , &near_theta_p    );
+  rhoban_utils::tryRead(v, "near_lateral_p"  , &near_lateral_p  );
+  rhoban_utils::tryRead(v, "foot_y_offset"   , &foot_y_offset   );
+  rhoban_utils::tryRead(v, "wished_x"        , &wished_x        );
+  rhoban_utils::tryRead(v, "target_theta_tol", &target_theta_tol);
+  rhoban_utils::tryRead(v, "ball_theta_tol"  , &ball_theta_tol  );
+  rhoban_utils::tryRead(v, "approach_type"   , &approach_type   );
   if (type_str != "") {
     type = loadType(type_str);
   }
-  rhoban_utils::xml_tools::try_read<double>(node, "step_p", step_p);
-  rhoban_utils::xml_tools::try_read<double>(node, "near_theta_p", near_theta_p);
-  rhoban_utils::xml_tools::try_read<double>(node, "near_lateral_p", near_lateral_p);
-  rhoban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
-  rhoban_utils::xml_tools::try_read<double>(node, "wished_x", wished_x);
-  rhoban_utils::xml_tools::try_read<double>(node, "target_theta_tol", target_theta_tol);
-  rhoban_utils::xml_tools::try_read<double>(node, "ball_theta_tol", ball_theta_tol);
-  rhoban_utils::xml_tools::try_read<std::string>(node, "approach_type" , approach_type);
   bool valid_type = false;
   for (const std::string & name : {"lateral", "classic", "opportunist"}) {
     if (name == approach_type) {
@@ -258,28 +255,25 @@ void ExpertApproach::fromJson(TiXmlNode * node)
   }
   // Read right_foot_kick_dir (from deg to rad)
   double right_foot_kick_dir_deg = rad2deg(right_foot_kick_dir);
-  rhoban_utils::xml_tools::try_read<double>(node, "right_foot_kick_dir", right_foot_kick_dir_deg);
+  rhoban_utils::tryRead(v, "right_foot_kick_dir", &right_foot_kick_dir_deg);
   right_foot_kick_dir = deg2rad(right_foot_kick_dir_deg);
   // Read lateral threshold (from deg to rad)
   if (approach_type == "opportunist") {
     double lateral_threshold_deg = rad2deg(lateral_threshold);
-    rhoban_utils::xml_tools::try_read<double>(node, "lateral_threshold", lateral_threshold_deg);
+    rhoban_utils::tryRead(v, "lateral_threshold", &lateral_threshold_deg);
     lateral_threshold = deg2rad(lateral_threshold_deg);
   }
   // Reading vector list of parameters
-  std::vector<double> params_read;
-  rhoban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);
+  Eigen::VectorXd new_params = rhoban_utils::read<Eigen::VectorXd>(v, "params");
   // If number of coefficients is appropriate, update config
-  if (params_read.size() == nb_parameters)
-  {
-    Eigen::VectorXd new_params = Eigen::Map<Eigen::VectorXd>(params_read.data(), nb_parameters);
+  if (new_params.rows() == nb_parameters) {
     setConfig(type, new_params);
   }
   // Else throw an explicit error if number of parameters was not 0
-  else if (params_read.size() != 0) {
+  else if (new_params.rows() != 0) {
     std::ostringstream oss;
     oss << "ExpertApproach::fromJson: invalid number of parameters in node 'params': "
-        << "read: " << params_read.size() << ", expecting: " << nb_parameters;
+        << "read: " << new_params.rows() << ", expecting: " << nb_parameters;
     throw std::runtime_error(oss.str());
   }
 }

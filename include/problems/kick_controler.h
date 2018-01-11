@@ -71,8 +71,8 @@ public:
     /// A: (dstep_x, dstep_y, dstep_theta)
     std::unique_ptr<csa_mdp::Policy> approach_policy;
 
-    void toJson(std::ostream & out) const override;
-    void fromJson(TiXmlNode * node) override;
+    Json::Value toJson() const override;
+    void fromJson(const Json::Value & v, const std::string & dir_name) override;
     std::string getClassName() const override;
 
     void syncKickZones(const KickModelCollection & kmc);
@@ -90,8 +90,8 @@ public:
     /// Description of the policy used when the robot is not kicking
     std::unique_ptr<csa_mdp::Policy> approach_policy;
 
-    void toJson(std::ostream & out) const override;
-    void fromJson(TiXmlNode * node) override;
+    Json::Value toJson() const override;
+    void fromJson(const Json::Value & v, const std::string & dir_name) override;
     std::string getClassName() const override;
   };
 
@@ -172,8 +172,8 @@ public:
                                           const Eigen::Vector2d & ball_end) const;
 
 
-  void toJson(std::ostream & out) const override;
-  void fromJson(TiXmlNode * node) override;
+  Json::Value toJson() const override;
+  void fromJson(const Json::Value & v, const std::string & dir_name) override;
   std::string getClassName() const override;
 
   size_t getNbPlayers() const;

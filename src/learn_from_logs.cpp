@@ -21,16 +21,18 @@ public:
       return "policy_learner";
     }
 
-  void toJson(std::ostream &out) const override
+  Json::Value toJson() const override
     {
-      history_conf.write("history_conf", out);
-      fpf_conf.write("fpf_conf", out);
+      Json::Value v;
+      v["history_conf"] = history_conf.toJson();
+      v["fpf_conf"    ] = fpf_conf.toJson();
+      return v;
     }
 
-  void fromJson(TiXmlNode *node) override
+  void fromJson(const Json::Value & v, const std::string & dir_name) override
     {
-      history_conf.read(node, "history_conf");
-      fpf_conf.read(node, "fpf_conf");
+      history_conf.read(v, "history_conf", dir_name);
+      fpf_conf.read(v, "fpf_conf", dir_name);
     }
 
   History::Config history_conf;
@@ -63,7 +65,7 @@ int main(int argc, char ** argv)
 
   /// CONFIG
   Config config;
-  config.load_file();// Loading file Config.xml
+  config.loadFile();// Loading file Config.xml
 
   std::shared_ptr<Problem> problem = config.history_conf.problem;
 
