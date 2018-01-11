@@ -2,7 +2,7 @@
 
 #include "kick_model/kick_model_factory.h"
 
-using namespace rosban_utils::xml_tools;
+using namespace rhoban_utils::xml_tools;
 
 namespace csa_mdp
 {
@@ -28,13 +28,13 @@ std::vector<std::string> KickModelCollection::getKickNames() const
   return names;
 }
 
-void KickModelCollection::to_xml(std::ostream & out) const
+void KickModelCollection::toJson(std::ostream & out) const
 {
   (void) out;
-  throw std::logic_error("KickModelCollection::to_xml: not implemented");
+  throw std::logic_error("KickModelCollection::toJson: not implemented");
 }
 
-void KickModelCollection::from_xml(TiXmlNode * node)
+void KickModelCollection::fromJson(TiXmlNode * node)
 {
   KickModelFactory kmf;
   models = read_map<std::unique_ptr<KickModel>>(node, "map", 
@@ -56,7 +56,7 @@ void KickModelCollection::setGrassConeOffset(double offset)
   }
 }
 
-std::string KickModelCollection::class_name() const
+std::string KickModelCollection::getClassName() const
 {
   return "KickModelCollection";
 }

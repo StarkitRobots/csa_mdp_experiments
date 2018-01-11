@@ -128,31 +128,31 @@ Eigen::VectorXd CartPole::getResetCmd(const Eigen::VectorXd &state) const
   return cmd;
 }
 
-void CartPole::to_xml(std::ostream & out) const
+void CartPole::toJson(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<double>("max_pos"           , max_pos               , out);
-  rosban_utils::xml_tools::write<double>("max_vel"           , max_vel               , out);
-  rosban_utils::xml_tools::write<double>("max_torque"        , max_torque            , out);
-  rosban_utils::xml_tools::write<double>("max_axis_vel"      , max_axis_vel          , out);
-  rosban_utils::xml_tools::write<double>("start_cart_pos_tol", start_cart_pos_tol    , out);
-  rosban_utils::xml_tools::write<double>("start_cart_vel_tol", start_cart_vel_tol    , out);
-  rosban_utils::xml_tools::write<double>("start_axis_pos_tol", start_axis_pos_tol    , out);
-  rosban_utils::xml_tools::write<double>("start_axis_vel_tol", start_axis_vel_tol    , out);
-  rosban_utils::xml_tools::write<std::string>("reward_type  ", to_string(reward_type), out);
+  rhoban_utils::xml_tools::write<double>("max_pos"           , max_pos               , out);
+  rhoban_utils::xml_tools::write<double>("max_vel"           , max_vel               , out);
+  rhoban_utils::xml_tools::write<double>("max_torque"        , max_torque            , out);
+  rhoban_utils::xml_tools::write<double>("max_axis_vel"      , max_axis_vel          , out);
+  rhoban_utils::xml_tools::write<double>("start_cart_pos_tol", start_cart_pos_tol    , out);
+  rhoban_utils::xml_tools::write<double>("start_cart_vel_tol", start_cart_vel_tol    , out);
+  rhoban_utils::xml_tools::write<double>("start_axis_pos_tol", start_axis_pos_tol    , out);
+  rhoban_utils::xml_tools::write<double>("start_axis_vel_tol", start_axis_vel_tol    , out);
+  rhoban_utils::xml_tools::write<std::string>("reward_type  ", to_string(reward_type), out);
 }
 
-void CartPole::from_xml(TiXmlNode * node)
+void CartPole::fromJson(TiXmlNode * node)
 {
-  rosban_utils::xml_tools::try_read<double>(node, "max_pos"           , max_pos           );
-  rosban_utils::xml_tools::try_read<double>(node, "max_vel"           , max_vel           );
-  rosban_utils::xml_tools::try_read<double>(node, "max_torque"        , max_torque        );
-  rosban_utils::xml_tools::try_read<double>(node, "max_axis_vel"      , max_axis_vel      );
-  rosban_utils::xml_tools::try_read<double>(node, "start_cart_pos_tol", start_cart_pos_tol);
-  rosban_utils::xml_tools::try_read<double>(node, "start_cart_vel_tol", start_cart_vel_tol);
-  rosban_utils::xml_tools::try_read<double>(node, "start_axis_pos_tol", start_axis_pos_tol);
-  rosban_utils::xml_tools::try_read<double>(node, "start_axis_vel_tol", start_axis_vel_tol);
+  rhoban_utils::xml_tools::try_read<double>(node, "max_pos"           , max_pos           );
+  rhoban_utils::xml_tools::try_read<double>(node, "max_vel"           , max_vel           );
+  rhoban_utils::xml_tools::try_read<double>(node, "max_torque"        , max_torque        );
+  rhoban_utils::xml_tools::try_read<double>(node, "max_axis_vel"      , max_axis_vel      );
+  rhoban_utils::xml_tools::try_read<double>(node, "start_cart_pos_tol", start_cart_pos_tol);
+  rhoban_utils::xml_tools::try_read<double>(node, "start_cart_vel_tol", start_cart_vel_tol);
+  rhoban_utils::xml_tools::try_read<double>(node, "start_axis_pos_tol", start_axis_pos_tol);
+  rhoban_utils::xml_tools::try_read<double>(node, "start_axis_vel_tol", start_axis_vel_tol);
   std::string reward_type_str;
-  rosban_utils::xml_tools::try_read<std::string>(node, "reward_type", reward_type_str);
+  rhoban_utils::xml_tools::try_read<std::string>(node, "reward_type", reward_type_str);
   if (reward_type_str != "")
   {
     reward_type =  loadRewardType(reward_type_str);
@@ -160,7 +160,7 @@ void CartPole::from_xml(TiXmlNode * node)
   updateLimits();
 }
 
-std::string CartPole::class_name() const
+std::string CartPole::getClassName() const
 {
   return "cart_pole";
 }

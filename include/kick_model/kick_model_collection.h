@@ -8,7 +8,7 @@
 namespace csa_mdp
 {
 
-class KickModelCollection : public rosban_utils::Serializable
+class KickModelCollection : public rhoban_utils::JsonSerializable
 {
 public:
   KickModelCollection();
@@ -22,9 +22,9 @@ public:
   /// Setting the grass cone offset [deg]
   void setGrassConeOffset(double offset);
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
 protected:
   GrassModel grassModel;

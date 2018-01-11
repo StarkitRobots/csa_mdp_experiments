@@ -2,12 +2,12 @@
 
 #include "learning_machine/learning_machine.h"
 
-#include "rosban_utils/factory.h"
+#include "rhoban_utils/serialization/factory.h"
 
 namespace csa_mdp
 {
 
-class LearningMachineFactory : public rosban_utils::Factory<LearningMachine>
+class LearningMachineFactory : public rhoban_utils::Factory<LearningMachine>
 {
 public:
   LearningMachineFactory();

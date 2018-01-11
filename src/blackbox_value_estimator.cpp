@@ -9,14 +9,14 @@
 #include "rosban_csa_mdp/core/policy_factory.h"
 #include "rosban_fa/trainer_factory.h"
 #include "rosban_random/tools.h"
-#include "rosban_utils/multi_core.h"
+#include "rhoban_utils/threading/multi_core.h"
 
 #include <fenv.h>
 
 namespace csa_mdp
 {
 
-class BlackboxValueEstimator : public rosban_utils::Serializable
+class BlackboxValueEstimator : public rhoban_utils::JsonSerializable
 {
 public:
   /// Dummy constructor
@@ -41,7 +41,7 @@ public:
       std::vector<std::default_random_engine> engines =
         rosban_random::getRandomEngines(std::min(nb_threads, nb_samples), engine);
       // The task which has to be performed :
-      rosban_utils::MultiCore::StochasticTask task =
+      rhoban_utils::MultiCore::StochasticTask task =
         [this, &inputs, &observations, input_dims]
         (int start_idx, int end_idx, std::default_random_engine * thread_engine)
         {
@@ -66,7 +66,7 @@ public:
           }      
         };
       // Running computation
-      rosban_utils::MultiCore::runParallelStochasticTask(task, nb_samples, &engines);
+      rhoban_utils::MultiCore::runParallelStochasticTask(task, nb_samples, &engines);
     }
 
 
@@ -79,24 +79,24 @@ public:
                                  problem->getStateLimits());
     }
 
-  void to_xml(std::ostream & out) const override
+  void toJson(std::ostream & out) const override
     {
       (void) out;
-      throw std::logic_error("BlackboxValueEstimator::to_xml: not implemented");
+      throw std::logic_error("BlackboxValueEstimator::toJson: not implemented");
     }
 
-  void from_xml(TiXmlNode * node) override
+  void fromJson(TiXmlNode * node) override
     {
       // Reading basic properties
-      rosban_utils::xml_tools::try_read<int>   (node, "nb_samples"       , nb_samples      );
-      rosban_utils::xml_tools::try_read<int>   (node, "evals_per_sample" , evals_per_sample);
-      rosban_utils::xml_tools::try_read<int>   (node, "nb_threads"       , nb_threads      );
-      rosban_utils::xml_tools::try_read<int>   (node, "horizon"          , horizon         );
-      rosban_utils::xml_tools::try_read<double>(node, "discount"         , discount        );
+      rhoban_utils::xml_tools::try_read<int>   (node, "nb_samples"       , nb_samples      );
+      rhoban_utils::xml_tools::try_read<int>   (node, "evals_per_sample" , evals_per_sample);
+      rhoban_utils::xml_tools::try_read<int>   (node, "nb_threads"       , nb_threads      );
+      rhoban_utils::xml_tools::try_read<int>   (node, "horizon"          , horizon         );
+      rhoban_utils::xml_tools::try_read<double>(node, "discount"         , discount        );
       // Getting problem (mandatory)
       std::shared_ptr<const Problem> tmp_problem;
       std::string problem_path;
-      rosban_utils::xml_tools::try_read<std::string>(node, "problem_path", problem_path);
+      rhoban_utils::xml_tools::try_read<std::string>(node, "problem_path", problem_path);
       if (problem_path != "") {
         tmp_problem = ProblemFactory().buildFromXmlFile(problem_path, "Problem");
       } else {
@@ -104,7 +104,7 @@ public:
       }
       problem = std::dynamic_pointer_cast<const BlackBoxProblem>(tmp_problem);
       if (!problem) {
-        throw std::runtime_error("BlackBoxLearner::from_xml: problem is not a BlackBoxProblem");
+        throw std::runtime_error("BlackBoxLearner::fromJson: problem is not a BlackBoxProblem");
       }
       // Reading approximator (mandatory)
       approximator = rosban_fa::TrainerFactory().read(node, "approximator");
@@ -116,7 +116,7 @@ public:
       policy->setActionLimits(problem->getActionsLimits());
     }
 
-  std::string class_name() const override
+  std::string getClassName() const override
     {
       return "BlackboxValueEstimator";
     }

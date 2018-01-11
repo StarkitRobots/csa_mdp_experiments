@@ -30,9 +30,9 @@ public:
   Eigen::VectorXd getRawAction(const Eigen::VectorXd &state,
                                std::default_random_engine * external_engine) const override;
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
   // WARNING: Does not work in cartesian mode approach
   // Approximation is not entirely appropriate, but it has the advantage of

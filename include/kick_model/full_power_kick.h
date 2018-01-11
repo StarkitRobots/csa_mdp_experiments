@@ -22,9 +22,9 @@ public:
                          double * final_ball_x, double * final_ball_y,
                          double * kick_reward) const override;
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
 private:
   /// The average distance of the shoot

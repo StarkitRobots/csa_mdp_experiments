@@ -9,25 +9,25 @@
 
 using namespace csa_mdp;
 
-class Config : public rosban_utils::Serializable
+class Config : public rhoban_utils::JsonSerializable
 {
 public:
   Config()
     {
     }
 
-  std::string class_name() const override
+  std::string getClassName() const override
     {
       return "policy_learner";
     }
 
-  void to_xml(std::ostream &out) const override
+  void toJson(std::ostream &out) const override
     {
       history_conf.write("history_conf", out);
       fpf_conf.write("fpf_conf", out);
     }
 
-  void from_xml(TiXmlNode *node) override
+  void fromJson(TiXmlNode *node) override
     {
       history_conf.read(node, "history_conf");
       fpf_conf.read(node, "fpf_conf");

@@ -1,6 +1,6 @@
 #include "kick_model/custom_power_kick.h"
 
-#include "rosban_utils/xml_tools.h"
+#include "rhoban_utils/xml_tools.h"
 
 namespace csa_mdp
 {
@@ -51,21 +51,21 @@ void CustomPowerKick::applyKick(double ball_start_x, double ball_start_y,
             engine, final_ball_x, final_ball_y, reward);
 }
 
-void CustomPowerKick::to_xml(std::ostream & out) const
+void CustomPowerKick::toJson(std::ostream & out) const
 {
-  KickModel::to_xml(out);
-  rosban_utils::xml_tools::write<double>("min_kick_power", min_kick_power, out);
-  rosban_utils::xml_tools::write<double>("max_kick_power", max_kick_power, out);
+  KickModel::toJson(out);
+  rhoban_utils::xml_tools::write<double>("min_kick_power", min_kick_power, out);
+  rhoban_utils::xml_tools::write<double>("max_kick_power", max_kick_power, out);
 }
 
-void CustomPowerKick::from_xml(TiXmlNode * node)
+void CustomPowerKick::fromJson(TiXmlNode * node)
 {
-  KickModel::from_xml(node);
-  min_kick_power = rosban_utils::xml_tools::read<double>(node, "min_kick_power");
-  max_kick_power = rosban_utils::xml_tools::read<double>(node, "max_kick_power");
+  KickModel::fromJson(node);
+  min_kick_power = rhoban_utils::xml_tools::read<double>(node, "min_kick_power");
+  max_kick_power = rhoban_utils::xml_tools::read<double>(node, "max_kick_power");
 }
 
-std::string CustomPowerKick::class_name() const
+std::string CustomPowerKick::getClassName() const
 {
   return "CustomPowerKick";
 }

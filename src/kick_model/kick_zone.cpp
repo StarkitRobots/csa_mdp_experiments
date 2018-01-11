@@ -1,6 +1,6 @@
 #include "kick_model/kick_zone.h"
 
-using namespace rosban_utils;
+using namespace rhoban_utils;
 using namespace xml_tools;
 
 static double deg2rad(double deg) { return M_PI * deg / 180; }
@@ -134,7 +134,7 @@ Eigen::Vector3d KickZone::convertWorldStateToKickState(
   return state_in_self;
 }
 
-void KickZone::to_xml(std::ostream & out) const
+void KickZone::toJson(std::ostream & out) const
 {
   xml_tools::write<double>("kick_x_min"       , kick_x_min       , out);
   xml_tools::write<double>("kick_x_max"       , kick_x_max       , out);
@@ -147,7 +147,7 @@ void KickZone::to_xml(std::ostream & out) const
   xml_tools::write<double>("kick_theta_offset", kick_theta_offset_deg, out);
 }
 
-void KickZone::from_xml(TiXmlNode * node)
+void KickZone::fromJson(TiXmlNode * node)
 {
   try_read<double>(node, "kick_x_min"       , kick_x_min       );
   try_read<double>(node, "kick_x_max"       , kick_x_max       );
@@ -160,7 +160,7 @@ void KickZone::from_xml(TiXmlNode * node)
   kick_theta_offset = deg2rad(kick_theta_offset_deg);
 }
 
-std::string KickZone::class_name() const
+std::string KickZone::getClassName() const
 {
   return "KickZone";
 }

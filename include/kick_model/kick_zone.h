@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rosban_utils/serializable.h"
+#include "rhoban_utils/serialization/json_serializable.h"
 
 #include <Eigen/Core>
 
@@ -13,7 +13,7 @@ namespace csa_mdp
 /// 0: ball_x   [m]
 /// 1: ball_y   [m]
 /// 2: kick_wished_dir [rad]
-class KickZone : public rosban_utils::Serializable
+class KickZone : public rhoban_utils::JsonSerializable
 {
 public:
 
@@ -65,9 +65,9 @@ public:
     const Eigen::Vector3d & player_state,
     double kick_dir) const;
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
 protected:
   /// Minimal distance along x to kick

@@ -129,20 +129,20 @@ void LearningMachineController::setProblem(std::unique_ptr<csa_mdp::Problem> new
   }
 }
 
-std::string LearningMachineController::class_name() const
+std::string LearningMachineController::getClassName() const
 {
   return "LearningMachineController";
 }
 
-void LearningMachineController::to_xml(std::ostream &out) const
+void LearningMachineController::toJson(std::ostream &out) const
 {
-  LearningMachine::to_xml(out);
+  LearningMachine::toJson(out);
   control_config.write("control", out);
 }
 
-void LearningMachineController::from_xml(TiXmlNode *node)
+void LearningMachineController::fromJson(TiXmlNode *node)
 {
-  LearningMachine::from_xml(node);
+  LearningMachine::fromJson(node);
   control_config.read(node, "control");
 }
 

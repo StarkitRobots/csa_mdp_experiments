@@ -98,23 +98,23 @@ Eigen::VectorXd OKSeed::finishKick(int side) const
   return Eigen::Vector2d(autoAimId, goal_width/4 * side);
 }
 
-void OKSeed::to_xml(std::ostream & out) const
+void OKSeed::toJson(std::ostream & out) const
 {
   //TODO: write Ids
-  rosban_utils::xml_tools::write<double>("back_limit"  , back_limit  , out);
-  rosban_utils::xml_tools::write<double>("goal_width"  , goal_width  , out);
-  rosban_utils::xml_tools::write<double>("finish_limit", finish_limit, out);
+  rhoban_utils::xml_tools::write<double>("back_limit"  , back_limit  , out);
+  rhoban_utils::xml_tools::write<double>("goal_width"  , goal_width  , out);
+  rhoban_utils::xml_tools::write<double>("finish_limit", finish_limit, out);
 }
 
-void OKSeed::from_xml(TiXmlNode * node)
+void OKSeed::fromJson(TiXmlNode * node)
 {
   //TODO: read Ids
-  rosban_utils::xml_tools::try_read<double>(node, "back_limit"  , back_limit  );
-  rosban_utils::xml_tools::try_read<double>(node, "goal_width"  , goal_width  );
-  rosban_utils::xml_tools::try_read<double>(node, "finish_limit", finish_limit);
+  rhoban_utils::xml_tools::try_read<double>(node, "back_limit"  , back_limit  );
+  rhoban_utils::xml_tools::try_read<double>(node, "goal_width"  , goal_width  );
+  rhoban_utils::xml_tools::try_read<double>(node, "finish_limit", finish_limit);
 }
 
-std::string OKSeed::class_name() const
+std::string OKSeed::getClassName() const
 {
   return "OKSeed";
 }

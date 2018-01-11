@@ -87,11 +87,11 @@ Eigen::VectorXd DoubleInvertedPendulum::getResetCmd(const Eigen::VectorXd &state
   return cmd;
 }
 
-void DoubleInvertedPendulum::to_xml(std::ostream & out) const {(void)out;}
+void DoubleInvertedPendulum::toJson(std::ostream & out) const {(void)out;}
 
-void DoubleInvertedPendulum::from_xml(TiXmlNode * node) {(void)node;}
+void DoubleInvertedPendulum::fromJson(TiXmlNode * node) {(void)node;}
 
-std::string DoubleInvertedPendulum::class_name() const
+std::string DoubleInvertedPendulum::getClassName() const
 {
   return "double_inverted_pendulum";
 }

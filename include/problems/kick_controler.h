@@ -61,7 +61,7 @@ public:
   /// - Kick model         : To determine the eventual results
   /// - Approach model     : To determine in which states it is allowable to kick
   /// - Approach policy    : To choose the orders sent to the walk when simulating the approach
-  class KickOption : rosban_utils::Serializable {
+  class KickOption : rhoban_utils::JsonSerializable {
   public:
     std::unique_ptr<KickDecisionModel> kick_decision_model;
     std::vector<std::string> kick_model_names;
@@ -71,15 +71,15 @@ public:
     /// A: (dstep_x, dstep_y, dstep_theta)
     std::unique_ptr<csa_mdp::Policy> approach_policy;
 
-    void to_xml(std::ostream & out) const override;
-    void from_xml(TiXmlNode * node) override;
-    std::string class_name() const override;
+    void toJson(std::ostream & out) const override;
+    void fromJson(TiXmlNode * node) override;
+    std::string getClassName() const override;
 
     void syncKickZones(const KickModelCollection & kmc);
   };
 
   /// Each player has its own custom configuration
-  class Player : rosban_utils::Serializable {
+  class Player : rhoban_utils::JsonSerializable {
   public:
     /// Allows to identify player more easily
     std::string name;
@@ -90,9 +90,9 @@ public:
     /// Description of the policy used when the robot is not kicking
     std::unique_ptr<csa_mdp::Policy> approach_policy;
 
-    void to_xml(std::ostream & out) const override;
-    void from_xml(TiXmlNode * node) override;
-    std::string class_name() const override;
+    void toJson(std::ostream & out) const override;
+    void fromJson(TiXmlNode * node) override;
+    std::string getClassName() const override;
   };
 
 public:
@@ -172,9 +172,9 @@ public:
                                           const Eigen::Vector2d & ball_end) const;
 
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
   size_t getNbPlayers() const;
 

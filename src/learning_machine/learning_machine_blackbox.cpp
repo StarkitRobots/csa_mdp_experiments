@@ -42,7 +42,7 @@ void LearningMachineBlackBox::setProblem(std::unique_ptr<csa_mdp::Problem> new_p
   }
 }
 
-std::string LearningMachineBlackBox::class_name() const
+std::string LearningMachineBlackBox::getClassName() const
 {
   return "LearningMachineBlackBox";
 }

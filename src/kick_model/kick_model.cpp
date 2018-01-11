@@ -1,7 +1,5 @@
 #include "kick_model/kick_model.h"
 
-#include "rosban_utils/xml_tools.h"
-
 namespace csa_mdp
 {
 
@@ -49,18 +47,18 @@ void KickModel::setGrassModel(GrassModel grassModel_)
   grassModel = grassModel_;
 }
 
-void KickModel::to_xml(std::ostream & out) const
+void KickModel::toJson(std::ostream & out) const
 {
   out << "<kick_zone>";
-  kick_zone.to_xml(out);
+  kick_zone.toJson(out);
   out << "</kick_zone>";
-  rosban_utils::xml_tools::write<double>("kick_reward", kick_reward, out);
+  rhoban_utils::xml_tools::write<double>("kick_reward", kick_reward, out);
 }
 
-void KickModel::from_xml(TiXmlNode * node)
+void KickModel::fromJson(TiXmlNode * node)
 {
   kick_zone.read(node, "kick_zone");
-  rosban_utils::xml_tools::try_read<double>(node, "kick_reward", kick_reward);  
+  rhoban_utils::xml_tools::try_read<double>(node, "kick_reward", kick_reward);  
 }
 
 }

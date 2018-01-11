@@ -2,7 +2,7 @@
 
 #include "kick_model/kick_zone.h"
 #include "kick_model/grass_model.h"
-#include "rosban_utils/serializable.h"
+#include "rhoban_utils/serialization/json_serializable.h"
 
 #include <Eigen/Core>
 
@@ -18,7 +18,7 @@ namespace csa_mdp
 /// Each kick might contain/use several parameters
 ///
 /// All dimensions are in meters
-class KickModel : public rosban_utils::Serializable {
+class KickModel : public rhoban_utils::JsonSerializable {
 public:
   KickModel();
 
@@ -65,8 +65,8 @@ public:
   /// Setting the grass model
   virtual void setGrassModel(GrassModel grassModel);
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
 
   virtual KickModel * clone() const = 0;
 

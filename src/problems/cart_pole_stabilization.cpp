@@ -212,18 +212,18 @@ Eigen::VectorXd CartPoleStabilization::getStartingState(std::default_random_engi
   return state;
 }
 
-void CartPoleStabilization::to_xml(std::ostream & out) const
+void CartPoleStabilization::toJson(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write("learning_space", to_string(learning_space), out);
+  rhoban_utils::xml_tools::write("learning_space", to_string(learning_space), out);
 }
-void CartPoleStabilization::from_xml(TiXmlNode * node)
+void CartPoleStabilization::fromJson(TiXmlNode * node)
 {
   std::string learning_space_str;
-  rosban_utils::xml_tools::try_read(node, "learning_space", learning_space_str);
+  rhoban_utils::xml_tools::try_read(node, "learning_space", learning_space_str);
   if (learning_space_str != "") { learning_space = loadLearningSpace(learning_space_str); }
 }
 
-std::string CartPoleStabilization::class_name() const
+std::string CartPoleStabilization::getClassName() const
 {
   return "cart_pole_stabilization";
 }

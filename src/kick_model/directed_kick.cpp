@@ -1,7 +1,5 @@
 #include "kick_model/directed_kick.h"
 
-#include "rosban_utils/xml_tools.h"
-
 namespace csa_mdp
 {
 
@@ -31,17 +29,17 @@ double DirectedKick::computeKickDirection(const Eigen::VectorXd & unused,
   }
   return actions(0);
 }
-void DirectedKick::to_xml(std::ostream & out) const
+void DirectedKick::toJson(std::ostream & out) const
 {
   (void)out;
 }
 
-void DirectedKick::from_xml(TiXmlNode * node)
+void DirectedKick::fromJson(TiXmlNode * node)
 {
   (void)node;
 }
 
-std::string DirectedKick::class_name() const
+std::string DirectedKick::getClassName() const
 {
   return "DirectedKick";
 }

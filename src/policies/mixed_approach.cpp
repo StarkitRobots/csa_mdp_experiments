@@ -46,19 +46,19 @@ Eigen::VectorXd MixedApproach::getRawAction(const Eigen::VectorXd & state,
   return nearby_policy->getRawAction(state, engine);
 };
 
-void MixedApproach::to_xml(std::ostream & out) const
+void MixedApproach::toJson(std::ostream & out) const
 {
   (void)out;
-  throw std::logic_error("MixedApproach::to_xml: unimplemented method");
+  throw std::logic_error("MixedApproach::toJson: unimplemented method");
 }
 
-void MixedApproach::from_xml(TiXmlNode * node)
+void MixedApproach::fromJson(TiXmlNode * node)
 {
   std::string path;
   csa_mdp::PolicyFactory().tryRead(node, "nearby_policy", nearby_policy);
 }
 
-std::string MixedApproach::class_name() const
+std::string MixedApproach::getClassName() const
 {
   return "mixed_approach";
 }

@@ -12,7 +12,7 @@ namespace csa_mdp
 {
 
 /// Base class for running experiments
-class LearningMachine : public rosban_utils::Serializable
+class LearningMachine : public rhoban_utils::JsonSerializable
 {
 public:
   //TODO replace update rule by two int runs_by_policy and runs_by_policy_growth
@@ -87,9 +87,9 @@ public:
   /// Get the learning state from the given full state
   Eigen::VectorXd getLearningState(const Eigen::VectorXd & state);
 
-  virtual std::string class_name() const override;
-  void to_xml(std::ostream &out) const override;
-  void from_xml(TiXmlNode *node) override;
+  virtual std::string getClassName() const override;
+  void toJson(std::ostream &out) const override;
+  void fromJson(TiXmlNode *node) override;
 
 protected:
   /// The online explorator

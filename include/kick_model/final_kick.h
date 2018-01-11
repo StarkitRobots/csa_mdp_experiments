@@ -24,9 +24,9 @@ public:
   double computeKickDirection(const Eigen::VectorXd & ball_pos,
                               const Eigen::VectorXd & actions) const override;
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
 private:  
   /// The position of the opponent goal in x (expecting field_length / 2)

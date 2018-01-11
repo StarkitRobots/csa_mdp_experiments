@@ -195,11 +195,11 @@ bool Approach::seeBall(const Eigen::VectorXd & state) const
   return angle < viewing_angle && angle > -viewing_angle;
 }
 
-void Approach::to_xml(std::ostream & out) const {(void)out;}
+void Approach::toJson(std::ostream & out) const {(void)out;}
 
-void Approach::from_xml(TiXmlNode * node) {(void)node;}
+void Approach::fromJson(TiXmlNode * node) {(void)node;}
 
-std::string Approach::class_name() const
+std::string Approach::getClassName() const
 {
   return "approach";
 }

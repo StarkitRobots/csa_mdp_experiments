@@ -2,12 +2,12 @@
 
 #include "kick_model/kick_decision_model.h"
 
-#include "rosban_utils/factory.h"
+#include "rhoban_utils/serialization/factory.h"
 
 namespace csa_mdp
 {
 
-class KickDecisionModelFactory : public rosban_utils::Factory<KickDecisionModel> {
+class KickDecisionModelFactory : public rhoban_utils::Factory<KickDecisionModel> {
 public:
   KickDecisionModelFactory();
 };

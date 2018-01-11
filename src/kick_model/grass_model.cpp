@@ -1,6 +1,6 @@
 #include "kick_model/kick_model.h"
 
-#include "rosban_utils/xml_tools.h"
+#include "rhoban_utils/xml_tools.h"
 
 namespace csa_mdp
 {
@@ -30,21 +30,21 @@ void GrassModel::setConeOffset(double cone_offset)
     coneOffset = cone_offset;
 }
 
-void GrassModel::to_xml(std::ostream & out) const
+void GrassModel::toJson(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<double>("ratio", ratio, out);
-  rosban_utils::xml_tools::write<double>("coneWidth", coneWidth, out);
-  rosban_utils::xml_tools::write<double>("coneOffset", coneOffset, out);
+  rhoban_utils::xml_tools::write<double>("ratio", ratio, out);
+  rhoban_utils::xml_tools::write<double>("coneWidth", coneWidth, out);
+  rhoban_utils::xml_tools::write<double>("coneOffset", coneOffset, out);
 }
 
-void GrassModel::from_xml(TiXmlNode * node)
+void GrassModel::fromJson(TiXmlNode * node)
 {
-  rosban_utils::xml_tools::try_read<double>(node, "ratio", ratio);
-  rosban_utils::xml_tools::try_read<double>(node, "coneWidth", coneWidth);  
-  rosban_utils::xml_tools::try_read<double>(node, "coneOffset", coneOffset);  
+  rhoban_utils::xml_tools::try_read<double>(node, "ratio", ratio);
+  rhoban_utils::xml_tools::try_read<double>(node, "coneWidth", coneWidth);  
+  rhoban_utils::xml_tools::try_read<double>(node, "coneOffset", coneOffset);  
 }
 
-std::string GrassModel::class_name() const
+std::string GrassModel::getClassName() const
 {
     return "GrassModel";
 }

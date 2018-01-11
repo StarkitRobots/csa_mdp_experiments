@@ -33,9 +33,9 @@ public:
 
   Eigen::VectorXd getResetCmd(const Eigen::VectorXd &state) const override;
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
 private:
   // maximal distance from center to cart [m]

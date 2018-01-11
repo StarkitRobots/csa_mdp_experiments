@@ -103,15 +103,15 @@ Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine * 
   return state;
 }
 
-void DoubleIntegrator::to_xml(std::ostream & out) const {
-  rosban_utils::xml_tools::write<bool>("random_start", random_start, out);
+void DoubleIntegrator::toJson(std::ostream & out) const {
+  rhoban_utils::xml_tools::write<bool>("random_start", random_start, out);
 }
 
-void DoubleIntegrator::from_xml(TiXmlNode * node) {
-  rosban_utils::xml_tools::try_read<bool>(node, "random_start", random_start);
+void DoubleIntegrator::fromJson(TiXmlNode * node) {
+  rhoban_utils::xml_tools::try_read<bool>(node, "random_start", random_start);
 }
 
-std::string DoubleIntegrator::class_name() const
+std::string DoubleIntegrator::getClassName() const
 {
   return "double_integrator";
 }

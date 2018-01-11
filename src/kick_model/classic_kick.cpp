@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-using namespace rosban_utils;
+using namespace rhoban_utils;
 
 static double deg2rad(double deg) { return M_PI * deg / 180; }
 static double rad2deg(double rad) { return 180 * rad / M_PI; }
@@ -61,9 +61,9 @@ Eigen::Vector2d ClassicKick::getKickInSelf(const Eigen::Vector2d & ball_pos,
 }
 
 
-void ClassicKick::to_xml(std::ostream & out) const
+void ClassicKick::toJson(std::ostream & out) const
 {
-  KickModel::to_xml(out);
+  KickModel::toJson(out);
   // Using human readable values in xml
   double kick_dir_deg   = rad2deg(right_kick_dir);
   double dir_stddev_deg = rad2deg(dir_stddev);
@@ -73,9 +73,9 @@ void ClassicKick::to_xml(std::ostream & out) const
   xml_tools::write<double>("dir_stddev"     , dir_stddev_deg , out);
 }
 
-void ClassicKick::from_xml(TiXmlNode * node)
+void ClassicKick::fromJson(TiXmlNode * node)
 {
-  KickModel::from_xml(node);
+  KickModel::fromJson(node);
   double kick_dir_deg, dir_stddev_deg;
   kick_power      = xml_tools::read<double>(node, "kick_power"     );
   kick_dir_deg    = xml_tools::read<double>(node, "right_kick_dir" );
@@ -86,7 +86,7 @@ void ClassicKick::from_xml(TiXmlNode * node)
   dir_stddev = deg2rad(dir_stddev_deg);
 }
 
-std::string ClassicKick::class_name() const
+std::string ClassicKick::getClassName() const
 {
   return "ClassicKick";
 }

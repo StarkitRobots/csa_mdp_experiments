@@ -2,12 +2,12 @@
 
 #include "kick_model/kick_model.h"
 
-#include "rosban_utils/factory.h"
+#include "rhoban_utils/serialization/factory.h"
 
 namespace csa_mdp
 {
 
-class KickModelFactory : public rosban_utils::Factory<KickModel> {
+class KickModelFactory : public rhoban_utils::Factory<KickModel> {
 public:
   KickModelFactory();
 };

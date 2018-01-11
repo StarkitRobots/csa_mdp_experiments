@@ -1,7 +1,5 @@
 #include "kick_model/final_kick.h"
 
-#include "rosban_utils/xml_tools.h"
-
 namespace csa_mdp
 {
 
@@ -48,20 +46,20 @@ double FinalKick::computeKickDirection(const Eigen::VectorXd & ball_pos,
 
 
 
-void FinalKick::to_xml(std::ostream & out) const
+void FinalKick::toJson(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<double>("goal_x"    , goal_x    , out);
-  rosban_utils::xml_tools::write<double>("max_y"     , max_y     , out);
+  rhoban_utils::xml_tools::write<double>("goal_x"    , goal_x    , out);
+  rhoban_utils::xml_tools::write<double>("max_y"     , max_y     , out);
 }
 
-void FinalKick::from_xml(TiXmlNode * node)
+void FinalKick::fromJson(TiXmlNode * node)
 {
-  goal_x     = rosban_utils::xml_tools::read<double>(node, "goal_x"    );
-  max_y      = rosban_utils::xml_tools::read<double>(node, "max_y"     );
+  goal_x     = rhoban_utils::xml_tools::read<double>(node, "goal_x"    );
+  max_y      = rhoban_utils::xml_tools::read<double>(node, "max_y"     );
   updateActionLimits();
 }
 
-std::string FinalKick::class_name() const
+std::string FinalKick::getClassName() const
 {
   return "FinalKick";
 }

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "rosban_utils/serializable.h"
+#include "rhoban_utils/serialization/json_serializable.h"
 
 #include <Eigen/Core>
 
 namespace csa_mdp
 {
 
-class KickDecisionModel : public rosban_utils::Serializable
+class KickDecisionModel : public rhoban_utils::JsonSerializable
 {
 public:
 

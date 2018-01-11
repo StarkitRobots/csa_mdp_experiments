@@ -253,46 +253,46 @@ Eigen::VectorXd SimulatedCartPole::getStartingState(std::default_random_engine *
   return state;
 }
 
-void SimulatedCartPole::to_xml(std::ostream & out) const
+void SimulatedCartPole::toJson(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<double>("max_pos"            , max_pos                  , out);
-  rosban_utils::xml_tools::write<double>("max_vel"            , max_vel                  , out);
-  rosban_utils::xml_tools::write<double>("max_torque"         , max_torque               , out);
-  rosban_utils::xml_tools::write<double>("max_axis_vel"       , max_axis_vel             , out);
-  rosban_utils::xml_tools::write<double>("pole_length"        , pole_length              , out);
-  rosban_utils::xml_tools::write<double>("cart_mass"          , cart_mass                , out);
-  rosban_utils::xml_tools::write<double>("pendulum_mass"      , pendulum_mass            , out);
-  rosban_utils::xml_tools::write<double>("friction"           , friction                 , out);
-  rosban_utils::xml_tools::write<double>("gravity"            , gravity                  , out);
-  rosban_utils::xml_tools::write<double>("integration_step"   , integration_step         , out);
-  rosban_utils::xml_tools::write<double>("simulation_step"    , simulation_step          , out);
-  rosban_utils::xml_tools::write<double>("torque_stddev"      , torque_stddev            , out);
-  rosban_utils::xml_tools::write<std::string>("reward_type"   , to_string(reward_type)   , out);
-  rosban_utils::xml_tools::write<std::string>("learning_space", to_string(learning_space), out);
+  rhoban_utils::xml_tools::write<double>("max_pos"            , max_pos                  , out);
+  rhoban_utils::xml_tools::write<double>("max_vel"            , max_vel                  , out);
+  rhoban_utils::xml_tools::write<double>("max_torque"         , max_torque               , out);
+  rhoban_utils::xml_tools::write<double>("max_axis_vel"       , max_axis_vel             , out);
+  rhoban_utils::xml_tools::write<double>("pole_length"        , pole_length              , out);
+  rhoban_utils::xml_tools::write<double>("cart_mass"          , cart_mass                , out);
+  rhoban_utils::xml_tools::write<double>("pendulum_mass"      , pendulum_mass            , out);
+  rhoban_utils::xml_tools::write<double>("friction"           , friction                 , out);
+  rhoban_utils::xml_tools::write<double>("gravity"            , gravity                  , out);
+  rhoban_utils::xml_tools::write<double>("integration_step"   , integration_step         , out);
+  rhoban_utils::xml_tools::write<double>("simulation_step"    , simulation_step          , out);
+  rhoban_utils::xml_tools::write<double>("torque_stddev"      , torque_stddev            , out);
+  rhoban_utils::xml_tools::write<std::string>("reward_type"   , to_string(reward_type)   , out);
+  rhoban_utils::xml_tools::write<std::string>("learning_space", to_string(learning_space), out);
 }
 
-void SimulatedCartPole::from_xml(TiXmlNode * node)
+void SimulatedCartPole::fromJson(TiXmlNode * node)
 {
-  rosban_utils::xml_tools::try_read<double>(node, "max_pos"           , max_pos           );
-  rosban_utils::xml_tools::try_read<double>(node, "max_vel"           , max_vel           );
-  rosban_utils::xml_tools::try_read<double>(node, "max_torque"        , max_torque        );
-  rosban_utils::xml_tools::try_read<double>(node, "max_axis_vel"      , max_axis_vel      );
-  rosban_utils::xml_tools::try_read<double>(node, "pole_length"       , pole_length       );
-  rosban_utils::xml_tools::try_read<double>(node, "cart_mass"         , cart_mass         );
-  rosban_utils::xml_tools::try_read<double>(node, "pendulum_mass"     , pendulum_mass     );
-  rosban_utils::xml_tools::try_read<double>(node, "friction"          , friction          );
-  rosban_utils::xml_tools::try_read<double>(node, "gravity"           , gravity           );
-  rosban_utils::xml_tools::try_read<double>(node, "integration_step"  , integration_step  );
-  rosban_utils::xml_tools::try_read<double>(node, "simulation_step"   , simulation_step   );
-  rosban_utils::xml_tools::try_read<double>(node, "torque_stddev"     , torque_stddev     );
+  rhoban_utils::xml_tools::try_read<double>(node, "max_pos"           , max_pos           );
+  rhoban_utils::xml_tools::try_read<double>(node, "max_vel"           , max_vel           );
+  rhoban_utils::xml_tools::try_read<double>(node, "max_torque"        , max_torque        );
+  rhoban_utils::xml_tools::try_read<double>(node, "max_axis_vel"      , max_axis_vel      );
+  rhoban_utils::xml_tools::try_read<double>(node, "pole_length"       , pole_length       );
+  rhoban_utils::xml_tools::try_read<double>(node, "cart_mass"         , cart_mass         );
+  rhoban_utils::xml_tools::try_read<double>(node, "pendulum_mass"     , pendulum_mass     );
+  rhoban_utils::xml_tools::try_read<double>(node, "friction"          , friction          );
+  rhoban_utils::xml_tools::try_read<double>(node, "gravity"           , gravity           );
+  rhoban_utils::xml_tools::try_read<double>(node, "integration_step"  , integration_step  );
+  rhoban_utils::xml_tools::try_read<double>(node, "simulation_step"   , simulation_step   );
+  rhoban_utils::xml_tools::try_read<double>(node, "torque_stddev"     , torque_stddev     );
   std::string reward_type_str;
-  rosban_utils::xml_tools::try_read<std::string>(node, "reward_type", reward_type_str);
+  rhoban_utils::xml_tools::try_read<std::string>(node, "reward_type", reward_type_str);
   if (reward_type_str != "")
   {
     reward_type =  loadRewardType(reward_type_str);
   }
   std::string learning_space_str;
-  rosban_utils::xml_tools::try_read<std::string>(node, "learning_space", learning_space_str);
+  rhoban_utils::xml_tools::try_read<std::string>(node, "learning_space", learning_space_str);
   if (learning_space_str != "")
   {
     learning_space = loadLearningSpace(learning_space_str);
@@ -300,7 +300,7 @@ void SimulatedCartPole::from_xml(TiXmlNode * node)
   updateLimits();
 }
 
-std::string SimulatedCartPole::class_name() const
+std::string SimulatedCartPole::getClassName() const
 {
   return "cart_pole";
 }

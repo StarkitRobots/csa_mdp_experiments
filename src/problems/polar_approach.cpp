@@ -2,11 +2,11 @@
 
 #include "kick_model/kick_model_collection.h"
 
-#include "rosban_utils/xml_tools.h"
+#include "rhoban_utils/xml_tools.h"
 
 #include <cmath>
 
-using namespace rosban_utils::xml_tools;
+using namespace rhoban_utils::xml_tools;
 
 namespace csa_mdp
 {
@@ -253,12 +253,12 @@ bool PolarApproach::seeBall(const Eigen::VectorXd & state) const
   return angle < viewing_angle && angle > -viewing_angle;
 }
 
-void PolarApproach::to_xml(std::ostream & out) const {
+void PolarApproach::toJson(std::ostream & out) const {
   (void)out;
-  throw std::logic_error("PolarApproach::to_xml: not implemented");
+  throw std::logic_error("PolarApproach::toJson: not implemented");
 }
 
-void PolarApproach::from_xml(TiXmlNode * node)
+void PolarApproach::fromJson(TiXmlNode * node)
 {
   std::string odometry_path;
   try_read<std::string>(node, "odometry_path", odometry_path);
@@ -271,7 +271,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
     }
     catch (const std::runtime_error & err) {
       std::ostringstream oss;
-      oss << "PolarApproach::from_xml: failed to read odometry file '"
+      oss << "PolarApproach::fromJson: failed to read odometry file '"
           << odometry_path << "'";
       throw std::runtime_error(oss.str());
     }
@@ -316,7 +316,7 @@ void PolarApproach::from_xml(TiXmlNode * node)
   updateLimits();
 }
 
-std::string PolarApproach::class_name() const
+std::string PolarApproach::getClassName() const
 {
   return "polar_approach";
 }

@@ -7,10 +7,10 @@
 #include "rosban_csa_mdp/core/policy_factory.h"
 #include "rosban_fa/function_approximator_factory.h"
 #include "rosban_random/tools.h"
-#include "rosban_utils/xml_tools.h"
+#include "rhoban_utils/xml_tools.h"
 
-using namespace rosban_utils;
-using namespace rosban_utils::xml_tools;
+using namespace rhoban_utils;
+using namespace rhoban_utils::xml_tools;
 
 // Normalize angle in [-pi,pi]
 static double normalizeAngle(double angle)
@@ -21,13 +21,13 @@ static double normalizeAngle(double angle)
 namespace csa_mdp
 {
 
-void KickControler::KickOption::to_xml(std::ostream & out) const {
+void KickControler::KickOption::toJson(std::ostream & out) const {
   (void) out;
   //TODO
-  throw std::logic_error("KickControler::KickOption::to_xml: not implemented");
+  throw std::logic_error("KickControler::KickOption::toJson: not implemented");
 }
 
-void KickControler::KickOption::from_xml(TiXmlNode * node)
+void KickControler::KickOption::fromJson(TiXmlNode * node)
 {
   kick_decision_model = KickDecisionModelFactory().read(node, "kick_decision_model");
   approach_model.tryRead(node,"approach_model");
@@ -37,7 +37,7 @@ void KickControler::KickOption::from_xml(TiXmlNode * node)
   kick_model_names = read_vector<std::string>(node, "kick_model_names");
 }
 
-std::string KickControler::KickOption::class_name() const
+std::string KickControler::KickOption::getClassName() const
 {
   return "kick_controler_kick_option";
 }
@@ -50,15 +50,15 @@ void KickControler::KickOption::syncKickZones(const KickModelCollection & kmc)
   }
 }
 
-void KickControler::Player::to_xml(std::ostream & out) const {
+void KickControler::Player::toJson(std::ostream & out) const {
   (void) out;
   //TODO
-  throw std::logic_error("KickControler::Player::to_xml: not implemented");
+  throw std::logic_error("KickControler::Player::toJson: not implemented");
 }
 
-void KickControler::Player::from_xml(TiXmlNode * node)
+void KickControler::Player::fromJson(TiXmlNode * node)
 {
-  name = rosban_utils::xml_tools::read<std::string>(node, "name");
+  name = rhoban_utils::xml_tools::read<std::string>(node, "name");
   navigation_approach.tryRead(node, "approach_model");
   // Replace approach_policy if found
   PolicyFactory().tryRead(node, "policy", approach_policy);
@@ -70,7 +70,7 @@ void KickControler::Player::from_xml(TiXmlNode * node)
     std::unique_ptr<KickOption> ko(new KickOption());
     // default values for approach_model are provided by navigation_approach
     ko->approach_model = navigation_approach;
-    ko->from_xml(child);
+    ko->fromJson(child);
     kick_options.push_back(std::move(ko));
   }
   // Update odometry on all kick_options models
@@ -79,7 +79,7 @@ void KickControler::Player::from_xml(TiXmlNode * node)
   }
 }
 
-std::string KickControler::Player::class_name() const
+std::string KickControler::Player::getClassName() const
 {
   return "kick_controler_player";
 }
@@ -645,13 +645,13 @@ KickControler::toKickControlerState(const Eigen::VectorXd & pa_state,
   return kc_state;
 }
 
-void KickControler::to_xml(std::ostream & out) const
+void KickControler::toJson(std::ostream & out) const
 {
   (void) out;
-  throw std::logic_error("KickControler::to_xml: unimplemented");
+  throw std::logic_error("KickControler::toJson: unimplemented");
 }
 
-void KickControler::from_xml(TiXmlNode * node)
+void KickControler::fromJson(TiXmlNode * node)
 {
   xml_tools::try_read<bool>  (node, "simulate_approaches"    , simulate_approaches    );
   xml_tools::try_read<double>(node, "max_initial_dist"       , max_initial_dist       );
@@ -687,7 +687,7 @@ void KickControler::from_xml(TiXmlNode * node)
   for ( TiXmlNode* child = values->FirstChild(); child != NULL; child = child->NextSibling())
   {
     std::unique_ptr<Player> p(new Player);
-    p->from_xml(child);
+    p->fromJson(child);
     for (size_t kick_id = 0; kick_id < p->kick_options.size(); kick_id++) {
       p->kick_options[kick_id]->syncKickZones(kmc);
     }
@@ -702,7 +702,7 @@ void KickControler::from_xml(TiXmlNode * node)
     {
       std::unique_ptr<KickOption> ko(new KickOption());
       // no default values for approach_model
-      ko->from_xml(child);
+      ko->fromJson(child);
       kick_options.push_back(std::move(ko));
     }
   }
@@ -718,7 +718,7 @@ void KickControler::from_xml(TiXmlNode * node)
 
   // Consistency check
   if (players.size() == 0 && simulate_approaches) {
-    throw std::runtime_error("KickControler::from_xml: no players is incompatible with enabling simulated approaches");
+    throw std::runtime_error("KickControler::fromJson: no players is incompatible with enabling simulated approaches");
   }
   
   updateStateLimits();
@@ -726,7 +726,7 @@ void KickControler::from_xml(TiXmlNode * node)
   updateActionsLimits();
 }
 
-std::string KickControler::class_name() const
+std::string KickControler::getClassName() const
 {
   return "kick_controler";
 }

@@ -209,39 +209,39 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
   return getRawAction(state, (State *)nullptr);
 }
 
-void ExpertApproach::to_xml(std::ostream & out) const
+void ExpertApproach::toJson(std::ostream & out) const
 {
-  rosban_utils::xml_tools::write<std::string>("type", to_string(type), out);
-  rosban_utils::xml_tools::write<double>("step_p", step_p, out);
-  rosban_utils::xml_tools::write<double>("near_lateral_p", near_lateral_p, out);
-  rosban_utils::xml_tools::write<std::string>  ("approach_type" , approach_type, out);
-  rosban_utils::xml_tools::write<double>("foot_y_offset", foot_y_offset, out);
-  rosban_utils::xml_tools::write<double>("target_theta_tol", target_theta_tol, out);
-  rosban_utils::xml_tools::write<double>("ball_theta_tol"  , ball_theta_tol  , out);
+  rhoban_utils::xml_tools::write<std::string>("type", to_string(type), out);
+  rhoban_utils::xml_tools::write<double>("step_p", step_p, out);
+  rhoban_utils::xml_tools::write<double>("near_lateral_p", near_lateral_p, out);
+  rhoban_utils::xml_tools::write<std::string>  ("approach_type" , approach_type, out);
+  rhoban_utils::xml_tools::write<double>("foot_y_offset", foot_y_offset, out);
+  rhoban_utils::xml_tools::write<double>("target_theta_tol", target_theta_tol, out);
+  rhoban_utils::xml_tools::write<double>("ball_theta_tol"  , ball_theta_tol  , out);
   Eigen::VectorXd config = getConfig();
   std::vector<double> params;
   for (int i = 0; i < config.size(); i++)
   {
     params.push_back(config(i));
   }
-  rosban_utils::xml_tools::write_vector<double>("params", params, out);
+  rhoban_utils::xml_tools::write_vector<double>("params", params, out);
 }
 
-void ExpertApproach::from_xml(TiXmlNode * node)
+void ExpertApproach::fromJson(TiXmlNode * node)
 {
   std::string type_str;
-  rosban_utils::xml_tools::try_read<std::string>(node, "type", type_str);
+  rhoban_utils::xml_tools::try_read<std::string>(node, "type", type_str);
   if (type_str != "") {
     type = loadType(type_str);
   }
-  rosban_utils::xml_tools::try_read<double>(node, "step_p", step_p);
-  rosban_utils::xml_tools::try_read<double>(node, "near_theta_p", near_theta_p);
-  rosban_utils::xml_tools::try_read<double>(node, "near_lateral_p", near_lateral_p);
-  rosban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
-  rosban_utils::xml_tools::try_read<double>(node, "wished_x", wished_x);
-  rosban_utils::xml_tools::try_read<double>(node, "target_theta_tol", target_theta_tol);
-  rosban_utils::xml_tools::try_read<double>(node, "ball_theta_tol", ball_theta_tol);
-  rosban_utils::xml_tools::try_read<std::string>(node, "approach_type" , approach_type);
+  rhoban_utils::xml_tools::try_read<double>(node, "step_p", step_p);
+  rhoban_utils::xml_tools::try_read<double>(node, "near_theta_p", near_theta_p);
+  rhoban_utils::xml_tools::try_read<double>(node, "near_lateral_p", near_lateral_p);
+  rhoban_utils::xml_tools::try_read<double>(node, "foot_y_offset", foot_y_offset);
+  rhoban_utils::xml_tools::try_read<double>(node, "wished_x", wished_x);
+  rhoban_utils::xml_tools::try_read<double>(node, "target_theta_tol", target_theta_tol);
+  rhoban_utils::xml_tools::try_read<double>(node, "ball_theta_tol", ball_theta_tol);
+  rhoban_utils::xml_tools::try_read<std::string>(node, "approach_type" , approach_type);
   bool valid_type = false;
   for (const std::string & name : {"lateral", "classic", "opportunist"}) {
     if (name == approach_type) {
@@ -250,25 +250,25 @@ void ExpertApproach::from_xml(TiXmlNode * node)
     }
   }
   if (!valid_type) {
-    throw std::runtime_error("ExpertApproach::from_xml: invalid approach_type: '" 
+    throw std::runtime_error("ExpertApproach::fromJson: invalid approach_type: '" 
                              + approach_type + "'");
   }
   if (foot_y_offset < 0) {
-    throw std::runtime_error("ExpertApproach::from_xml: foot_y_offset should always be positive");
+    throw std::runtime_error("ExpertApproach::fromJson: foot_y_offset should always be positive");
   }
   // Read right_foot_kick_dir (from deg to rad)
   double right_foot_kick_dir_deg = rad2deg(right_foot_kick_dir);
-  rosban_utils::xml_tools::try_read<double>(node, "right_foot_kick_dir", right_foot_kick_dir_deg);
+  rhoban_utils::xml_tools::try_read<double>(node, "right_foot_kick_dir", right_foot_kick_dir_deg);
   right_foot_kick_dir = deg2rad(right_foot_kick_dir_deg);
   // Read lateral threshold (from deg to rad)
   if (approach_type == "opportunist") {
     double lateral_threshold_deg = rad2deg(lateral_threshold);
-    rosban_utils::xml_tools::try_read<double>(node, "lateral_threshold", lateral_threshold_deg);
+    rhoban_utils::xml_tools::try_read<double>(node, "lateral_threshold", lateral_threshold_deg);
     lateral_threshold = deg2rad(lateral_threshold_deg);
   }
   // Reading vector list of parameters
   std::vector<double> params_read;
-  rosban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);
+  rhoban_utils::xml_tools::try_read_vector<double>(node, "params", params_read);
   // If number of coefficients is appropriate, update config
   if (params_read.size() == nb_parameters)
   {
@@ -278,7 +278,7 @@ void ExpertApproach::from_xml(TiXmlNode * node)
   // Else throw an explicit error if number of parameters was not 0
   else if (params_read.size() != 0) {
     std::ostringstream oss;
-    oss << "ExpertApproach::from_xml: invalid number of parameters in node 'params': "
+    oss << "ExpertApproach::fromJson: invalid number of parameters in node 'params': "
         << "read: " << params_read.size() << ", expecting: " << nb_parameters;
     throw std::runtime_error(oss.str());
   }
@@ -517,7 +517,7 @@ ExpertApproach::Type ExpertApproach::loadType(const std::string & type_str)
   throw std::runtime_error("Unknown ExpertApproach::Type: '" + type_str + "'");
 }
 
-std::string ExpertApproach::class_name() const
+std::string ExpertApproach::getClassName() const
 { return "expert_approach"; }
 
 std::string to_string(ExpertApproach::State state)

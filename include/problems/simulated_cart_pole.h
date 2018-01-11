@@ -47,9 +47,9 @@ public:
 
   Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
 protected:
   // Entry is dimension 6, output is dimension 6

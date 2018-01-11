@@ -1,6 +1,6 @@
 #include "kick_model/full_power_kick.h"
 
-#include "rosban_utils/xml_tools.h"
+#include "rhoban_utils/xml_tools.h"
 
 namespace csa_mdp
 {
@@ -42,19 +42,19 @@ void FullPowerKick::applyKick(double ball_start_x, double ball_start_y,
             engine, final_ball_x, final_ball_y, reward);
 }
 
-void FullPowerKick::to_xml(std::ostream & out) const
+void FullPowerKick::toJson(std::ostream & out) const
 {
-  KickModel::to_xml(out);
-  rosban_utils::xml_tools::write<double>("kick_power", kick_power, out);
+  KickModel::toJson(out);
+  rhoban_utils::xml_tools::write<double>("kick_power", kick_power, out);
 }
 
-void FullPowerKick::from_xml(TiXmlNode * node)
+void FullPowerKick::fromJson(TiXmlNode * node)
 {
-  KickModel::from_xml(node);
-  kick_power = rosban_utils::xml_tools::read<double>(node, "kick_power");
+  KickModel::fromJson(node);
+  kick_power = rhoban_utils::xml_tools::read<double>(node, "kick_power");
 }
 
-std::string FullPowerKick::class_name() const
+std::string FullPowerKick::getClassName() const
 {
   return "FullPowerKick";
 }

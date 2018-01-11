@@ -31,9 +31,9 @@ public:
   virtual Eigen::Vector2d getKickInSelf(const Eigen::Vector2d & ball_pos,
                                         bool right_kick) const override;
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
   virtual KickModel * clone() const override;
 

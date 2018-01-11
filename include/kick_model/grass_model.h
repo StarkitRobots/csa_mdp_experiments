@@ -2,7 +2,7 @@
 
 #include "kick_model/kick_zone.h"
 
-#include "rosban_utils/serializable.h"
+#include "rhoban_utils/serialization/json_serializable.h"
 
 #include <Eigen/Core>
 
@@ -11,7 +11,7 @@
 namespace csa_mdp
 {
 
-class GrassModel : public rosban_utils::Serializable {
+class GrassModel : public rhoban_utils::JsonSerializable {
 public:
   GrassModel();
 
@@ -21,9 +21,9 @@ public:
   /// Setting the cone offset [deg]
   void setConeOffset(double cone_offset);
 
-  void to_xml(std::ostream & out) const override;
-  void from_xml(TiXmlNode * node) override;
-  std::string class_name() const override;
+  void toJson(std::ostream & out) const override;
+  void fromJson(TiXmlNode * node) override;
+  std::string getClassName() const override;
 
 protected:
   /// Influence of grass [0 to 1 factor]

@@ -29,9 +29,9 @@ public:
   
   virtual void setProblem(std::unique_ptr<csa_mdp::Problem> problem) override;
 
-  virtual std::string class_name() const override;
-  void to_xml(std::ostream &out) const override;
-  void from_xml(TiXmlNode *node) override;
+  virtual std::string getClassName() const override;
+  void toJson(std::ostream &out) const override;
+  void fromJson(TiXmlNode *node) override;
 
 private:
   std::unique_ptr<ControlBridge> bridge;
