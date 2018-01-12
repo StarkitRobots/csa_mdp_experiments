@@ -14,7 +14,12 @@
 using namespace csa_mdp;
 
 
-int main() {
+int main(int argc, char ** argv) {
+  std::string learner_path("black_box_learner.json");
+  if (argc > 2) {
+    learner_path = argv[1];
+  }
+
   // Abort if error are found
   feenableexcept(FE_DIVBYZERO| FE_INVALID | FE_OVERFLOW);
 
@@ -29,7 +34,7 @@ int main() {
   ExtendedProblemFactory::registerExtraProblems();
 
   std::shared_ptr<BlackBoxLearner> bbl;
-  bbl = BlackBoxLearnerFactory().buildFromJsonFile("BlackBoxLearner.xml");
+  bbl = BlackBoxLearnerFactory().buildFromJsonFile(learner_path);
 
   std::default_random_engine engine = rosban_random::getRandomEngine();
 

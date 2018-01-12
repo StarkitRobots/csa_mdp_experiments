@@ -1,0 +1,14 @@
+{
+    "class name" : "PML2",
+    "content" : {
+        "problem" : {
+            "class name" : "double_integrator",
+            "content" : {}
+        },
+        "optimizer" : {
+            "class name" : "CrossEntropy",
+            "content" : {
+            }
+        }
+    }
+}
