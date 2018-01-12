@@ -16,7 +16,7 @@ using namespace csa_mdp;
 
 int main(int argc, char ** argv) {
   std::string learner_path("black_box_learner.json");
-  if (argc > 2) {
+  if (argc >= 2) {
     learner_path = argv[1];
   }
 

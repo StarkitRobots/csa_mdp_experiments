@@ -30,9 +30,9 @@ namespace csa_mdp
 /// - last_step_x
 /// - last_step_y
 /// - last_step_theta
-class PolarApproach : public BlackBoxProblem {
+class BallApproach : public BlackBoxProblem {
 public:
-  PolarApproach();
+  BallApproach();
 
   void clearKickZones();
   void addKickZone(const KickZone & kz);

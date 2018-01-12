@@ -2,7 +2,7 @@
     "class name" : "PML2",
     "content" : {
         "problem" : {
-            "class name" : "double_integrator",
+            "class name" : "DoubleIntegrator",
             "content" : {}
         },
         "optimizer" : {

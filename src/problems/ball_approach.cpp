@@ -1,4 +1,4 @@
-#include "problems/polar_approach.h"
+#include "problems/ball_approach.h"
 
 #include "kick_model/kick_model_collection.h"
 
@@ -16,7 +16,7 @@ static double normalizeAngle(double angle)
   return angle - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
 }
 
-PolarApproach::PolarApproach()
+BallApproach::BallApproach()
   : max_dist(1.5),
     // State limits
     min_step_x(-0.02),
@@ -48,17 +48,17 @@ PolarApproach::PolarApproach()
   updateLimits();
 }
 
-void PolarApproach::clearKickZones()
+void BallApproach::clearKickZones()
 {
   kick_zones.clear();
 }
 
-void PolarApproach::addKickZone(const KickZone & kz)
+void BallApproach::addKickZone(const KickZone & kz)
 {
   kick_zones.push_back(kz);
 }
 
-void PolarApproach::updateLimits()
+void BallApproach::updateLimits()
 {
   Eigen::MatrixXd state_limits(6,2), action_limits(3,2);
   state_limits <<
@@ -80,22 +80,22 @@ void PolarApproach::updateLimits()
   setActionsNames({{"d_step_x","d_step_y","d_step_theta"}});
 }
 
-void PolarApproach::setMaxDist(double dist)
+void BallApproach::setMaxDist(double dist)
 {
   max_dist = dist;
   updateLimits();
 }
 
-const Odometry & PolarApproach::getOdometry() const
+const Odometry & BallApproach::getOdometry() const
 {
   return odometry;
 }
-void PolarApproach::setOdometry(const Odometry & new_odometry)
+void BallApproach::setOdometry(const Odometry & new_odometry)
 {
   odometry = new_odometry;
 }
 
-bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
+bool BallApproach::isTerminal(const Eigen::VectorXd & state) const
 {
   bool collision_terminal = (terminal_collisions && isColliding(state));
   bool kick_terminal = false;
@@ -117,9 +117,9 @@ bool PolarApproach::isTerminal(const Eigen::VectorXd & state) const
   return kick_terminal || collision_terminal || isOutOfSpace(state);
 }
 
-double  PolarApproach::getReward(const Eigen::VectorXd & state,
-                                 const Eigen::VectorXd & action,
-                                 const Eigen::VectorXd & dst) const
+double  BallApproach::getReward(const Eigen::VectorXd & state,
+                                const Eigen::VectorXd & action,
+                                const Eigen::VectorXd & dst) const
 {
   (void)state;(void)action;
   if (isColliding(dst) ) return collision_reward;
@@ -131,14 +131,14 @@ double  PolarApproach::getReward(const Eigen::VectorXd & state,
   return reward;
 }
 
-Problem::Result PolarApproach::getSuccessor(const Eigen::VectorXd & state,
-                                            const Eigen::VectorXd & action,
-                                            std::default_random_engine * engine) const
+Problem::Result BallApproach::getSuccessor(const Eigen::VectorXd & state,
+                                           const Eigen::VectorXd & action,
+                                           std::default_random_engine * engine) const
 {
   // Now, actions need to be (0 vx vy vtheta)
   if (action.rows() != 4) {
     std::ostringstream oss;
-    oss << "PolarApproach::getSuccessor: "
+    oss << "BallApproach::getSuccessor: "
         << " invalid dimension for action, expecting 4 and received "
         << action.rows();
     throw std::runtime_error(oss.str());
@@ -184,7 +184,7 @@ Problem::Result PolarApproach::getSuccessor(const Eigen::VectorXd & state,
   return result;
 }
 
-Eigen::VectorXd PolarApproach::getStartingState(std::default_random_engine * engine) const
+Eigen::VectorXd BallApproach::getStartingState(std::default_random_engine * engine) const
 {
   Eigen::VectorXd state = Eigen::VectorXd::Zero(6);
   // Creating the distribution
@@ -205,10 +205,10 @@ Eigen::VectorXd PolarApproach::getStartingState(std::default_random_engine * eng
   return state;
 }
 
-bool PolarApproach::isKickable(const Eigen::VectorXd & state) const
+bool BallApproach::isKickable(const Eigen::VectorXd & state) const
 {
   if (kick_zones.size() == 0) {
-    throw std::logic_error("PolarApproach::isKickable: No kick zones");
+    throw std::logic_error("BallApproach::isKickable: No kick zones");
   }
 
   Eigen::Vector3d ball_state;
@@ -221,7 +221,7 @@ bool PolarApproach::isKickable(const Eigen::VectorXd & state) const
   return false;
 }
 
-bool PolarApproach::isColliding(const Eigen::VectorXd & state) const
+bool BallApproach::isColliding(const Eigen::VectorXd & state) const
 {
   double ball_x = getBallX(state);
   double ball_y = getBallY(state);
@@ -230,7 +230,7 @@ bool PolarApproach::isColliding(const Eigen::VectorXd & state) const
   return x_ko && y_ko;
 }
 
-bool PolarApproach::isOutOfSpace(const Eigen::VectorXd & state) const
+bool BallApproach::isOutOfSpace(const Eigen::VectorXd & state) const
 {
   const Eigen::MatrixXd & space_limits = getStateLimits();
   for (int dim = 0; dim < state.rows(); dim++)
@@ -243,17 +243,17 @@ bool PolarApproach::isOutOfSpace(const Eigen::VectorXd & state) const
   return false;
 }
 
-bool PolarApproach::seeBall(const Eigen::VectorXd & state) const
+bool BallApproach::seeBall(const Eigen::VectorXd & state) const
 {
   double angle = state(1);
   return angle < viewing_angle && angle > -viewing_angle;
 }
 
-Json::Value PolarApproach::toJson() const {
-  throw std::logic_error("PolarApproach::toJson: not implemented");
+Json::Value BallApproach::toJson() const {
+  throw std::logic_error("BallApproach::toJson: not implemented");
 }
 
-void PolarApproach::fromJson(const Json::Value & v, const std::string & dir_name)
+void BallApproach::fromJson(const Json::Value & v, const std::string & dir_name)
 {
   std::string odometry_path;
   tryRead(v, "odometry_path", odometry_path);
@@ -266,7 +266,7 @@ void PolarApproach::fromJson(const Json::Value & v, const std::string & dir_name
     }
     catch (const std::runtime_error & err) {
       std::ostringstream oss;
-      oss << "PolarApproach::fromJson: failed to read odometry file '"
+      oss << "BallApproach::fromJson: failed to read odometry file '"
           << odometry_path << "'";
       throw std::runtime_error(oss.str());
     }
@@ -317,17 +317,17 @@ void PolarApproach::fromJson(const Json::Value & v, const std::string & dir_name
   updateLimits();
 }
 
-std::string PolarApproach::getClassName() const
+std::string BallApproach::getClassName() const
 {
-  return "polar_approach";
+  return "BallApproach";
 }
 
-double PolarApproach::getBallX(const Eigen::VectorXd & state)
+double BallApproach::getBallX(const Eigen::VectorXd & state)
 {
   return cos(state(1)) * state(0);
 }
 
-double PolarApproach::getBallY(const Eigen::VectorXd & state)
+double BallApproach::getBallY(const Eigen::VectorXd & state)
 {
   return sin(state(1)) * state(0);
 }

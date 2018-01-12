@@ -232,7 +232,7 @@ void CartPoleStabilization::fromJson(const Json::Value & v, const std::string & 
 
 std::string CartPoleStabilization::getClassName() const
 {
-  return "cart_pole_stabilization";
+  return "CartPoleStabilization";
 }
 
 CartPoleStabilization::LearningSpace

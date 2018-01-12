@@ -80,7 +80,7 @@ void InvertedPendulum::fromJson(const Json::Value & v, const std::string & dir_n
 
 std::string InvertedPendulum::getClassName() const
 {
-  return "inverted_pendulum";
+  return "InvertedPendulum";
 }
 
 }

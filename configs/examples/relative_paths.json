@@ -1,0 +1,11 @@
+{
+    "class name" : "PML2",
+    "content" : {
+        "problem_path" : "problem.json",//The path to the problem to be solved
+        "optimizer" : {
+            "class name" : "CrossEntropy",
+            "content" : {}
+        },
+        "time_budget" : 3600
+    }
+}

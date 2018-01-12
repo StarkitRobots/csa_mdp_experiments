@@ -116,7 +116,7 @@ void DoubleIntegrator::fromJson(const Json::Value & v, const std::string & dir_n
 
 std::string DoubleIntegrator::getClassName() const
 {
-  return "double_integrator";
+  return "DoubleIntegrator";
 }
 
 }

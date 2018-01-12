@@ -307,7 +307,7 @@ void KickControler::runSteps(int max_steps,
   // Variables used globally in the function
   std::uniform_real_distribution<double> failure_distrib(0,1);
   const KickOption & kick_option = *(players[kicker_id]->kick_options[kick_option_id]);
-  // Step 1: gather all players states according to their polar_approach
+  // Step 1: gather all players states according to their ball_approach
   std::vector<Problem::Result> approach_status;
   std::vector<Eigen::Vector3d> targets;
   for (int player_id = 0; player_id < (int)players.size(); player_id++) {
@@ -317,7 +317,7 @@ void KickControler::runSteps(int max_steps,
     target = getTarget(status->successor, action, player_id, kicker_id, kick_option_id);
     // Build player_status
     Problem::Result player_status;
-    player_status.successor = toPolarApproachState(player_state, target);
+    player_status.successor = toBallApproachState(player_state, target);
     player_status.reward = 0;
     player_status.terminal = false;
     // Storing necessary values
@@ -343,7 +343,7 @@ void KickControler::runSteps(int max_steps,
       // TODO: avoid code duplication between kickers and non kickers
       if (player_id == kicker_id) {
         if (!kicker_enabled) continue;//Skip kicker if disabled
-        const PolarApproach & model = kick_option.approach_model;
+        const BallApproach & model = kick_option.approach_model;
         // Simulate approach action
         approach_status[player_id] = model.getSuccessor(approach_status[player_id].successor,
                                                         pa_action, engine);
@@ -352,7 +352,7 @@ void KickControler::runSteps(int max_steps,
       }
       else {
         // Retrieve model
-        const PolarApproach & model = players[player_id]->navigation_approach;
+        const BallApproach & model = players[player_id]->navigation_approach;
         // Simulate approach action
         approach_status[player_id] = model.getSuccessor(approach_status[player_id].successor,
                                                         pa_action, engine);
@@ -423,12 +423,12 @@ void KickControler::approximateKickerApproach(const Eigen::Vector2d & ball_real_
   double min_time = std::numeric_limits<double>::max();
   Eigen::Vector3d kicker_target;
   if (approach_steps_approximator) {
-    // Getting the equivalent state for polar_approach
+    // Getting the equivalent state for ball_approach
     Eigen::Vector3d kick_target;
     kick_target.segment(0,2) = ball_real_pos;
     kick_target(2) = kick_wished_dir;
-    Eigen::VectorXd polar_state = toPolarApproachState(kicker_state, kick_target);
-    min_time = -approach_steps_approximator->predict(polar_state, 0);
+    Eigen::VectorXd ball_state = toBallApproachState(kicker_state, kick_target);
+    min_time = -approach_steps_approximator->predict(ball_state, 0);
     // Getting Use kicking left position as next position for the robot:
     // approach_steps_approximator does not provide enough information to choose
     // the side
@@ -592,8 +592,8 @@ Eigen::Vector3d KickControler::getTarget(const Eigen::VectorXd & state,
   return target;
 }
 
-Eigen::VectorXd KickControler::toPolarApproachState(const Eigen::Vector3d & player_state,
-                                                    const Eigen::Vector3d & target) const
+Eigen::VectorXd KickControler::toBallApproachState(const Eigen::Vector3d & player_state,
+                                                   const Eigen::Vector3d & target) const
 {
   // Computing basic properties
   double ball_x_field     = target(0);
@@ -729,7 +729,7 @@ void KickControler::fromJson(const Json::Value & v, const std::string & dir_name
 
 std::string KickControler::getClassName() const
 {
-  return "kick_controler";
+  return "KickControler";
 }
 
 size_t KickControler::getNbPlayers() const

@@ -12,6 +12,7 @@ CartPole::CartPole()
     pole_length(0.3),
     reward_type(RewardType::Continuous)
 {
+  std::cout << "Building a cart pole" << std::endl;
   updateLimits();
 }
 

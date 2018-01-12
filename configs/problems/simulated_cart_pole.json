@@ -1,0 +1,9 @@
+{
+    "class name" : "SimulatedCartPole",
+    "content" : {
+        "reward_type" : "continuous",// Available: binary, continuous, pilco
+        "max_pos" : 1,// Half length of the rail [m]
+        "max_val" : 5,// Max speed of the cart [m/s]
+        "max_torque": 20// Max torque applied by the cart [N]
+    }
+}

@@ -307,7 +307,7 @@ void SimulatedCartPole::fromJson(const Json::Value & v, const std::string & dir_
 
 std::string SimulatedCartPole::getClassName() const
 {
-  return "cart_pole";
+  return "SimulatedCartPole";
 }
 
 std::string to_string(SimulatedCartPole::RewardType type)

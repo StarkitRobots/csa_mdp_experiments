@@ -1,7 +1,6 @@
 #include "problems/extended_problem_factory.h"
 
-//#include "problems/approach.h"
-#include "problems/polar_approach.h"
+#include "problems/ball_approach.h"
 //#include "problems/cart_pole.h"
 #include "problems/cart_pole_stabilization.h"
 #include "problems/double_integrator.h"
@@ -24,22 +23,20 @@ void ExtendedProblemFactory::registerExtraProblems()
   if (performed) return;
   performed = true;
   // Registering extra builders
-//  registerExtraBuilder("approach",
-//                       [](){return std::unique_ptr<Problem>(new Approach);}, false);
-  registerExtraBuilder("polar_approach",
-                       [](){return std::unique_ptr<Problem>(new PolarApproach);});
+  registerExtraBuilder("BallApproach",
+                       [](){return std::unique_ptr<Problem>(new BallApproach);});
 //  registerExtraBuilder("cart_pole", [](){return std::unique_ptr<Problem>(new CartPole);});
-  registerExtraBuilder("cart_pole_stabilization",
+  registerExtraBuilder("CartPoleStabilization",
                        [](){return std::unique_ptr<Problem>(new CartPoleStabilization);});
 //  registerExtraBuilder("inverted_pendulum",
 //                       [](){return std::unique_ptr<Problem>(new InvertedPendulum);}, false);
 //  registerExtraBuilder("double_inverted_pendulum",
 //                       [](){return std::unique_ptr<Problem>(new DoubleInvertedPendulum);}, false);
-  registerExtraBuilder("double_integrator",
+  registerExtraBuilder("DoubleIntegrator",
                        [](){return std::unique_ptr<Problem>(new DoubleIntegrator);});
-  registerExtraBuilder("kick_controler",
+  registerExtraBuilder("KickControler",
                        [](){return std::unique_ptr<Problem>(new KickControler);});
-  registerExtraBuilder("simulated_cart_pole",
+  registerExtraBuilder("SimulatedCartPole",
                        [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
 }
 

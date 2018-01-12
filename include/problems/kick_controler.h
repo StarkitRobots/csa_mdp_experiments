@@ -1,6 +1,6 @@
 #pragma once
 
-#include "problems/polar_approach.h"
+#include "problems/ball_approach.h"
 #include "kick_model/kick_decision_model.h"
 #include "kick_model/kick_model_collection.h"
 
@@ -65,7 +65,7 @@ public:
   public:
     std::unique_ptr<KickDecisionModel> kick_decision_model;
     std::vector<std::string> kick_model_names;
-    PolarApproach approach_model;
+    BallApproach approach_model;
     /// The policy used for the approach problem
     /// S: (ball_dist, ball_dir, target_angle, last_step_x, last_step_y, last_step_theta)
     /// A: (dstep_x, dstep_y, dstep_theta)
@@ -86,7 +86,7 @@ public:
     /// Different players might have different kicks available
     std::vector<std::unique_ptr<KickOption>> kick_options;
     /// Description of the approach problem used when the robot is not kicking
-    PolarApproach navigation_approach;
+    BallApproach navigation_approach;
     /// Description of the policy used when the robot is not kicking
     std::unique_ptr<csa_mdp::Policy> approach_policy;
 
@@ -251,13 +251,13 @@ private:
                             int kicker_id,
                             int kick_option) const;
 
-  /// Extract a polar_approach state from the given player state and the given target
+  /// Extract a BallApproach state from the given player state and the given target
   /// Current speeds of the robots are set to [0,0,0]
-  Eigen::VectorXd toPolarApproachState(const Eigen::Vector3d & player_state,
-                                       const Eigen::Vector3d & target) const;
+  Eigen::VectorXd toBallApproachState(const Eigen::Vector3d & player_state,
+                                      const Eigen::Vector3d & target) const;
 
   /// Return an updated version
-  Eigen::VectorXd toKickControlerState(const Eigen::VectorXd & pa_state,
+  Eigen::VectorXd toKickControlerState(const Eigen::VectorXd & ba_state,
                                        const Eigen::VectorXd & prev_kc_state,
                                        int player_id,
                                        const Eigen::Vector3d & target) const;
