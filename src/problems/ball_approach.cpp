@@ -2,6 +2,8 @@
 
 #include "kick_model/kick_model_collection.h"
 
+#include "rhoban_utils/angle.h"
+
 #include <cmath>
 
 namespace csa_mdp
@@ -262,7 +264,7 @@ void BallApproach::fromJson(const Json::Value & v, const std::string & dir_name)
   if (odometry_path != "")
   {
     try {
-      odometry.loadFromFile(odometry_path);
+      odometry.loadFile(odometry_path);
     }
     catch (const std::runtime_error & err) {
       std::ostringstream oss;
@@ -280,14 +282,16 @@ void BallApproach::fromJson(const Json::Value & v, const std::string & dir_name)
     };
   rhoban_utils::tryReadVector<KickZone>(v, "kick_zones", dir_name, kick_zone_builder, &kick_zones);
   // Read internal properties
+  double max_step_theta_deg(rhoban_utils::rad2deg(max_step_theta));
+  double max_step_theta_diff_deg(rhoban_utils::rad2deg(max_step_theta_diff));
   rhoban_utils::tryRead(v,"max_dist"                  , &max_dist);
   rhoban_utils::tryRead(v,"min_step_x"                , &min_step_x);
   rhoban_utils::tryRead(v,"max_step_x"                , &max_step_x);
   rhoban_utils::tryRead(v,"max_step_y"                , &max_step_y);
-  rhoban_utils::tryRead(v,"max_step_theta"            , &max_step_theta);
+  rhoban_utils::tryRead(v,"max_step_theta"            , &max_step_theta_deg);
   rhoban_utils::tryRead(v,"max_step_x_diff"           , &max_step_x_diff);
   rhoban_utils::tryRead(v,"max_step_y_diff"           , &max_step_y_diff);
-  rhoban_utils::tryRead(v,"max_step_theta_diff"       , &max_step_theta_diff);
+  rhoban_utils::tryRead(v,"max_step_theta_diff"       , &max_step_theta_diff_deg);
   rhoban_utils::tryRead(v,"kick_reward"               , &kick_reward);
   rhoban_utils::tryRead(v,"kick_terminal_speed_factor", &kick_terminal_speed_factor);
   rhoban_utils::tryRead(v,"viewing_angle"             , &viewing_angle);
@@ -301,6 +305,9 @@ void BallApproach::fromJson(const Json::Value & v, const std::string & dir_name)
   rhoban_utils::tryRead(v,"walk_frequency"            , &walk_frequency);
   rhoban_utils::tryRead(v,"init_min_dist"             , &init_min_dist);
   rhoban_utils::tryRead(v,"init_max_dist"             , &init_max_dist);
+  // Applying values which have been read in Deg:
+  max_step_theta = rhoban_utils::deg2rad(max_step_theta_deg);
+  max_step_theta_diff = rhoban_utils::deg2rad(max_step_theta_diff_deg);
 
   std::vector<std::string> kick_zone_names;
   rhoban_utils::tryReadVector(v, "kick_zone_names", &kick_zone_names);

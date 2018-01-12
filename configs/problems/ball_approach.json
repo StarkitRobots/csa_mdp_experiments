@@ -1,0 +1,43 @@
+{
+    "class name" : "BallApproach",
+    "content" : {
+        "odometry_path" : "../soccer/odometry.json", // See in 
+        "kick_zones" : [
+            {// Taken from RoboCup 2017, with Sigmaban+ robots for classic kick
+                "kick_x_min" : 0.15,
+                "kick_x_max" : 0.28,
+                "kick_y_offset" : 0.07,
+                "kick_y_tol" : 0.06,
+                "kick_theta_tol" : 10,// Degrees
+                "kick_theta_offset" : 0
+            }
+        ],
+        "max_dist" : 1,// Max dist to the ball
+        // Max speeds
+        "min_step_x" : -0.02,// [m/step]
+        "max_step_x" : 0.06,// [m/step]
+        "max_step_y" : 0.03,// [m/step]
+        "max_step_theta" : 20,// [deg/step]
+        // Max accelerations
+        "max_step_x_diff" : 0.02,// [m/step^2]
+        "max_step_y_diff" : 0.015,// [m/step^2]
+        "max_step_theta_diff" : 10,// [m/step^2]
+        // Robot bounding box
+        "collision_x_front" : 0.12,// [m]
+        "collision_x_back" : 0.2,// [m]
+        "collision_y" : 0.2,// [m]
+        // Rewards
+        "kick_reward" : 0,// No cost when in kick position
+        "no_view_reward" : 0,// This cost is ignored in the default setup
+        "collision_reward" : -200,
+        "out_of_space_reward" : -200,
+        // Terminal status
+        "kick_terminal_speed_factor" : 0.2,// Condition to enter terminal state
+        "terminal_collisions" : true,
+        // Misc
+        "walk_frequency" : 1.55,
+        // Initial conditions
+        "init_min_dist" : 0.4,// [m]
+        "init_max_dist" : 0.95// [m]
+    }
+}

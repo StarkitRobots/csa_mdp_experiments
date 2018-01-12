@@ -264,7 +264,8 @@ void ExpertApproach::fromJson(const Json::Value & v, const std::string & dir_nam
     lateral_threshold = deg2rad(lateral_threshold_deg);
   }
   // Reading vector list of parameters
-  Eigen::VectorXd new_params = rhoban_utils::read<Eigen::VectorXd>(v, "params");
+  Eigen::VectorXd new_params;
+  rhoban_utils::tryRead<Eigen::VectorXd>(v, "params", &new_params);
   // If number of coefficients is appropriate, update config
   if (new_params.rows() == nb_parameters) {
     setConfig(type, new_params);

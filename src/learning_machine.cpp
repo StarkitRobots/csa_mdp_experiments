@@ -13,12 +13,17 @@
 
 using namespace csa_mdp;
 
-int main()
+int main(int argc, char ** argv)
 {
+  std::string learner_path("learning_machine.json");
+  if (argc >= 2) {
+    learner_path = argv[1];
+  }
+
   // Registering extra features from csa_mdp
-  PolicyFactory::registerExtraBuilder("expert_approach",
+  PolicyFactory::registerExtraBuilder("ExpertApproach",
                                       []() {return std::unique_ptr<Policy>(new ExpertApproach);});
-  PolicyFactory::registerExtraBuilder("mixed_approach",
+  PolicyFactory::registerExtraBuilder("MixedApproach",
                                       []() {return std::unique_ptr<Policy>(new MixedApproach);});
   PolicyFactory::registerExtraBuilder("OKSeed",
                                       []() {return std::unique_ptr<Policy>(new OKSeed);});
@@ -28,7 +33,7 @@ int main()
   // Loading the learning Machine
   LearningMachineFactory lmf;
   std::shared_ptr<LearningMachine> lm;
-  lm = lmf.buildFromJsonFile("LearningMachine.xml");
+  lm = lmf.buildFromJsonFile(learner_path);
 
 #ifndef NO_ROSBAN_CONTROL
   // If we need a controller, init ros link

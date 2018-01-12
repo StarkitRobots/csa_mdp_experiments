@@ -1,7 +1,7 @@
 {
     "class name" : "PML2",
     "content" : {
-        "problem_path" : "problem.json",//The path to the problem to be solved
+        "problem_path" : "../problems/ball_approach.json",//The path to the problem to be solved
         "optimizer" : {
             "class name" : "CrossEntropy",
             "content" : {}

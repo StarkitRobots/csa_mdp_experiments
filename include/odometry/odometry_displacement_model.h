@@ -1,105 +1,75 @@
 #pragma once
 
+#include "rhoban_utils/serialization/json_serializable.h"
+
 #include <vector>
-#include <Eigen/Dense>
+#include <Eigen/Core>
 
 namespace csa_mdp {
 
-/**
- * OdometryDisplacementModel
- *
- * Implement several odometry models
- * for pose displacement correction.
- */
-class OdometryDisplacementModel
+/// OdometryDisplacementModel
+///
+/// Implement several odometry models for pose displacement correction.
+class OdometryDisplacementModel : public rhoban_utils::JsonSerializable
 {
-    public:
+public:
 
-        /**
-         * Different displacement
-         * correction models types.
-         */
-        enum Type {
-            DisplacementIdentity = 1,
-            DisplacementProportionalXY = 2,
-            DisplacementProportionalXYA = 3,
-            DisplacementLinearSimpleXY = 4,
-            DisplacementLinearSimpleXYA = 5,
-            DisplacementLinearFullXY = 6,
-            DisplacementLinearFullXYA = 7,
-        };
+  /// Different displacement
+  /// correction models types.
+  enum Type {
+    DisplacementIdentity = 1,
+    DisplacementProportionalXY = 2,
+    DisplacementProportionalXYA = 3,
+    DisplacementLinearSimpleXY = 4,
+    DisplacementLinearSimpleXYA = 5,
+    DisplacementLinearFullXY = 6,
+    DisplacementLinearFullXYA = 7,
+  };
 
-        /**
-         * Initialization with
-         * displacement model type.
-         * Parameters default values 
-         * and bounds configuration.
-         */
-        OdometryDisplacementModel(Type type);
+  /// Initialization with displacement model type.  Parameters default values
+  /// and bounds configuration.
+  OdometryDisplacementModel(Type type);
 
-        /**
-         * Return current model type
-         */
-        Type getType() const;
+  /// Return current model type
+  Type getType() const;
 
-        /**
-         * Return current or default
-         * parameters for current model type.
-         */
-        const Eigen::VectorXd& getParameters() const;
+  /// Return current or default parameters for current model type.
+  const Eigen::VectorXd& getParameters() const;
 
-        /**
-         * Assign given parameters. 
-         * If given parameters does not
-         * comply with min or max bounds, 
-         * a positive distance (for fitness scoring)
-         * from given parameters is given.
-         * The internal parameters are not updated.
-         * Else, the parameters are assigned
-         * and zero is returned.
-         */
-        double setParameters(
-            const Eigen::VectorXd& params);
+  /// Assign given parameters.  If given parameters does not comply with min or
+  /// max bounds, a positive distance (for fitness scoring) from given
+  /// parameters is given.  The internal parameters are not updated.  Else, the
+  /// parameters are assigned and zero is returned.
+  double setParameters(const Eigen::VectorXd& params);
 
-        std::vector<std::string> getParametersNames() const;
+  std::vector<std::string> getParametersNames() const;
 
-        /**
-         * Return parameter normalization 
-         * coefficients
-         */
-        const Eigen::VectorXd& getNormalization() const;
+  /// Return parameter normalization coefficients
+  const Eigen::VectorXd& getNormalization() const;
 
-        /**
-         * Correct and return given relative 
-         * displacement [dX,dY,dTheta] using 
-         * current model parameters.
-         */
-        Eigen::Vector3d displacementCorrection(
-            const Eigen::Vector3d& diff) const;
+  /// Correct and return given relative displacement [dX,dY,dTheta] using
+  /// current model parameters.
+  Eigen::Vector3d displacementCorrection(
+    const Eigen::Vector3d& diff) const;
 
-        /**
-         * Print current parameters on
-         * standart output
-         */
-        void printParameters() const;
+  /// Print current parameters on standard output
+  void printParameters() const;
 
-    private:
+  virtual std::string getClassName() const override;
+  virtual Json::Value toJson() const override;
+  virtual void fromJson(const Json::Value & v, const std::string & dir_name);
 
-        /**
-         * Current model type
-         */
-        Type _type;
+private:
 
-        /**
-         * Displacement model parameters
-         */
-        Eigen::VectorXd _params;
+  /// Current model type
+  Type _type;
 
-        /**
-         * Min and max parameter bounds
-         */
-        Eigen::VectorXd _minBounds;
-        Eigen::VectorXd _maxBounds;
+  /// Displacement model parameters
+  Eigen::VectorXd _params;
+
+  /// Min and max parameter bounds
+  Eigen::VectorXd _minBounds;
+  Eigen::VectorXd _maxBounds;
 };
 
 }

@@ -402,5 +402,30 @@ void OdometryDisplacementModel::printParameters() const
     }
 }
 
+std::string OdometryDisplacementModel::getClassName() const {
+  return "OdometryDisplacementModel";
+}
+
+Json::Value OdometryDisplacementModel::toJson() const {
+  Json::Value v;
+  v["type"] = _type;
+  v["params"] = rhoban_utils::vector2Json(_params);
+  return v;
+}
+
+void OdometryDisplacementModel::fromJson(const Json::Value & v, const std::string & dir_name) {
+  (void)dir_name;
+  _type = (Type)rhoban_utils::read<int>(v,"type");
+  Eigen::VectorXd params = rhoban_utils::read<Eigen::VectorXd>(v, "params");
+  
+  double isError = setParameters(params);
+  if (isError > 0.0) {
+    std::ostringstream oss;
+    oss << "OdometryDisplacement parameters are out of bounds: " << isError << std::endl;
+    throw std::runtime_error(oss.str());
+  }
+}
+
+
 }
 

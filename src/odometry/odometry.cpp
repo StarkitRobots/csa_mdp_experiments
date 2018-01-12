@@ -11,9 +11,9 @@
  */
 static double AngleBound(double angle)
 {
-    return 
-        angle 
-        - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
+  return 
+    angle 
+    - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
 }
 
 
@@ -24,67 +24,67 @@ static double AngleBound(double angle)
  */
 static double AngleDistance(double angleSrc, double angleDst) 
 {    
-    angleSrc = AngleBound(angleSrc);
-    angleDst = AngleBound(angleDst);
+  angleSrc = AngleBound(angleSrc);
+  angleDst = AngleBound(angleDst);
 
-    double max, min;
-    if (angleSrc > angleDst) {
-        max = angleSrc;
-        min = angleDst;
-    } else {
-        max = angleDst;
-        min = angleSrc;
-    }
+  double max, min;
+  if (angleSrc > angleDst) {
+    max = angleSrc;
+    min = angleDst;
+  } else {
+    max = angleDst;
+    min = angleSrc;
+  }
 
-    double dist1 = max-min;
-    double dist2 = 2.0*M_PI - max + min;
+  double dist1 = max-min;
+  double dist2 = 2.0*M_PI - max + min;
  
-    if (dist1 < dist2) {
-        if (angleSrc > angleDst) {
-            return -dist1;
-        } else {
-            return dist1;
-        }
+  if (dist1 < dist2) {
+    if (angleSrc > angleDst) {
+      return -dist1;
     } else {
-        if (angleSrc > angleDst) {
-            return dist2;
-        } else {
-            return -dist2;
-        }
+      return dist1;
     }
+  } else {
+    if (angleSrc > angleDst) {
+      return dist2;
+    } else {
+      return -dist2;
+    }
+  }
 }
 
 
 void WriteEigenVectorToStream(
-    std::ostream& os, 
-    const Eigen::VectorXd& vect)
+  std::ostream& os, 
+  const Eigen::VectorXd& vect)
 {
-    os << vect.size();
-    for (size_t i=0;i<(size_t)vect.size();i++) {
-        os << " " << std::setprecision(17) << vect(i);
-    }
-    os << std::endl;
+  os << vect.size();
+  for (size_t i=0;i<(size_t)vect.size();i++) {
+    os << " " << std::setprecision(17) << vect(i);
+  }
+  os << std::endl;
 }
 
 Eigen::VectorXd ReadEigenVectorFromStream(
-    std::istream& is)
+  std::istream& is)
 {
-    size_t size;
-    is >> size;
-    Eigen::VectorXd vect(size);
-    for (size_t i=0;i<size;i++) {
-        double value;
-        is >> value;
-        vect(i) = value;
-    }
-    while (
-        is.peek() == ' ' || 
-        is.peek() == '\n'
+  size_t size;
+  is >> size;
+  Eigen::VectorXd vect(size);
+  for (size_t i=0;i<size;i++) {
+    double value;
+    is >> value;
+    vect(i) = value;
+  }
+  while (
+    is.peek() == ' ' || 
+    is.peek() == '\n'
     ) {
-        is.ignore();
-    }
+    is.ignore();
+  }
 
-    return vect;
+  return vect;
 }
 
 
@@ -96,81 +96,81 @@ Odometry::Odometry()
 {}
         
 Odometry::Odometry(
-    OdometryDisplacementModel::Type typeDisplacement,
-    OdometryNoiseModel::Type typeNoise) :
-    _modelDisplacement(typeDisplacement),
-    _modelNoise(typeNoise),
-    _isInitialized(false),
-    _last(),
-    _state(),
-    _corrected(),
-    _lastDiff()
+  OdometryDisplacementModel::Type typeDisplacement,
+  OdometryNoiseModel::Type typeNoise) :
+  _modelDisplacement(typeDisplacement),
+  _modelNoise(typeNoise),
+  _isInitialized(false),
+  _last(),
+  _state(),
+  _corrected(),
+  _lastDiff()
 {
-    //Ask reset
-    reset();
+  //Ask reset
+  reset();
 }
 
 OdometryDisplacementModel::Type Odometry::getDisplacementType() const
 {
-    return _modelDisplacement.getType();
+  return _modelDisplacement.getType();
 }
 OdometryNoiseModel::Type Odometry::getNoiseType() const
 {
-    return _modelNoise.getType();
+  return _modelNoise.getType();
 }
         
 Eigen::VectorXd Odometry::getParameters() const
 {
-    size_t sizeDisplacement = 
-        _modelDisplacement.getParameters().size();
-    size_t sizeNoise = 
-        _modelNoise.getParameters().size();
+  size_t sizeDisplacement = 
+    _modelDisplacement.getParameters().size();
+  size_t sizeNoise = 
+    _modelNoise.getParameters().size();
 
-    Eigen::VectorXd params(
-        sizeDisplacement+sizeNoise);
-    if (sizeDisplacement > 0) {
-        params.segment(0, sizeDisplacement) = 
-            _modelDisplacement.getParameters();
-    }
-    if (sizeNoise > 0) {
-        params.segment(sizeDisplacement, sizeNoise) = 
-            _modelNoise.getParameters();
-    }
+  Eigen::VectorXd params(
+    sizeDisplacement+sizeNoise);
+  if (sizeDisplacement > 0) {
+    params.segment(0, sizeDisplacement) = 
+      _modelDisplacement.getParameters();
+  }
+  if (sizeNoise > 0) {
+    params.segment(sizeDisplacement, sizeNoise) = 
+      _modelNoise.getParameters();
+  }
 
-    return params;
+  return params;
 }
 
 double Odometry::setParameters(
-    const Eigen::VectorXd& params)
+  const Eigen::VectorXd& params)
 {
-    size_t sizeDisplacement = 
-        _modelDisplacement.getParameters().size();
-    size_t sizeNoise = 
-        _modelNoise.getParameters().size();
+  size_t sizeDisplacement = 
+    _modelDisplacement.getParameters().size();
+  size_t sizeNoise = 
+    _modelNoise.getParameters().size();
 
-    if (
-        (size_t)params.size() != 
-        sizeDisplacement+sizeNoise
+  if (
+    (size_t)params.size() != 
+    sizeDisplacement+sizeNoise
     ) {
-        throw std::logic_error(
-            "Odometry invalid parameters size: "
-            + std::to_string(sizeDisplacement)
-            + std::string("+")
-            + std::to_string(sizeNoise)
-            + std::string("!=")
-            + std::to_string(params.size()));
-    }
+    throw std::logic_error(
+      "Odometry invalid parameters size: "
+      + std::to_string(sizeDisplacement)
+      + std::string("+")
+      + std::to_string(sizeNoise)
+      + std::string("!=")
+      + std::to_string(params.size()));
+  }
 
-    double error = 0.0;
-    if (sizeDisplacement > 0) {
-        error += _modelDisplacement.setParameters(
-            params.segment(0, sizeDisplacement));
-    }
-    if (sizeNoise > 0) {
-        error += _modelNoise.setParameters(
-            params.segment(sizeDisplacement, sizeNoise));
-    }
-    return error;
+  double error = 0.0;
+  if (sizeDisplacement > 0) {
+    error += _modelDisplacement.setParameters(
+      params.segment(0, sizeDisplacement));
+  }
+  if (sizeNoise > 0) {
+    error += _modelNoise.setParameters(
+      params.segment(sizeDisplacement, sizeNoise));
+  }
+  return error;
 }
 
 std::vector<std::string> Odometry::getParametersNames() const
@@ -191,65 +191,65 @@ std::vector<std::string> Odometry::getParametersNames() const
         
 Eigen::VectorXd Odometry::getNormalization() const
 {
-    size_t sizeDisplacement = 
-        _modelDisplacement.getNormalization().size();
-    size_t sizeNoise = 
-        _modelNoise.getNormalization().size();
+  size_t sizeDisplacement = 
+    _modelDisplacement.getNormalization().size();
+  size_t sizeNoise = 
+    _modelNoise.getNormalization().size();
 
-    Eigen::VectorXd coefs(
-        sizeDisplacement+sizeNoise);
-    if (sizeDisplacement > 0) {
-        coefs.segment(0, sizeDisplacement) = 
-            _modelDisplacement.getNormalization();
-    }
-    if (sizeNoise > 0) {
-        coefs.segment(sizeDisplacement, sizeNoise) = 
-            _modelNoise.getNormalization();
-    }
+  Eigen::VectorXd coefs(
+    sizeDisplacement+sizeNoise);
+  if (sizeDisplacement > 0) {
+    coefs.segment(0, sizeDisplacement) = 
+      _modelDisplacement.getNormalization();
+  }
+  if (sizeNoise > 0) {
+    coefs.segment(sizeDisplacement, sizeNoise) = 
+      _modelNoise.getNormalization();
+  }
 
-    return coefs;
+  return coefs;
 }
         
 void Odometry::printParameters() const
 {
-    _modelDisplacement.printParameters();
-    _modelNoise.printParameters();
+  _modelDisplacement.printParameters();
+  _modelNoise.printParameters();
 }
 
 void Odometry::reset()
 {
-    _isInitialized = false;
-    _state = Eigen::Vector3d(0.0, 0.0, 0.0);
-    _corrected = Eigen::Vector3d(0.0, 0.0, 0.0);
-    _lastDiff = Eigen::Vector3d(0.0, 0.0, 0.0);
+  _isInitialized = false;
+  _state = Eigen::Vector3d(0.0, 0.0, 0.0);
+  _corrected = Eigen::Vector3d(0.0, 0.0, 0.0);
+  _lastDiff = Eigen::Vector3d(0.0, 0.0, 0.0);
 }
 void Odometry::reset(const Eigen::Vector3d& pose)
 {
-    _isInitialized = false;
-    _state = pose;
-    _corrected = pose;
-    _lastDiff = Eigen::Vector3d(0.0, 0.0, 0.0);
+  _isInitialized = false;
+  _state = pose;
+  _corrected = pose;
+  _lastDiff = Eigen::Vector3d(0.0, 0.0, 0.0);
 }
         
 void Odometry::updateFullStep(
-    const Eigen::Vector3d& deltaPose,
-    std::default_random_engine* engine)
+  const Eigen::Vector3d& deltaPose,
+  std::default_random_engine* engine)
 {
-    if (!_isInitialized) {
-        _last = _state;
-        _isInitialized = true;
-    }
-
-    //Apply displacement correction
-    Eigen::Vector3d diff = getDiffFullStep(deltaPose, engine);
-    //Save applied delta
-    _lastDiff = deltaPose;
-    
-    //Integrate current state with given full 
-    //step relative displacement
+  if (!_isInitialized) {
     _last = _state;
-    odometryInt(diff, _state);
-    _corrected = _state;
+    _isInitialized = true;
+  }
+
+  //Apply displacement correction
+  Eigen::Vector3d diff = getDiffFullStep(deltaPose, engine);
+  //Save applied delta
+  _lastDiff = deltaPose;
+    
+  //Integrate current state with given full 
+  //step relative displacement
+  _last = _state;
+  odometryInt(diff, _state);
+  _corrected = _state;
 }
 
 Eigen::Vector3d Odometry::getDiffFullStep(
@@ -267,82 +267,54 @@ Eigen::Vector3d Odometry::getDiffFullStep(
 
 const Eigen::Vector3d& Odometry::state() const
 {
-    return _corrected;
+  return _corrected;
 }
 
 Eigen::Vector3d Odometry::odometryDiff(
-    const Eigen::Vector3d& state1, 
-    const Eigen::Vector3d& state2) const
+  const Eigen::Vector3d& state1, 
+  const Eigen::Vector3d& state2) const
 {
-    //Vector in world
-    double vectX = state2.x() - state1.x();
-    double vectY = state2.y() - state1.y();
-    double angle = AngleDistance(state1.z(), state2.z()); 
-    //Rotation to source frame
-    double vectInSrcX = vectX*cos(-state1.z()) - vectY*sin(-state1.z());
-    double vectInSrcY = vectX*sin(-state1.z()) + vectY*cos(-state1.z());
+  //Vector in world
+  double vectX = state2.x() - state1.x();
+  double vectY = state2.y() - state1.y();
+  double angle = AngleDistance(state1.z(), state2.z()); 
+  //Rotation to source frame
+  double vectInSrcX = vectX*cos(-state1.z()) - vectY*sin(-state1.z());
+  double vectInSrcY = vectX*sin(-state1.z()) + vectY*cos(-state1.z());
 
-    return Eigen::Vector3d(vectInSrcX, vectInSrcY, angle);
+  return Eigen::Vector3d(vectInSrcX, vectInSrcY, angle);
 }
 
 void Odometry::odometryInt(
-    const Eigen::Vector3d& diff,
-    Eigen::Vector3d& state) const
+  const Eigen::Vector3d& diff,
+  Eigen::Vector3d& state) const
 {
-    //Rotation to world frame
-    double vectX = diff.x()*cos(state.z()) - diff.y()*sin(state.z());
-    double vectY = diff.x()*sin(state.z()) + diff.y()*cos(state.z());
-    //Integration
-    state.x() += vectX;
-    state.y() += vectY;
-    state.z() += diff.z();
-    //Shrink to -PI,PI
-    state.z() = AngleBound(state.z());
+  //Rotation to world frame
+  double vectX = diff.x()*cos(state.z()) - diff.y()*sin(state.z());
+  double vectY = diff.x()*sin(state.z()) + diff.y()*cos(state.z());
+  //Integration
+  state.x() += vectX;
+  state.y() += vectY;
+  state.z() += diff.z();
+  //Shrink to -PI,PI
+  state.z() = AngleBound(state.z());
 }
 
-void Odometry::saveToFile(const std::string & path) const
-{
-    std::ofstream file(path);
-    if (!file.is_open()) {
-        throw std::runtime_error("Unable to open file: " + path);
-    }
-    file << (int)getDisplacementType() << " " 
-         << (int)getNoiseType() << std::endl;
-    WriteEigenVectorToStream(file, getParameters());
-    file.close();
+std::string Odometry::getClassName() const {
+  return "OdometryModel";
 }
 
-void Odometry::loadFromFile(const std::string & path)
-{
-    //Open file
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        throw std::runtime_error("Unable to open file: " + path);
-    }
-    //Read data
-    int tmpTypeDisplacement;
-    int tmpTypeNoise;
-    file >> tmpTypeDisplacement;
-    file >> tmpTypeNoise;
-    OdometryDisplacementModel::Type typeDisplacement = 
-        (OdometryDisplacementModel::Type)tmpTypeDisplacement;
-    OdometryNoiseModel::Type typeNoise = 
-        (OdometryNoiseModel::Type)tmpTypeNoise;
-    Eigen::VectorXd initParams = ReadEigenVectorFromStream(file);
-    file.close();
-    //Check bounds
-    
-    _modelDisplacement = OdometryDisplacementModel(typeDisplacement);
-    _modelNoise = OdometryNoiseModel(typeNoise);
-    reset();
-    
-    double isError = setParameters(initParams);
-    if (isError > 0.0) {
-        std::ostringstream oss;
-        oss << "Odometry parameters are out of bounds: " 
-            << isError << std::endl;
-        throw std::runtime_error(oss.str());
-    }
+Json::Value Odometry::toJson() const {
+  Json::Value v;
+  v["displacement"] = _modelDisplacement.toJson();
+  v["noise"] = _modelNoise.toJson();
+  return v;
+}
+
+void Odometry::fromJson(const Json::Value & v, const std::string & dir_name) {
+  _modelDisplacement.tryRead(v, "displacement", dir_name);
+  _modelNoise.tryRead(v, "noise", dir_name);
+  reset();
 }
 
 }

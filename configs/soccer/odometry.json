@@ -1,0 +1,11 @@
+// A basic odometry model for the robot
+{
+    "displacement" : {
+        "type" : 3,//ProportionalXYA
+        "params" : [1.6, 1, 1]// SpeedUp along x-axis, normal for lateral and rotation
+    },
+    "noise" : {
+        "type" : 2,//ConstantNoise
+        "params" : [0.01, 0.01, 0.017]// [m/step],[m/step],[rad/step]
+    }
+}
