@@ -60,7 +60,7 @@ void MixedApproach::fromJson(const Json::Value & v, const std::string & dir_name
 
 std::string MixedApproach::getClassName() const
 {
-  return "mixed_approach";
+  return "MixedApproach";
 }
 
 }

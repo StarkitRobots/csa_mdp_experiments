@@ -26,6 +26,9 @@ public:
   /// Initialization with noise model type.  Parameters default values and
   /// bounds configuration.
   OdometryNoiseModel(Type type);
+
+  /// Change type and reset all parameters to default values
+  void setType(Type t);
         
   /// Return current model type
   Type getType() const;

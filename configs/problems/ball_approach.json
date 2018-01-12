@@ -36,6 +36,7 @@
         "terminal_collisions" : true,
         // Misc
         "walk_frequency" : 1.55,
+        "discount" : 1,// No discount for this problem
         // Initial conditions
         "init_min_dist" : 0.4,// [m]
         "init_max_dist" : 0.95// [m]

@@ -258,20 +258,11 @@ Json::Value BallApproach::toJson() const {
 void BallApproach::fromJson(const Json::Value & v, const std::string & dir_name)
 {
   std::string odometry_path;
-  tryRead(v, "odometry_path", odometry_path);
+  rhoban_utils::tryRead(v, "odometry_path", &odometry_path);
 
   // If coefficients have been properly read, use them
-  if (odometry_path != "")
-  {
-    try {
-      odometry.loadFile(odometry_path);
-    }
-    catch (const std::runtime_error & err) {
-      std::ostringstream oss;
-      oss << "BallApproach::fromJson: failed to read odometry file '"
-          << odometry_path << "'";
-      throw std::runtime_error(oss.str());
-    }
+  if (odometry_path != "") {
+    odometry.loadFile(dir_name + odometry_path);
   }
   // Read kicks
   auto kick_zone_builder = [](const Json::Value & v, const std::string & dir_name)

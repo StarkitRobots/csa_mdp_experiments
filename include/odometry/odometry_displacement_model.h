@@ -30,6 +30,9 @@ public:
   /// and bounds configuration.
   OdometryDisplacementModel(Type type);
 
+  /// Change type and reset all parameters to default values
+  void setType(Type t);
+
   /// Return current model type
   Type getType() const;
 

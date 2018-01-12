@@ -24,11 +24,11 @@ int main(int argc, char ** argv) {
   feenableexcept(FE_DIVBYZERO| FE_INVALID | FE_OVERFLOW);
 
 
-  PolicyFactory::registerExtraBuilder("expert_approach",
+  PolicyFactory::registerExtraBuilder("ExpertApproach",
                                       []() {return std::unique_ptr<Policy>(new ExpertApproach);});
   PolicyFactory::registerExtraBuilder("OKSeed",
                                       []() {return std::unique_ptr<Policy>(new OKSeed);});
-  PolicyFactory::registerExtraBuilder("mixed_approach",
+  PolicyFactory::registerExtraBuilder("MixedApproach",
                                       []() {return std::unique_ptr<Policy>(new MixedApproach);});
 
   ExtendedProblemFactory::registerExtraProblems();

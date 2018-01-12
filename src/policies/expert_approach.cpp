@@ -513,7 +513,7 @@ ExpertApproach::Type ExpertApproach::loadType(const std::string & type_str)
 }
 
 std::string ExpertApproach::getClassName() const
-{ return "expert_approach"; }
+{ return "ExpertApproach"; }
 
 std::string to_string(ExpertApproach::State state)
 {
