@@ -7,7 +7,7 @@
         "optimizer" : {
             "rel path" : "../optimizers/cross_entropy.json"
         },
-        "policy" : {
+        "policy" : {// Simply remove entry if there is no initial policy
             "rel path" : "../policies/expert_approach_polar.json"
         },
         "time_budget" : 3600,

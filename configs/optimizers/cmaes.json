@@ -1,0 +1,10 @@
+{
+    "class name" : "CMAES",
+    "content" : {
+        "population_size" : 50,// Number of elements in the population at each iteration
+        "nb_iterations" : 100,// Maximal number of iterations
+        "nb_restarts" : 2,//Number of times the algorithm restarts with a new guess
+        "max_history" : 10,//Number of consecutive iterations without improvement allowed
+        "quiet" : true
+    }
+}

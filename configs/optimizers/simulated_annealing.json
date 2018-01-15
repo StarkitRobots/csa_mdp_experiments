@@ -1,0 +1,7 @@
+{
+    "class name" : "SimulatedAnnealing",
+    "content" : {
+        "initial_temperature" : 50,// Key element of the optimizer
+        "nb_trials" : 100000// Number of trials used for optimization
+    }
+}
