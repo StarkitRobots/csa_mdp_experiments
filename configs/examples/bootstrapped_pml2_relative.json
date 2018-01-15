@@ -1,0 +1,19 @@
+{
+    "class name" : "PML2",
+    "content" : {
+        "problem" : {
+            "rel path" : "../problems/ball_approach.json"//The path to the problem to be solved
+        },
+        "optimizer" : {
+            "rel path" : "../optimizers/cross_entropy.json"
+        },
+        "policy" : {
+            "rel path" : "../policies/expert_approach_polar.json"
+        },
+        "time_budget" : 3600,
+        "nb_threads" : 1,
+        "discount" : 1,
+        "trial_length" : 100,
+        "nb_evaluation_trials" : 100000
+    }
+}
