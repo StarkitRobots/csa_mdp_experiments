@@ -1,21 +1,18 @@
 {
     "class name" : "PML2",
     "content" : {
-        "problem_path" : "../problems/ball_approach.json",//The path to the problem to be solved
-        "optimizer" : {
-            "class name" : "CrossEntropy",
-            "content" : {}
-        },
-        "policy" : {
-            "class name" : "ExpertApproach",
-            "content" : {
-                "type" : "polar"
-            }
-        },
-        "time_budget" : 3600,
+        // The problem to be solved
+        "problem" : {"rel_path" : "../problems/ball_approach.json"},
+        // The optimizer used to update tree properties
+        "optimizer" : {"path" : "../optimizers/cross_entropy.json"},
+        // The initial policy
+        "policy" : {"path" : "expert_approach.json"},
+        // Learning properties,
+        "nb_evaluation_trials" : 100000,// The number of trials used to approximate average reward
+        "evaluations_ratio" : 4,// There is 'evaluations_ratio' more runs for optimization than for evaluation
+        "time_budget" : 18000,
         "nb_threads" : 8,
         "discount" : 1,
-        "trial_length" : 100,
-        "nb_evaluation_trials" : 100000
+        "trial_length" : 100
     }
 }

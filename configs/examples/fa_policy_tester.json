@@ -1,0 +1,15 @@
+// A simple example of json file for evaluating a policy
+// To be used with the learning_machine binary
+{
+    "class name" : "LearningMachineBlackBox",
+    "content" : {
+        "problem" : {"rel path" : "../problems/ball_approach.json"},
+        "learner" : {"rel path" : "../learners/fake_learner.json"},
+        "save_run_logs" : true,// Output tuple (state,action,reward) to a csv file
+        "save_details" : false,
+        "nb_threads" : 1,
+        "nb_runs" : 25,// The number of runs used
+        "nb_steps" : 100,// The maximal number of steps for a trial
+        "discount" : 1
+    }
+}

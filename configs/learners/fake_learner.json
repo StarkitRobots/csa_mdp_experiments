@@ -1,0 +1,12 @@
+// A learning machine which simply apply the provided policy
+{
+    "class name" : "FakeLearner",
+    "content" : {
+        "policy" : {
+            "class name" : "FAPolicy",
+            "content" : {
+                "path" : "policy_tree.bin"
+            }
+        }
+    }
+}
