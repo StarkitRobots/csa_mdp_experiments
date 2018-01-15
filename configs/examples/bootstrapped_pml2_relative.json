@@ -14,6 +14,7 @@
         "nb_threads" : 1,
         "discount" : 1,
         "trial_length" : 100,
-        "nb_evaluation_trials" : 100000
+        "nb_evaluation_trials" : 100000,
+        "evaluations_ratio" : 4
     }
 }
