@@ -1,0 +1,13 @@
+{
+    "class name" : "CompositeOptimizer",
+    "content" : {
+        // Number of trials used to average the reward for the best solution for each optimizer
+        "validation_trials": 1000,
+        "optimizers" : [
+            { "rel path" : "cmaes.json"},
+            { "rel path" : "cross_entropy.json"},
+            { "rel path" : "simulated_annealing.json"},
+        ],
+        "names" : ["CMAES", "CE" , "SA"]
+    }
+}
