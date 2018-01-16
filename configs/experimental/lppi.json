@@ -1,0 +1,39 @@
+{
+    "class name" : "LPPI",
+    "content" : {
+        // ### black_box_learner stuff
+        "problem" : {
+            "rel path" : "../problems/ball_approach.json"//The path to the problem to be solved
+        },
+        "nb_threads" : 4,
+        "trial_length" : 200,
+        "nb_evaluation_trials" : 10000,
+        "time_budget" : 3600,
+        "discount" : 1,
+        // ### lppi stuff
+        "planner" : {
+            "optimizer" : {
+                "class name" : "CrossEntropy",
+                "content" : {
+                    "nb_generations" : 5,
+                    "population_size" : 20,
+                    "best_set_size" : 5
+                }
+            },
+            "look_ahead" : 20,
+            "rollouts_per_sample" : 2,
+            "discount" : 0.98
+        },
+        "value_trainer" : {
+            "class name" : "PWCForestTrainer",
+            "content" : {}
+        },
+        "policy_trainer" : {
+            "class name" : "PWLForestTrainer",
+            "content" : {}
+        },
+        "min_rollout_length" : 50,
+        "max_rollout_length" : 200,
+        "nb_entries" : 10000
+    }
+}
