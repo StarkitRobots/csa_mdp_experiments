@@ -8,6 +8,7 @@
 //#include "problems/double_inverted_pendulum.h"
 #include "problems/kick_controler.h"
 #include "problems/simulated_cart_pole.h"
+#include "problems/ssl_ball_approach.h"
 
 namespace csa_mdp
 {
@@ -38,6 +39,8 @@ void ExtendedProblemFactory::registerExtraProblems()
                        [](){return std::unique_ptr<Problem>(new KickControler);});
   registerExtraBuilder("SimulatedCartPole",
                        [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
+  registerExtraBuilder("SSLBallApproach",
+                       [](){return std::unique_ptr<Problem>(new SSLBallApproach);});
 }
 
 std::unique_ptr<ControlProblem> ExtendedProblemFactory::buildControl(const std::string &name)

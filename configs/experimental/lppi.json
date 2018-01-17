@@ -3,7 +3,7 @@
     "content" : {
         // ### black_box_learner stuff
         "problem" : {
-            "rel path" : "../problems/ball_approach.json"//The path to the problem to be solved
+            "rel path" : "../problems/ssl_ball_approach.json"//The path to the problem to be solved
         },
         "nb_threads" : 4,
         "trial_length" : 200,

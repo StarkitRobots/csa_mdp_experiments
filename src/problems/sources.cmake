@@ -9,4 +9,5 @@ set (SOURCES
   extended_problem_factory.cpp
   kick_controler.cpp
   simulated_cart_pole.cpp
+  ssl_ball_approach.cpp
 )

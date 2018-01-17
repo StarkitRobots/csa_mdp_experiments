@@ -3,6 +3,7 @@
 #include "rhoban_utils/angle.h"
 
 #include <cmath>
+#include <iostream>
 
 namespace csa_mdp
 {
@@ -13,13 +14,12 @@ static double normalizeAngle(double angle)
   return angle - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
 }
 
-/// If norm2 of vec is lower than bound, return vec, otherwise, return
-/// vec * bound / norm2(vec)
-static Eigen::Vector2d boundNorm2(const Eigen::Vector2d & vec, double bound)
+/// If norm of vec is lower than bound, return vec, otherwise, return
+/// vec * bound / norm(vec)
+static Eigen::Vector2d boundNorm(const Eigen::Vector2d & vec, double bound)
 {
-  double norm2_vec = vec.norm2();
-  if (vec.norm2() > bound) {
-    return vec * bound  / vec.norm2();
+  if (vec.norm() > bound) {
+    return vec * bound  / vec.norm();
   }
   return vec;
 }
@@ -28,7 +28,7 @@ static Eigen::Vector2d boundNorm2(const Eigen::Vector2d & vec, double bound)
 static Eigen::Vector3d boundXYA(const Eigen::Vector3d & vec, double cart_bound, double a_bound)
 {
   Eigen::Vector3d bounded_vec;
-  bounded_vec.segment(0,2) = boundNorm2(vec.segment(0,2), cart_bound);
+  bounded_vec.segment(0,2) = boundNorm(vec.segment(0,2), cart_bound);
   bounded_vec(2) = std::max(-a_bound,std::min(a_bound, vec(2)));
   return bounded_vec;
 }
@@ -46,6 +46,8 @@ static Eigen::Matrix<double,3,3> getR2FromR1(const Eigen::Vector2d & p,
   Eigen::Matrix<double,3,3> transform;
   transform.block(0,0,2,2) = rotation;
   transform.block(0,2,2,1) = -rotation * p;
+  transform(2,0) = 0;
+  transform(2,1) = 0;
   transform(2,2) = 1;
   return transform;
 }
@@ -73,7 +75,7 @@ SSLBallApproach::SSLBallApproach() :
   // Misc
   out_of_space_reward(-200),
   dt(0.033),// Around 30 fps
-  init_min_dist(0.4),
+  init_min_dist(collision_radius + 0.05),
   init_max_dist(max_dist - 0.05)
 {
   updateLimits();
@@ -117,9 +119,15 @@ double  SSLBallApproach::getReward(const Eigen::VectorXd & state,
                                    const Eigen::VectorXd & dst) const
 {
   (void)state;(void)action;
-  if (isKickable(dst)  ) return kick_reward;
-  if (isColliding(dst) ) return collision_reward;
-  if (isOutOfSpace(dst)) return out_of_space_reward;
+  if (isKickable(dst)) {
+    return kick_reward;
+  }
+  if (isColliding(dst) ) {
+    return collision_reward;
+  }
+  if (isOutOfSpace(dst)) {
+    return out_of_space_reward;
+  }
   return -dt;//Default reward
 }
 
@@ -140,51 +148,41 @@ Problem::Result SSLBallApproach::getSuccessor(const Eigen::VectorXd & state,
   // rdt: referential of the robot at time dt (now+dt)
   // b  : referential of the ball (invariant to t)
   // Get the step which will be applied
+  double kick_dir = state(2);
   Eigen::Vector3d acc_in_rt = action.segment(1,3);
   acc_in_rt = boundXYA(acc_in_rt, max_acc, max_acc_theta);// Ensuring acc respects the bounds
   Eigen::Vector3d curr_speed_in_rt = state.segment(3,3);
   Eigen::Vector3d next_speed_in_rt = curr_speed_in_rt + acc_in_rt * dt;
+  Eigen::Vector3d avg_speed_in_rt = (curr_speed_in_rt + next_speed_in_rt) /2;
   next_speed_in_rt = boundXYA(next_speed_in_rt, max_speed, max_speed_theta);
+  // Getting new kick_dir
+  double next_speed_theta = next_speed_in_rt(2);
+  double avg_speed_theta = avg_speed_in_rt(2);
+  double new_kick_dir = normalizeAngle(kick_dir - avg_speed_theta * dt);
+  // Now we do not care about speed_theta and acc_theta anymore, we can
+  // transform useful vectors in homogenous 2d vectors
+  avg_speed_in_rt(2) = 0;
+  next_speed_in_rt(2) = 0;
   // Using homogeneous transform
   Eigen::Vector2d ball_in_rt(getBallX(state), getBallY(state));
   Eigen::Matrix<double,3,3> b_from_rt = getR2FromR1(ball_in_rt, kick_dir);
-
-  // TODO : update this part
-
-
-  // Second part
-  Eigen::Matrix<double,3,3> rdt_from_b = getR2FromR1(ball_in_rt, kick_dir);
-
-
-
-
-
-
-  Eigen::Matrix<double,3,3> robot_t_to_ball = rot2d(-kick_dir);
-  robot_in_robot = Eigen::Vector3d(getBallX(state), getBallY(state))
-  robot_in_ball = 
-  speed_in_ball
-  // Apply a linear modification (from theory to 'reality')
-  Eigen::VectorXd real_move = odometry.getDiffFullStep(next_cmd, engine);
-  // Apply the real move
-  Eigen::VectorXd next_state = state;
-  // Apply rotation first
-  double delta_theta = real_move(2);
-  next_state(2) = normalizeAngle(state(2) - delta_theta);
-  next_state(1) = normalizeAngle(state(1) - delta_theta);
-  // Then, apply translation
-  double ball_x = getBallX(next_state) - real_move(0);
-  double ball_y = getBallY(next_state) - real_move(1);
-  double new_dist = std::sqrt(ball_x * ball_x + ball_y * ball_y);
-  double new_dir = atan2(ball_y, ball_x);
-  next_state(0) = new_dist;
-  next_state(1) = new_dir;
-  // Update cmd
-  next_state.segment(3,3) = next_cmd;
+  Eigen::Vector3d next_pos_in_rt = Eigen::Vector3d(0,0,1) + avg_speed_in_rt;
+  Eigen::Vector3d next_pos_in_b = b_from_rt * next_pos_in_rt;
+  Eigen::Matrix<double,3,3> rdt_from_b = getR2FromR1(next_pos_in_b.segment(0,2), -new_kick_dir);
+  Eigen::Vector3d ball_in_rdt = rdt_from_b * Eigen::Vector3d(0,0,1);
+  Eigen::Vector3d next_speed_in_rdt = rdt_from_b * b_from_rt * next_speed_in_rt;
+  // Filling up successor
+  Eigen::VectorXd successor(6);
+  successor(0) = ball_in_rdt.segment(0,2).norm();
+  successor(1) = atan2(ball_in_rdt(1), ball_in_rdt(0));
+  successor(2) = new_kick_dir;
+  successor.segment(3,2) = next_speed_in_rdt.segment(0,2);
+  successor(5) = next_speed_theta;
+  // Filling up result
   Problem::Result result;
-  result.successor = next_state;
-  result.reward = getReward(state, action, next_state);
-  result.terminal = isTerminal(next_state);
+  result.successor = successor;
+  result.reward = getReward(state, action, successor);
+  result.terminal = isTerminal(successor);
   return result;
 }
 
@@ -194,12 +192,10 @@ Eigen::VectorXd SSLBallApproach::getStartingState(std::default_random_engine * e
   // Creating the distribution
   std::uniform_real_distribution<double> dist_distrib(init_min_dist,
                                                       init_max_dist);
-  std::uniform_real_distribution<double> viewable_distrib(-viewing_angle,
-                                                          viewing_angle);
   std::uniform_real_distribution<double> angle_distrib(-M_PI, M_PI);
   // Generating random values
   double dist = dist_distrib(*engine);
-  double ball_theta = viewable_distrib(*engine);
+  double ball_theta = angle_distrib(*engine);
   double target_theta = angle_distrib(*engine);
   // Updating state
   state(0) = dist;
@@ -249,57 +245,33 @@ Json::Value SSLBallApproach::toJson() const {
 
 void SSLBallApproach::fromJson(const Json::Value & v, const std::string & dir_name)
 {
-  std::string odometry_path;
-  rhoban_utils::tryRead(v, "odometry_path", &odometry_path);
-
-  // If coefficients have been properly read, use them
-  if (odometry_path != "") {
-    odometry.loadFile(dir_name + odometry_path);
-  }
-  // Read kicks
-  auto kick_zone_builder = [](const Json::Value & v, const std::string & dir_name)
-    {
-      KickZone kz;
-      kz.fromJson(v,dir_name);
-      return kz;
-    };
-  rhoban_utils::tryReadVector<KickZone>(v, "kick_zones", dir_name, kick_zone_builder, &kick_zones);
+  (void)dir_name;
   // Read internal properties
-  double max_step_theta_deg(rhoban_utils::rad2deg(max_step_theta));
-  double max_step_theta_diff_deg(rhoban_utils::rad2deg(max_step_theta_diff));
+  double max_speed_theta_deg(rhoban_utils::rad2deg(max_speed_theta));
+  double max_acc_theta_deg(rhoban_utils::rad2deg(max_acc_theta));
+  double kick_speed_theta_max_deg(rhoban_utils::rad2deg(kick_speed_theta_max));
   rhoban_utils::tryRead(v,"max_dist"                  , &max_dist);
   rhoban_utils::tryRead(v,"max_speed"                 , &max_speed);
-  rhoban_utils::tryRead(v,"max_step_theta"            , &max_step_theta_deg);
-  rhoban_utils::tryRead(v,"max_step_x_diff"           , &max_step_x_diff);
-  rhoban_utils::tryRead(v,"max_step_y_diff"           , &max_step_y_diff);
-  rhoban_utils::tryRead(v,"max_step_theta_diff"       , &max_step_theta_diff_deg);
+  rhoban_utils::tryRead(v,"max_speed_theta"           , &max_speed_theta_deg);
+  rhoban_utils::tryRead(v,"max_acc"                   , &max_acc);
+  rhoban_utils::tryRead(v,"max_acc_theta"             , &max_acc_theta_deg);
+  rhoban_utils::tryRead(v,"kick_dir_tol"              , &kick_dir_tol);
+  rhoban_utils::tryRead(v,"kick_x_max"                , &kick_x_max);
+  rhoban_utils::tryRead(v,"kick_y_tol"                , &kick_y_tol);
+  rhoban_utils::tryRead(v,"kick_speed_x_max"          , &kick_speed_x_max);
+  rhoban_utils::tryRead(v,"kick_speed_y_max"          , &kick_speed_y_max);
+  rhoban_utils::tryRead(v,"kick_speed_theta_max"      , &kick_speed_theta_max_deg);
   rhoban_utils::tryRead(v,"kick_reward"               , &kick_reward);
-  rhoban_utils::tryRead(v,"kick_terminal_speed_factor", &kick_terminal_speed_factor);
-  rhoban_utils::tryRead(v,"viewing_angle"             , &viewing_angle);
-  rhoban_utils::tryRead(v,"no_view_reward"            , &no_view_reward);
-  rhoban_utils::tryRead(v,"collision_x_front"         , &collision_x_front);
-  rhoban_utils::tryRead(v,"collision_x_back"          , &collision_x_back);
-  rhoban_utils::tryRead(v,"collision_y"               , &collision_y);
+  rhoban_utils::tryRead(v,"collision_radius"          , &collision_radius);
   rhoban_utils::tryRead(v,"collision_reward"          , &collision_reward);
-  rhoban_utils::tryRead(v,"terminal_collisions"       , &terminal_collisions);
   rhoban_utils::tryRead(v,"out_of_space_reward"       , &out_of_space_reward);
-  rhoban_utils::tryRead(v,"walk_frequency"            , &walk_frequency);
+  rhoban_utils::tryRead(v,"dt"                        , &dt);
   rhoban_utils::tryRead(v,"init_min_dist"             , &init_min_dist);
   rhoban_utils::tryRead(v,"init_max_dist"             , &init_max_dist);
   // Applying values which have been read in Deg:
-  max_step_theta = rhoban_utils::deg2rad(max_step_theta_deg);
-  max_step_theta_diff = rhoban_utils::deg2rad(max_step_theta_diff_deg);
-
-  std::vector<std::string> kick_zone_names;
-  rhoban_utils::tryReadVector(v, "kick_zone_names", &kick_zone_names);
-
-  if (kick_zone_names.size() > 0) {
-    KickModelCollection kmc;
-    kmc.loadFile();
-    for (const std::string & name : kick_zone_names) {
-      kick_zones.push_back(kmc.getKickModel(name).getKickZone());
-    }
-  }
+  max_speed_theta = rhoban_utils::deg2rad(max_speed_theta_deg);
+  max_acc_theta = rhoban_utils::deg2rad(max_acc_theta_deg);
+  kick_speed_theta_max = rhoban_utils::deg2rad(kick_speed_theta_max_deg);
 
   // Update limits according to the new parameters
   updateLimits();

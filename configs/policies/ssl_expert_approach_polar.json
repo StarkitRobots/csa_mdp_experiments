@@ -1,0 +1,12 @@
+{
+    "class name" : "ExpertApproach",
+    "content" : {
+        "type" : "polar",
+        "wished_x" : 0.13,
+        "foot_y_offset" : 0,
+        "step_p" : 0.02,
+        "far_theta_p" : 1,
+        "rotate_theta_p" : 1,
+        "rotate_lateral_p" : -0.02
+    }
+}

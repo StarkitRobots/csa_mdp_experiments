@@ -31,9 +31,9 @@ namespace csa_mdp
 /// - acc_x
 /// - acc_y
 /// - acc_theta
-class BallApproach : public BlackBoxProblem {
+class SSLBallApproach : public BlackBoxProblem {
 public:
-  BallApproach();
+  SSLBallApproach();
 
   bool isTerminal(const Eigen::VectorXd & state) const;
 

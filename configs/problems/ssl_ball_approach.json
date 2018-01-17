@@ -1,0 +1,7 @@
+{
+    "class name" : "SSLBallApproach",
+    "content" : {
+        "dt" : 0.033,
+        "init_min_dist" : 0.6
+    }
+}

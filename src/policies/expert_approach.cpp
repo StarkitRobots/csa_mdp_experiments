@@ -189,7 +189,6 @@ Eigen::VectorXd ExpertApproach::getRawAction(const Eigen::VectorXd &state,
       wished_cmd(2) = near_theta_p * target_angle;
       break;
   }
-
   Eigen::VectorXd delta_cmd = wished_cmd - state.segment(3,3);
 
   if (final_state != nullptr) {
@@ -229,8 +228,11 @@ void ExpertApproach::fromJson(const Json::Value & v, const std::string & dir_nam
   std::string type_str;
   rhoban_utils::tryRead(v, "type"            , &type_str        );
   rhoban_utils::tryRead(v, "step_p"          , &step_p          );
-  rhoban_utils::tryRead(v, "near_theta_p"    , &near_theta_p    );
+  rhoban_utils::tryRead(v, "far_theta_p"     , &far_theta_p     );
+  rhoban_utils::tryRead(v, "rotate_theta_p"  , &rotate_theta_p  );
+  rhoban_utils::tryRead(v, "rotate_lateral_p", &rotate_lateral_p);
   rhoban_utils::tryRead(v, "near_lateral_p"  , &near_lateral_p  );
+  rhoban_utils::tryRead(v, "near_theta_p"    , &near_theta_p    );
   rhoban_utils::tryRead(v, "foot_y_offset"   , &foot_y_offset   );
   rhoban_utils::tryRead(v, "wished_x"        , &wished_x        );
   rhoban_utils::tryRead(v, "target_theta_tol", &target_theta_tol);
