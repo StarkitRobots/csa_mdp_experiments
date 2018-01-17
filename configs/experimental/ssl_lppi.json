@@ -3,11 +3,11 @@
     "content" : {
         // ### black_box_learner stuff
         "problem" : {
-            "rel path" : "../problems/ball_approach.json"//The path to the problem to be solved
+            "rel path" : "../problems/ssl_ball_approach.json"//The path to the problem to be solved
         },
-        "nb_threads" : 4,
-        "trial_length" : 200,
-        "nb_evaluation_trials" : 100000,
+        "nb_threads" : 40,
+        "trial_length" : 1000,
+        "nb_evaluation_trials" : 1000000,
         "time_budget" : 36000,
         "discount" : 1,
         // ### lppi stuff
@@ -15,13 +15,13 @@
             "optimizer" : {
                 "class name" : "CrossEntropy",
                 "content" : {
-                    "nb_generations" : 10,
-                    "population_size" : 100,
-                    "best_set_size" : 10
+                    "nb_generations" : 20,
+                    "population_size" : 200,
+                    "best_set_size" : 20
                 }
             },
-            "look_ahead" : 5,
-            "rollouts_per_sample" : 5,
+            "look_ahead" : 10,
+            "rollouts_per_sample" : 1,
             "discount" : 0.98
         },
         "value_trainer" : {
@@ -32,8 +32,8 @@
             "class name" : "PWLForestTrainer",
             "content" : {}
         },
-        "min_rollout_length" : 50,
-        "max_rollout_length" : 200,
-        "nb_entries" : 10000
+        "min_rollout_length" : 200,
+        "max_rollout_length" : 1000,
+        "nb_entries" : 50000
     }
 }
