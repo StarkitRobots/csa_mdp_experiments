@@ -7,21 +7,21 @@
         },
         "nb_threads" : 4,
         "trial_length" : 200,
-        "nb_evaluation_trials" : 10000,
-        "time_budget" : 3600,
+        "nb_evaluation_trials" : 100000,
+        "time_budget" : 36000,
         "discount" : 1,
         // ### lppi stuff
         "planner" : {
             "optimizer" : {
                 "class name" : "CrossEntropy",
                 "content" : {
-                    "nb_generations" : 5,
-                    "population_size" : 20,
-                    "best_set_size" : 5
+                    "nb_generations" : 10,
+                    "population_size" : 100,
+                    "best_set_size" : 10
                 }
             },
-            "look_ahead" : 20,
-            "rollouts_per_sample" : 2,
+            "look_ahead" : 5,
+            "rollouts_per_sample" : 5,
             "discount" : 0.98
         },
         "value_trainer" : {
