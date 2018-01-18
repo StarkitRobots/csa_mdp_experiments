@@ -58,7 +58,7 @@ SSLBallApproach::SSLBallApproach() :
   max_dist(1.0),// Roughly OK, hard to have more ideas
   max_speed(0.8),// Working well: 0.8 [m/s]
   max_speed_theta(1.5),// Working well: 1.5 [rad/s]
-  // Acceleration limits (Much higher could be possible
+  // Acceleration limits (Much higher could be possible)
   max_acc(max_speed/ 2),// 2 s to reach full speed
   max_acc_theta(max_speed_theta / 2),// 2 s to reach full speed 
   // Kick
