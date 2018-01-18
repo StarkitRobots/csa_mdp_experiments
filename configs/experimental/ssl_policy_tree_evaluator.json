@@ -1,0 +1,25 @@
+// A simple example of json file for evaluating a policy
+// To be used with learning_machine
+{
+    "class name" : "LearningMachineBlackBox",
+    "content" : {
+        "problem_path" : "../problems/ssl_ball_approach.json",
+        "learner" : {
+            "class name" : "FakeLearner",
+            "content" : {
+                "policy" : {
+                    "class name" : "FAPolicy",
+                    "content" : {
+                        "abs path" : "policy_tree.bin"
+                    }
+                }
+            }
+        },
+        "save_run_logs" : true,
+        "save_details" : false,
+        "nb_threads" : 1,
+        "nb_runs" : 25,
+        "nb_steps" : 200,
+        "discount" : 0.98
+    }
+}
