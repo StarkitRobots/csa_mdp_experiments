@@ -7,7 +7,7 @@
         },
         "nb_threads" : 40,
         "trial_length" : 1000,
-        "nb_evaluation_trials" : 1000000,
+        "nb_evaluation_trials" : 100000,
         "time_budget" : 36000,
         "discount" : 1,
         // ### lppi stuff
@@ -15,14 +15,14 @@
             "optimizer" : {
                 "class name" : "CrossEntropy",
                 "content" : {
-                    "nb_generations" : 20,
+                    "nb_generations" : 10,
                     "population_size" : 200,
                     "best_set_size" : 20
                 }
             },
-            "look_ahead" : 10,
+            "look_ahead" : 15,
             "rollouts_per_sample" : 1,
-            "discount" : 0.98
+            "discount" : 0.99
         },
         "value_trainer" : {
             "class name" : "PWCForestTrainer",
@@ -32,8 +32,8 @@
             "class name" : "PWLForestTrainer",
             "content" : {}
         },
-        "min_rollout_length" : 200,
+        "min_rollout_length" : 500,
         "max_rollout_length" : 1000,
-        "nb_entries" : 50000
+        "nb_entries" : 100000
     }
 }
