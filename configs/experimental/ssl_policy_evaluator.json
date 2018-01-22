@@ -16,7 +16,7 @@
         "save_details" : false,
         "nb_threads" : 1,
         "nb_runs" : 25,
-        "nb_steps" : 200,
+        "nb_steps" : 500,
         "discount" : 0.98
     }
 }

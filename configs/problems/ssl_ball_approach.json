@@ -3,6 +3,8 @@
     "content" : {
         "dt" : 0.1,
         "collision_reward" : -50,
-        "kick_y_tol" : 0.05
+        "kick_y_tol" : 0.05,
+        "cart_noise" : 0.02,
+        "angular_noise" : 2
     }
 }

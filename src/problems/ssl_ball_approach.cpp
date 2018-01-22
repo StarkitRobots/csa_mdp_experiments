@@ -162,11 +162,11 @@ Problem::Result SSLBallApproach::getSuccessor(const Eigen::VectorXd & state,
   // Computing noise:
   // Since variance is multiplied by dt, stddev is multiplied by sqrt(dt)
   double noise_multiplier = std::sqrt(dt);
-  std::normal_distribution<double> cart_noise(cart_stddev * noise_multiplier);
-  std::normal_distribution<double> angular_noise(angular_stddev * noise_multiplier);
+  std::normal_distribution<double> cart_noise(0,cart_stddev * noise_multiplier);
+  std::normal_distribution<double> angular_noise(0, angular_stddev * noise_multiplier);
   double noise_x = cart_noise(*engine);
   double noise_y = cart_noise(*engine);
-  double noise_theta = cart_noise(*engine);
+  double noise_theta = angular_noise(*engine);
   // Getting new kick_dir
   double next_speed_theta = next_speed_in_rt(2);
   double avg_speed_theta = avg_speed_in_rt(2);
