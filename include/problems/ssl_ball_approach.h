@@ -115,6 +115,15 @@ protected:
   /// Maximal distance at the beginning [m]
   /// (lower than max_dist to ensure the robot does not loose during the first steps)
   double init_max_dist;
+
+  // Simple noise model (not even linear)
+  // TODO: Ideally, noise model should be based on speed and acceleration (not supported by data)
+
+  /// Noise on cartesian position for 1 second (independent on x and y) [cart]
+  double cart_stddev;
+
+  /// Noise on angular orientation  for 1 second [rad]
+  double angular_stddev;
 };
 
 }

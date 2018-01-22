@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <random>
 
 namespace csa_mdp
 {
@@ -76,7 +77,10 @@ SSLBallApproach::SSLBallApproach() :
   out_of_space_reward(-200),
   dt(0.033),// Around 30 fps
   init_min_dist(collision_radius + 0.05),
-  init_max_dist(max_dist - 0.05)
+  init_max_dist(max_dist - 0.05),
+  // Noise model
+  cart_stddev(0.05),
+  angular_stddev(rhoban_utils::deg2rad(5))
 {
   updateLimits();
 }
@@ -155,10 +159,18 @@ Problem::Result SSLBallApproach::getSuccessor(const Eigen::VectorXd & state,
   Eigen::Vector3d next_speed_in_rt = curr_speed_in_rt + acc_in_rt * dt;
   Eigen::Vector3d avg_speed_in_rt = (curr_speed_in_rt + next_speed_in_rt) /2;
   next_speed_in_rt = boundXYA(next_speed_in_rt, max_speed, max_speed_theta);
+  // Computing noise:
+  // Since variance is multiplied by dt, stddev is multiplied by sqrt(dt)
+  double noise_multiplier = std::sqrt(dt);
+  std::normal_distribution<double> cart_noise(cart_stddev * noise_multiplier);
+  std::normal_distribution<double> angular_noise(angular_stddev * noise_multiplier);
+  double noise_x = cart_noise(*engine);
+  double noise_y = cart_noise(*engine);
+  double noise_theta = cart_noise(*engine);
   // Getting new kick_dir
   double next_speed_theta = next_speed_in_rt(2);
   double avg_speed_theta = avg_speed_in_rt(2);
-  double new_kick_dir = normalizeAngle(kick_dir - avg_speed_theta * dt);
+  double new_kick_dir = normalizeAngle(kick_dir - avg_speed_theta * dt + noise_theta);
   // Now we do not care about speed_theta and acc_theta anymore, we can
   // transform useful vectors in homogenous 2d vectors
   avg_speed_in_rt(2) = 0;
@@ -166,7 +178,7 @@ Problem::Result SSLBallApproach::getSuccessor(const Eigen::VectorXd & state,
   // Using homogeneous transform
   Eigen::Vector2d ball_in_rt(getBallX(state), getBallY(state));
   Eigen::Matrix<double,3,3> b_from_rt = getR2FromR1(ball_in_rt, kick_dir);
-  Eigen::Vector3d next_pos_in_rt = Eigen::Vector3d(0,0,1) + avg_speed_in_rt;
+  Eigen::Vector3d next_pos_in_rt = Eigen::Vector3d(noise_x,noise_y,1) + avg_speed_in_rt * dt;
   Eigen::Vector3d next_pos_in_b = b_from_rt * next_pos_in_rt;
   Eigen::Matrix<double,3,3> rdt_from_b = getR2FromR1(next_pos_in_b.segment(0,2), -new_kick_dir);
   Eigen::Vector3d ball_in_rdt = rdt_from_b * Eigen::Vector3d(0,0,1);
@@ -250,6 +262,7 @@ void SSLBallApproach::fromJson(const Json::Value & v, const std::string & dir_na
   double max_speed_theta_deg(rhoban_utils::rad2deg(max_speed_theta));
   double max_acc_theta_deg(rhoban_utils::rad2deg(max_acc_theta));
   double kick_speed_theta_max_deg(rhoban_utils::rad2deg(kick_speed_theta_max));
+  double angular_stddev_deg(rhoban_utils::rad2deg(angular_stddev));
   rhoban_utils::tryRead(v,"max_dist"                  , &max_dist);
   rhoban_utils::tryRead(v,"max_speed"                 , &max_speed);
   rhoban_utils::tryRead(v,"max_speed_theta"           , &max_speed_theta_deg);
@@ -268,10 +281,13 @@ void SSLBallApproach::fromJson(const Json::Value & v, const std::string & dir_na
   rhoban_utils::tryRead(v,"dt"                        , &dt);
   rhoban_utils::tryRead(v,"init_min_dist"             , &init_min_dist);
   rhoban_utils::tryRead(v,"init_max_dist"             , &init_max_dist);
+  rhoban_utils::tryRead(v,"cart_stddev"               , &cart_stddev);
+  rhoban_utils::tryRead(v,"angular_stddev"            , &angular_stddev_deg);
   // Applying values which have been read in Deg:
   max_speed_theta = rhoban_utils::deg2rad(max_speed_theta_deg);
   max_acc_theta = rhoban_utils::deg2rad(max_acc_theta_deg);
   kick_speed_theta_max = rhoban_utils::deg2rad(kick_speed_theta_max_deg);
+  angular_stddev = rhoban_utils::deg2rad(angular_stddev_deg);
 
   // Update limits according to the new parameters
   updateLimits();
