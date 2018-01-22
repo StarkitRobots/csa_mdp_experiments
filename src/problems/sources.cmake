@@ -10,4 +10,5 @@ set (SOURCES
   kick_controler.cpp
   simulated_cart_pole.cpp
   ssl_ball_approach.cpp
+  ssl_dynamic_ball_approach.cpp
 )
