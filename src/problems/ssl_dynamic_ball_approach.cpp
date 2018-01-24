@@ -220,14 +220,6 @@ Problem::Result SSLDynamicBallApproach::getSuccessor(const Eigen::VectorXd & sta
   result.successor = successor;
   result.reward = getReward(state, action, successor);
   result.terminal = isTerminal(successor);
-  // Debug:
-  std::cout << "-----" << std::endl
-            << " state: " << state.transpose() << std::endl
-            << " action: " << action.transpose() << std::endl
-            << " ball_speed_in_rt: " << ball_speed_in_rt.transpose() << std::endl
-            << " ball_speed_in_rdt: " << ball_speed_in_rdt.transpose() << std::endl
-            << " rdt_from_rt: " << std::endl << rdt_from_rt << std::endl
-            << " successor: " << successor.transpose() << std::endl;
   return result;
 }
 
@@ -289,13 +281,6 @@ bool SSLDynamicBallApproach::isOutOfSpace(const Eigen::VectorXd & state) const
   bool robot_theta_speed_ko = std::fabs(state(6)) > max_robot_speed_theta;
   bool ball_speed_ko = state.segment(7,2).norm() > max_ball_speed;
   bool kick_tol_ko = state(9) < min_kick_dir_tol || state(9) > max_kick_dir_tol;
-  std::cout << "state: " << state.transpose() << std::endl
-            << "ball_dist_ko: " << ball_dist_ko << std::endl
-            << "target_dist_ko: " << target_dist_ko << std::endl
-            << "robot_cart_speed_ko: " << robot_cart_speed_ko << std::endl
-            << "robot_theta_speed_ko: " << robot_theta_speed_ko << std::endl
-            << "ball_speed_ko: " << ball_speed_ko << std::endl
-            << "kick_tol_ko: " << kick_tol_ko << std::endl;
   return ball_dist_ko || target_dist_ko || robot_cart_speed_ko || robot_theta_speed_ko
                                                || ball_speed_ko || kick_tol_ko;
 }

@@ -5,7 +5,7 @@
         "problem" : {
             "rel path" : "../problems/ssl_dynamic_ball_approach.json"//The path to the problem to be solved
         },
-        "nb_threads" : 1,
+        "nb_threads" : 20,
         "trial_length" : 1000,
         "nb_evaluation_trials" : 100000,
         "time_budget" : 36000,
@@ -21,7 +21,7 @@
                 }
             },
             "look_ahead" : 10,
-            "rollouts_per_sample" : 1,
+            "rollouts_per_sample" : 10,
             "discount" : 0.99
         },
         "value_trainer" : {
@@ -32,8 +32,8 @@
             "class name" : "PWLForestTrainer",
             "content" : {}
         },
-        "min_rollout_length" : 50,
-        "max_rollout_length" : 100,
-        "nb_entries" : 100
+        "min_rollout_length" : 500,
+        "max_rollout_length" : 1000,
+        "nb_entries" : 50000
     }
 }

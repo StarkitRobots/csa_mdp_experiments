@@ -10,7 +10,7 @@ Eigen::Vector4d RollingBallModel::getNextState(const Eigen::Vector4d & ball_stat
                                                double dt) const {
   // Warning: two successives updateBall(dt) is not the same as updateBall(2*dt)
   const Eigen::Vector2d & ball_pos = ball_state.segment(0,2);
-  const Eigen::Vector2d & ball_speed = ball_state.segment(0,2);
+  const Eigen::Vector2d & ball_speed = ball_state.segment(2,2);
   Eigen::Vector2d next_speed =  ball_speed * (1 - (1-decay_rate) * dt);
   Eigen::Vector2d avg_speed = (ball_speed + next_speed) / 2;
   Eigen::Vector4d result;
