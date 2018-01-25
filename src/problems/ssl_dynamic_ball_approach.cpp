@@ -9,11 +9,6 @@
 namespace csa_mdp
 {
 
-/// Return the given angle in radian bounded between -PI and PI
-static double normalizeAngle(double angle) {
-  return angle - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
-}
-
 /// If norm of vec is lower than bound, return vec, otherwise, return
 /// vec * bound / norm(vec)
 static Eigen::Vector2d boundNorm(const Eigen::Vector2d & vec, double bound) {
