@@ -1,13 +1,19 @@
 {
     "class name" : "SSLDynamicBallApproach",
     "content" : {
+        "mode" : "Finish",
         "dt" : 0.1,
         "collision_reward" : -50,
-        "kick_y_tol" : 0.1,
-        "kick_x_max" : 0.2,
-        "kick_diff_speed_x_max" : 0.2,//[m/s]
-        "kick_diff_speed_y_max" : 0.1,//[m/s]
-        "kick_speed_theta_max" : 20,//[deg/s]
+        "finish_x_limits" : [0.20,0.25],//[m]
+        "finish_y_tol" : 0.1,//[m]
+        "finish_diff_speed_x_limits" : [0.0,0.05],//[m/s]
+        "finish_diff_speed_y_max" : 0.1,//[m/s]
+        "finish_speed_theta_max" : 20,//[deg/s]
+        "kick_x_limits" : [0.1,0.12],//[m]
+        "kick_y_tol" : 0.02,//[m]
+        "kick_diff_speed_x_limits" : [0.0,0.05],//[m/s]
+        "kick_diff_speed_y_max" : 0.025,//[m/s]
+        "kick_speed_theta_max" : 5,//[deg/s]
         "cart_noise" : 0.01,
         "angular_noise" : 1,
         "max_ball_speed" : 0.2,
