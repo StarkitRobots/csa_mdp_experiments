@@ -1,6 +1,6 @@
 #include "problems/cart_pole_stabilization.h"
 
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 
 #include <iostream>
 

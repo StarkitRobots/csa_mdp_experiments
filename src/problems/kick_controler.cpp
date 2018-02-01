@@ -6,7 +6,7 @@
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 #include "rosban_fa/function_approximator_factory.h"
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 
 using namespace rhoban_utils;
 
@@ -257,7 +257,7 @@ Eigen::VectorXd KickControler::getStartingState(std::default_random_engine * eng
   Eigen::VectorXd state(2 + 3 * players.size());
   // Getting ball position
   Eigen::VectorXd ball_pos =
-    rosban_random::getUniformSample(getFieldLimits(), engine);
+    rhoban_random::getUniformSample(getFieldLimits(), engine);
   state.segment(0,2) = ball_pos;
   // Sampling player position
   for (size_t player = 0; player < players.size(); player++) {
@@ -266,7 +266,7 @@ Eigen::VectorXd KickControler::getStartingState(std::default_random_engine * eng
     bool valid = false;
     while (!valid) {
       state.segment(start_idx,3) = 
-        rosban_random::getUniformSample(getPlayerLimits(), engine);
+        rhoban_random::getUniformSample(getPlayerLimits(), engine);
       valid = (state.segment(start_idx,2) - ball_pos).norm() < max_initial_dist;
     }
   }

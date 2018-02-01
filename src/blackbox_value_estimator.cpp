@@ -7,7 +7,7 @@
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 #include "rosban_fa/trainer_factory.h"
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 #include "rhoban_utils/threading/multi_core.h"
 
 #include <fenv.h>
@@ -38,7 +38,7 @@ public:
       inputs = Eigen::MatrixXd::Zero(input_dims, nb_samples);
       observations = Eigen::MatrixXd::Zero(nb_samples,1);
       std::vector<std::default_random_engine> engines =
-        rosban_random::getRandomEngines(std::min(nb_threads, nb_samples), engine);
+        rhoban_random::getRandomEngines(std::min(nb_threads, nb_samples), engine);
       // The task which has to be performed :
       rhoban_utils::MultiCore::StochasticTask task =
         [this, &inputs, &observations, input_dims]
@@ -49,7 +49,7 @@ public:
           const Eigen::MatrixXd & limits = problem->getStateLimits();
           // Sampling initial states
           inputs.block(0,start_idx, input_dims, thread_samples)
-          = rosban_random::getUniformSamplesMatrix(limits, thread_samples, thread_engine);
+          = rhoban_random::getUniformSamplesMatrix(limits, thread_samples, thread_engine);
           for (int idx = start_idx; idx < end_idx; idx ++) {
             const Eigen::VectorXd & state = inputs.col(idx);
             double total_reward = 0;
@@ -170,7 +170,7 @@ int main() {
 
   estimator.loadFile();
 
-  std::default_random_engine engine = rosban_random::getRandomEngine();
+  std::default_random_engine engine = rhoban_random::getRandomEngine();
 
   std::unique_ptr<rosban_fa::FunctionApproximator> approximator;
   approximator = estimator.trainApproximator(&engine);

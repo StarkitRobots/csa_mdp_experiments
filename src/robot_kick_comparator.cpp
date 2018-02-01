@@ -4,7 +4,7 @@
 #include "problems/kick_controler.h"
 
 #include "rosban_csa_mdp/core/policy_factory.h"
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 
 #include <fenv.h>
 
@@ -62,7 +62,7 @@ int main()
   init_state_2p.segment(5,3) = p1_pos;
 
 
-  std::default_random_engine engine = rosban_random::getRandomEngine();
+  std::default_random_engine engine = rhoban_random::getRandomEngine();
 
   double reward_1p = 0;
   for (int i = 0; i < nb_evaluations; i++) {

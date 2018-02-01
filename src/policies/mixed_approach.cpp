@@ -2,7 +2,7 @@
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 
 namespace csa_mdp
 {
@@ -12,7 +12,7 @@ MixedApproach::MixedApproach()
     far_theta_p(-0.2),
     far_max_speed(0.04)
 {
-  engine = rosban_random::getRandomEngine();
+  engine = rhoban_random::getRandomEngine();
 }
 
 Eigen::VectorXd MixedApproach::getRawAction(const Eigen::VectorXd & state)

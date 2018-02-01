@@ -1,6 +1,6 @@
 #include "learning_machine/learning_machine_blackbox.h"
 
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 
 namespace csa_mdp
 {
@@ -8,7 +8,7 @@ namespace csa_mdp
 LearningMachineBlackBox::LearningMachineBlackBox()
   : LearningMachine()
 {
-  engine = rosban_random::getRandomEngine();
+  engine = rhoban_random::getRandomEngine();
 }
 
 LearningMachineBlackBox::~LearningMachineBlackBox()

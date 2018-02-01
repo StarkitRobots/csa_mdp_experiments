@@ -7,7 +7,7 @@
 
 #include "rosban_csa_mdp/core/policy_factory.h"
 
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 
 #include <fenv.h>
 
@@ -36,7 +36,7 @@ int main(int argc, char ** argv) {
   std::shared_ptr<BlackBoxLearner> bbl;
   bbl = BlackBoxLearnerFactory().buildFromJsonFile(learner_path);
 
-  std::default_random_engine engine = rosban_random::getRandomEngine();
+  std::default_random_engine engine = rhoban_random::getRandomEngine();
 
   bbl->run(&engine);
 }

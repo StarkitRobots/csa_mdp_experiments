@@ -1,6 +1,6 @@
 #include "problems/double_integrator.h"
 
-#include "rosban_random/tools.h"
+#include "rhoban_random/tools.h"
 
 #include <iostream>
 
@@ -96,7 +96,7 @@ Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine * 
 {
   (void) engine;
   if (random_start) {
-    return rosban_random::getUniformSamplesMatrix(getStateLimits(), 1, engine);
+    return rhoban_random::getUniformSamplesMatrix(getStateLimits(), 1, engine);
   }
   Eigen::VectorXd state(2);
   state << 1, 0;
