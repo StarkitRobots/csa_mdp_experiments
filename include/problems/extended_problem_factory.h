@@ -1,9 +1,9 @@
 #pragma once
 
 #include "problems/control_problem.h"
-#include "rosban_csa_mdp/core/black_box_problem.h"
+#include "rhoban_csa_mdp/core/black_box_problem.h"
 
-#include "rosban_csa_mdp/core/problem_factory.h"
+#include "rhoban_csa_mdp/core/problem_factory.h"
 
 namespace csa_mdp
 {

@@ -2,7 +2,7 @@
 
 #include "kick_model/kick_zone.h"
 
-#include "rosban_csa_mdp/core/black_box_problem.h"
+#include "rhoban_csa_mdp/core/black_box_problem.h"
 
 #include "odometry/odometry.h"
 

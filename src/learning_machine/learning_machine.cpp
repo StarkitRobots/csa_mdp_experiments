@@ -1,8 +1,8 @@
 #include "learning_machine/learning_machine.h"
 
-#include "rosban_csa_mdp/core/history.h"
-#include "rosban_csa_mdp/core/problem_factory.h"
-#include "rosban_csa_mdp/solvers/learner_factory.h"
+#include "rhoban_csa_mdp/core/history.h"
+#include "rhoban_csa_mdp/core/problem_factory.h"
+#include "rhoban_csa_mdp/solvers/learner_factory.h"
 
 #include "rhoban_utils/timing/benchmark.h"
 

@@ -1,9 +1,9 @@
 #include "policies/ok_seed.h"
 
-#include "rosban_fa/constant_approximator.h"
-#include "rosban_fa/orthogonal_split.h"
+#include "rhoban_fa/constant_approximator.h"
+#include "rhoban_fa/orthogonal_split.h"
 
-using namespace rosban_fa;
+using namespace rhoban_fa;
 
 OKSeed::OKSeed()
   : back_limit(1), goal_width(2.6), finish_limit(2.5),
@@ -37,7 +37,7 @@ Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd & state,
   return finishKick(ball_y > 0 ? 1 : -1);
 }
 
-std::unique_ptr<rosban_fa::FATree> OKSeed::extractFATree() const
+std::unique_ptr<rhoban_fa::FATree> OKSeed::extractFATree() const
 {
   // Build approximators
   std::unique_ptr<FunctionApproximator> backlane_node(new ConstantApproximator(backlaneKick()));

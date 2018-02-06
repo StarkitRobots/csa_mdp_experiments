@@ -1,5 +1,5 @@
 #pragma once
-#include "rosban_csa_mdp/core/problem.h"
+#include "rhoban_csa_mdp/core/problem.h"
 
 namespace csa_mdp
 {

@@ -1,4 +1,4 @@
-#include "rosban_csa_mdp/core/black_box_problem.h"
+#include "rhoban_csa_mdp/core/black_box_problem.h"
 
 #include <random>
 

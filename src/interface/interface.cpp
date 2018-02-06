@@ -15,7 +15,7 @@ static double normalizeAngle(double value)
 }
 
 Eigen::VectorXd joints2State(const JointListener::StateMap &states,
-                             const rosban_control::ControlConfig &config)
+                             const rhoban_control::ControlConfig &config)
 {
   std::vector<std::string> missing_sensors;
   int nb_sensors = config.linear_sensors.size() + config.angular_sensors.size();

@@ -43,7 +43,7 @@ private:
   bool broken_connection;
 
   /// Configuration of the controller
-  rosban_control::ControlConfig control_config;
+  rhoban_control::ControlConfig control_config;
 
   /// Access to another type of problem
   std::shared_ptr<ControlProblem> ctrl_problem;

@@ -1,7 +1,7 @@
 #include "problems/extended_problem_factory.h"
 
-#include "rosban_csa_mdp/core/history.h"
-#include "rosban_csa_mdp/solvers/fpf.h"
+#include "rhoban_csa_mdp/core/history.h"
+#include "rhoban_csa_mdp/solvers/fpf.h"
 
 #include <fstream>
 

@@ -4,8 +4,8 @@
 #include "kick_model/kick_model_collection.h"
 #include "kick_model/kick_model_factory.h"
 
-#include "rosban_csa_mdp/core/policy_factory.h"
-#include "rosban_fa/function_approximator_factory.h"
+#include "rhoban_csa_mdp/core/policy_factory.h"
+#include "rhoban_fa/function_approximator_factory.h"
 #include "rhoban_random/tools.h"
 
 using namespace rhoban_utils;
@@ -713,7 +713,7 @@ void KickControler::fromJson(const Json::Value & v, const std::string & dir_name
   std::string approach_approximator_path;
   rhoban_utils::tryRead(v, "approach_approximator_path", &approach_approximator_path);
   if (approach_approximator_path != "") {
-    rosban_fa::FunctionApproximatorFactory().loadFromFile(approach_approximator_path,
+    rhoban_fa::FunctionApproximatorFactory().loadFromFile(approach_approximator_path,
                                                           approach_steps_approximator);
   }
 

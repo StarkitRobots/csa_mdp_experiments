@@ -1,9 +1,9 @@
 #pragma once
 
-#include "rosban_csa_mdp/solvers/learner.h"
+#include "rhoban_csa_mdp/solvers/learner.h"
 
-#include "rosban_csa_mdp/core/policy.h"
-#include "rosban_csa_mdp/core/problem.h"
+#include "rhoban_csa_mdp/core/policy.h"
+#include "rhoban_csa_mdp/core/problem.h"
 
 #include <fstream>
 #include <memory>

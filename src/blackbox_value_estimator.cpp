@@ -1,12 +1,12 @@
-#include "rosban_csa_mdp/solvers/black_box_learner_factory.h"
+#include "rhoban_csa_mdp/solvers/black_box_learner_factory.h"
 
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
 #include "policies/ok_seed.h"
 #include "problems/extended_problem_factory.h"
 
-#include "rosban_csa_mdp/core/policy_factory.h"
-#include "rosban_fa/trainer_factory.h"
+#include "rhoban_csa_mdp/core/policy_factory.h"
+#include "rhoban_fa/trainer_factory.h"
 #include "rhoban_random/tools.h"
 #include "rhoban_utils/threading/multi_core.h"
 
@@ -69,7 +69,7 @@ public:
     }
 
 
-  std::unique_ptr<rosban_fa::FunctionApproximator>
+  std::unique_ptr<rhoban_fa::FunctionApproximator>
   trainApproximator(std::default_random_engine * engine) const
     {
       Eigen::MatrixXd inputs, observations;
@@ -105,7 +105,7 @@ public:
         throw std::runtime_error("BlackBoxLearner::fromJson: problem is not a BlackBoxProblem");
       }
       // Reading approximator (mandatory)
-      approximator = rosban_fa::TrainerFactory().read(v, "approximator", dir_name);
+      approximator = rhoban_fa::TrainerFactory().read(v, "approximator", dir_name);
       // Reading policy (mandatory)
       policy = PolicyFactory().read(v, "policy", dir_name);
       // Updating the number of threads to use to build the approximator
@@ -124,7 +124,7 @@ private:
   std::shared_ptr<const BlackBoxProblem> problem;
 
   /// Approximator used to train function approximator
-  std::unique_ptr<rosban_fa::Trainer> approximator;
+  std::unique_ptr<rhoban_fa::Trainer> approximator;
 
   /// The policy used to navigate 
   std::unique_ptr<Policy> policy;
@@ -172,7 +172,7 @@ int main() {
 
   std::default_random_engine engine = rhoban_random::getRandomEngine();
 
-  std::unique_ptr<rosban_fa::FunctionApproximator> approximator;
+  std::unique_ptr<rhoban_fa::FunctionApproximator> approximator;
   approximator = estimator.trainApproximator(&engine);
 
   approximator->save("approximated_value.bin");

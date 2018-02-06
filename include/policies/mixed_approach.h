@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rosban_csa_mdp/core/policy.h"
+#include "rhoban_csa_mdp/core/policy.h"
 
 #include <memory>
 

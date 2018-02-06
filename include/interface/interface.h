@@ -7,4 +7,4 @@
 
 /// Throw an out_of_range exception if states are missing
 Eigen::VectorXd joints2State(const JointListener::StateMap &states,
-                             const rosban_control::ControlConfig &config);
+                             const rhoban_control::ControlConfig &config);

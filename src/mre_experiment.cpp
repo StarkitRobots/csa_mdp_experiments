@@ -5,7 +5,7 @@
 
 #include "policies/expert_approach.h"
 
-#include "rosban_csa_mdp/core/policy_factory.h"
+#include "rhoban_csa_mdp/core/policy_factory.h"
 
 #include <ros/ros.h>
 

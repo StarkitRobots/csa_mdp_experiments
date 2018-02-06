@@ -3,7 +3,7 @@
 
 #include "problems/kick_controler.h"
 
-#include "rosban_csa_mdp/core/policy_factory.h"
+#include "rhoban_csa_mdp/core/policy_factory.h"
 #include "rhoban_random/tools.h"
 
 #include <fenv.h>

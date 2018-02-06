@@ -1,9 +1,9 @@
 #include "policies/expert_approach.h"
 
-#include "rosban_fa/linear_approximator.h"
-#include "rosban_fa/orthogonal_split.h"
+#include "rhoban_fa/linear_approximator.h"
+#include "rhoban_fa/orthogonal_split.h"
 
-using namespace rosban_fa;
+using namespace rhoban_fa;
 
 static double deg2rad(double deg) { return M_PI * deg / 180; }
 static double rad2deg(double rad) { return 180 * rad / M_PI; }

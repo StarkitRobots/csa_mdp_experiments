@@ -4,9 +4,9 @@
 #include "kick_model/kick_decision_model.h"
 #include "kick_model/kick_model_collection.h"
 
-#include "rosban_csa_mdp/core/black_box_problem.h"
-#include "rosban_csa_mdp/core/policy.h"
-#include "rosban_fa/function_approximator.h"
+#include "rhoban_csa_mdp/core/black_box_problem.h"
+#include "rhoban_csa_mdp/core/policy.h"
+#include "rhoban_fa/function_approximator.h"
 
 #include <memory>
 
@@ -283,7 +283,7 @@ private:
   ///       be done is to have an approximator for each option (i.e couple
   ///       kick_name and kick_foot). Then this approximator could also be used
   ///       to choose which type of kick and which foot is used to kick.
-  std::unique_ptr<rosban_fa::FunctionApproximator> approach_steps_approximator;
+  std::unique_ptr<rhoban_fa::FunctionApproximator> approach_steps_approximator;
 
   /// Approximation of cartesian speed [m/s] for the robot when
   /// 'simulate_approaches' is false

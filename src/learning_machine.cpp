@@ -4,7 +4,7 @@
 #include "policies/mixed_approach.h"
 #include "policies/ok_seed.h"
 
-#include "rosban_csa_mdp/core/policy_factory.h"
+#include "rhoban_csa_mdp/core/policy_factory.h"
 
 #ifndef NO_ROSBAN_CONTROL
 #include "learning_machine/learning_machine_controller.h"

@@ -1,6 +1,6 @@
-#include "rosban_csa_mdp/core/policy_factory.h"
+#include "rhoban_csa_mdp/core/policy_factory.h"
 
-#include "rosban_fa/fa_tree.h"
+#include "rhoban_fa/fa_tree.h"
 
 #include "policies/expert_approach.h"
 #include "policies/ok_seed.h"
@@ -9,7 +9,7 @@
 
 using namespace csa_mdp;
 
-using rosban_fa::FATree;
+using rhoban_fa::FATree;
 
 int main(int argc, char ** argv)
 {

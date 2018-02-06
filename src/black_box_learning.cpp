@@ -1,11 +1,11 @@
-#include "rosban_csa_mdp/solvers/black_box_learner_factory.h"
+#include "rhoban_csa_mdp/solvers/black_box_learner_factory.h"
 
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
 #include "policies/ok_seed.h"
 #include "problems/extended_problem_factory.h"
 
-#include "rosban_csa_mdp/core/policy_factory.h"
+#include "rhoban_csa_mdp/core/policy_factory.h"
 
 #include "rhoban_random/tools.h"
 

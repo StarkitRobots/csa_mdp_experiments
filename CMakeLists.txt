@@ -7,26 +7,26 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rosban_csa_mdp
+  rhoban_csa_mdp
 )
 
-find_package(rosban_control QUIET)
+find_package(rhoban_control QUIET)
 
-# If rosban control is found, then compile files related to simulation
-if (rosban_control_FOUND)
-  message(STATUS "rosban_control found, adding support for gazebo interface")
-  list(APPEND catkin_LIBRARIES     ${rosban_control_LIBRARIES})
-  list(APPEND catkin_INCLUDE_DIRS  ${rosban_control_INCLUDE_DIRS})
+# If rhoban control is found, then compile files related to simulation
+if (rhoban_control_FOUND)
+  message(STATUS "rhoban_control found, adding support for gazebo interface")
+  list(APPEND catkin_LIBRARIES     ${rhoban_control_LIBRARIES})
+  list(APPEND catkin_INCLUDE_DIRS  ${rhoban_control_INCLUDE_DIRS})
 else()
-  message(STATUS "rosban_control was not found, no support for gazebo interface")
+  message(STATUS "rhoban_control was not found, no support for gazebo interface")
   add_definitions(-DNO_ROSBAN_CONTROL)
-endif(rosban_control_FOUND)
+endif(rhoban_control_FOUND)
 
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES csa_mdp_experiments
-  CATKIN_DEPENDS rosban_csa_mdp
+  CATKIN_DEPENDS rhoban_csa_mdp
 )
 
 ###########
@@ -50,9 +50,9 @@ set(DIRECTORIES
   src/problems
   )
 
-if(rosban_control_FOUND)
+if(rhoban_control_FOUND)
   set(DIRECTORIES ${DIRECTORIES} src/interface)
-endif(rosban_control_FOUND)
+endif(rhoban_control_FOUND)
 
 # Build ALL_SOURCES
 set (SOURCES)
