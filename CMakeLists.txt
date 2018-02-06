@@ -10,18 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   rhoban_csa_mdp
 )
 
-find_package(rhoban_control QUIET)
-
-# If rhoban control is found, then compile files related to simulation
-if (rhoban_control_FOUND)
-  message(STATUS "rhoban_control found, adding support for gazebo interface")
-  list(APPEND catkin_LIBRARIES     ${rhoban_control_LIBRARIES})
-  list(APPEND catkin_INCLUDE_DIRS  ${rhoban_control_INCLUDE_DIRS})
-else()
-  message(STATUS "rhoban_control was not found, no support for gazebo interface")
-  add_definitions(-DNO_ROSBAN_CONTROL)
-endif(rhoban_control_FOUND)
-
 
 catkin_package(
   INCLUDE_DIRS include
@@ -49,10 +37,6 @@ set(DIRECTORIES
   src/policies
   src/problems
   )
-
-if(rhoban_control_FOUND)
-  set(DIRECTORIES ${DIRECTORIES} src/interface)
-endif(rhoban_control_FOUND)
 
 # Build ALL_SOURCES
 set (SOURCES)

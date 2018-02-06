@@ -13,10 +13,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>rhoban_control</build_depend> <!-- optional rhoban/rhoban_control.git -->
   <build_depend>rhoban_csa_mdp</build_depend> <!-- rhoban/csa_mdp.git -->
 
-  <run_depend>rhoban_control</run_depend>
   <run_depend>rhoban_csa_mdp</run_depend>
 
 </package>

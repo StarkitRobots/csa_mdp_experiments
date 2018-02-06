@@ -1,6 +1,5 @@
 #pragma once
 
-#include "problems/control_problem.h"
 #include "rhoban_csa_mdp/core/black_box_problem.h"
 
 #include "rhoban_csa_mdp/core/problem_factory.h"
@@ -13,8 +12,6 @@ class ExtendedProblemFactory : public csa_mdp::ProblemFactory
 public:
   ExtendedProblemFactory();
 
-  /// Throws an exception if it fails to create a problem
-  std::unique_ptr<ControlProblem> buildControl(const std::string &name);
   /// Throws an exception if it fails to create a problem
   std::unique_ptr<BlackBoxProblem> buildBlackBox(const std::string &name);
 
