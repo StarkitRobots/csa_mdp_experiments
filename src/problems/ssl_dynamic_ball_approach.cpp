@@ -396,14 +396,10 @@ void SSLDynamicBallApproach::fromJson(const Json::Value & v, const std::string &
   rhoban_utils::tryRead(v,"max_kick_dir_tol"          , &max_kick_dir_tol_deg);
   rhoban_utils::tryRead(v,"max_acc"                   , &max_acc);
   rhoban_utils::tryRead(v,"max_acc_theta"             , &max_acc_theta_deg);
-  rhoban_utils::tryRead(v,"finish_x_limits"           , &finish_x_limits);
   rhoban_utils::tryRead(v,"finish_y_tol"              , &finish_y_tol);
-  rhoban_utils::tryRead(v,"finish_diff_speed_x_limits", &finish_diff_speed_x_limits);
   rhoban_utils::tryRead(v,"finish_diff_speed_y_max"   , &finish_diff_speed_y_max);
   rhoban_utils::tryRead(v,"finish_speed_theta_max"    , &finish_speed_theta_max_deg);
-  rhoban_utils::tryRead(v,"kick_x_limits"             , &kick_x_limits);
   rhoban_utils::tryRead(v,"kick_y_tol"                , &kick_y_tol);
-  rhoban_utils::tryRead(v,"kick_diff_speed_x_limits"  , &kick_diff_speed_x_limits);
   rhoban_utils::tryRead(v,"kick_diff_speed_y_max"     , &kick_diff_speed_y_max);
   rhoban_utils::tryRead(v,"kick_speed_theta_max"      , &kick_speed_theta_max_deg);
   rhoban_utils::tryRead(v,"collision_radius"          , &collision_radius);
@@ -416,6 +412,10 @@ void SSLDynamicBallApproach::fromJson(const Json::Value & v, const std::string &
   rhoban_utils::tryRead(v,"target_init_max_dist"      , &target_init_max_dist);
   rhoban_utils::tryRead(v,"cart_stddev"               , &cart_stddev);
   rhoban_utils::tryRead(v,"angular_stddev"            , &angular_stddev_deg);
+  rhoban_utils::tryReadEigen(v,"finish_x_limits", &finish_x_limits);
+  rhoban_utils::tryReadEigen(v,"finish_diff_speed_x_limits", &finish_diff_speed_x_limits);
+  rhoban_utils::tryReadEigen(v,"kick_x_limits"             , &kick_x_limits);
+  rhoban_utils::tryReadEigen(v,"kick_diff_speed_x_limits"  , &kick_diff_speed_x_limits);
   rolling_ball_model.tryRead(v,"ball_rolling_model", dir_name);
   // Applying values which have been read in Deg:
   max_robot_speed_theta = rhoban_utils::deg2rad(max_robot_speed_theta_deg);

@@ -302,7 +302,7 @@ Json::Value OdometryNoiseModel::toJson() const {
 void OdometryNoiseModel::fromJson(const Json::Value & v, const std::string & dir_name) {
   (void)dir_name;
   setType((Type)rhoban_utils::read<int>(v,"type"));
-  Eigen::VectorXd params = rhoban_utils::read<Eigen::VectorXd>(v, "params");
+  Eigen::VectorXd params = rhoban_utils::readEigen<-1,1>(v, "params");
   
   double isError = setParameters(params);
   if (isError > 0.0) {

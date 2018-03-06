@@ -267,7 +267,7 @@ void ExpertApproach::fromJson(const Json::Value & v, const std::string & dir_nam
   }
   // Reading vector list of parameters
   Eigen::VectorXd new_params;
-  rhoban_utils::tryRead<Eigen::VectorXd>(v, "params", &new_params);
+  rhoban_utils::tryReadEigen(v, "params", &new_params);
   // If number of coefficients is appropriate, update config
   if (new_params.rows() == nb_parameters) {
     setConfig(type, new_params);
