@@ -20,6 +20,7 @@ public:
   std::vector<std::string> getKickNames() const;
 
   /// Setting the grass cone offset [deg]
+  /// Ball is slowed when moving toward offset
   void setGrassConeOffset(double offset);
 
   Json::Value toJson() const override;
