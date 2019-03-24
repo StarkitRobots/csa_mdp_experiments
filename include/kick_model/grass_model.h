@@ -10,8 +10,8 @@
 
 namespace csa_mdp
 {
-
-class GrassModel : public rhoban_utils::JsonSerializable {
+class GrassModel : public rhoban_utils::JsonSerializable
+{
 public:
   GrassModel();
 
@@ -22,7 +22,7 @@ public:
   void setConeOffset(double cone_offset);
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
 protected:
@@ -36,4 +36,4 @@ protected:
   double coneOffset;
 };
 
-}
+}  // namespace csa_mdp

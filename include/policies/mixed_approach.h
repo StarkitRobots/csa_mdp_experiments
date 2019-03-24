@@ -6,26 +6,22 @@
 
 namespace csa_mdp
 {
-
 class MixedApproach : public csa_mdp::Policy
 {
 public:
-
   MixedApproach();
 
   /// Load the function
-  void loadNearbyApproach(const std::string & fa_path);
+  void loadNearbyApproach(const std::string& fa_path);
 
-  Eigen::VectorXd getRawAction(const Eigen::VectorXd &state) override;
-  Eigen::VectorXd getRawAction(const Eigen::VectorXd & state,
-                               std::default_random_engine * engine) const override;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd& state) override;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd& state, std::default_random_engine* engine) const override;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
 private:
-
   /// Distance from which the robot start applying far policy [m]
   double far_dist_min;
   /// Gain on rotation from far
@@ -40,4 +36,4 @@ private:
   std::default_random_engine engine;
 };
 
-}
+}  // namespace csa_mdp

@@ -12,7 +12,6 @@
 
 namespace csa_mdp
 {
-
 /// In this problem, one or several humanoid robots play versus a static goalie.
 /// At each time step, they have to choose:
 /// - Which player will kick?
@@ -61,7 +60,8 @@ public:
   /// - Kick model         : To determine the eventual results
   /// - Approach model     : To determine in which states it is allowable to kick
   /// - Approach policy    : To choose the orders sent to the walk when simulating the approach
-  class KickOption : rhoban_utils::JsonSerializable {
+  class KickOption : rhoban_utils::JsonSerializable
+  {
   public:
     std::unique_ptr<KickDecisionModel> kick_decision_model;
     std::vector<std::string> kick_model_names;
@@ -72,14 +72,15 @@ public:
     std::unique_ptr<csa_mdp::Policy> approach_policy;
 
     Json::Value toJson() const override;
-    void fromJson(const Json::Value & v, const std::string & dir_name) override;
+    void fromJson(const Json::Value& v, const std::string& dir_name) override;
     std::string getClassName() const override;
 
-    void syncKickZones(const KickModelCollection & kmc);
+    void syncKickZones(const KickModelCollection& kmc);
   };
 
   /// Each player has its own custom configuration
-  class Player : rhoban_utils::JsonSerializable {
+  class Player : rhoban_utils::JsonSerializable
+  {
   public:
     /// Allows to identify player more easily
     std::string name;
@@ -91,7 +92,7 @@ public:
     std::unique_ptr<csa_mdp::Policy> approach_policy;
 
     Json::Value toJson() const override;
-    void fromJson(const Json::Value & v, const std::string & dir_name) override;
+    void fromJson(const Json::Value& v, const std::string& dir_name) override;
     std::string getClassName() const override;
   };
 
@@ -99,9 +100,8 @@ public:
   KickControler();
 
   /// cf class description
-  Problem::Result getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action,
-                               std::default_random_engine * engine) const override;
+  Problem::Result getSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                               std::default_random_engine* engine) const override;
 
   /// At starting state:
   /// Players are placed randomly on the field
@@ -110,12 +110,10 @@ public:
   ///       be more faire between problems with a different number of players.
   ///       e.g: One of the player start at a distance drawn from [0,max_dist]
   ///            and the others start at a random position but above max_dist
-  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
+  Eigen::VectorXd getStartingState(std::default_random_engine* engine) const override;
 
-  /// Return the most adapted approach policy for the specified settings, 
-  const csa_mdp::Policy & getPolicy(int player_id,
-                                    int kicker_id,
-                                    int kick_option_id) const;
+  /// Return the most adapted approach policy for the specified settings,
+  const csa_mdp::Policy& getPolicy(int player_id, int kicker_id, int kick_option_id) const;
 
   /// Run up to 'max_steps' of simulation on all players using the provided action.
   /// if kicker is enabled, cost is increased according to the number of steps and the
@@ -123,77 +121,57 @@ public:
   /// Execution is interrupted if:
   /// - one of the robot fails (inside goalArea)
   /// - Kicker is enabled and has reached target
-  void runSteps(int max_steps,
-                const Eigen::VectorXd & action,
-                int kicker_id,
-                int kick_option,
-                bool kicker_enabled,
-                Problem::Result * status,
-                std::default_random_engine * engine) const;
+  void runSteps(int max_steps, const Eigen::VectorXd& action, int kicker_id, int kick_option, bool kicker_enabled,
+                Problem::Result* status, std::default_random_engine* engine) const;
 
-  double getApproximatedTime(const Eigen::VectorXd & src,
-                             const Eigen::VectorXd & dst) const;
+  double getApproximatedTime(const Eigen::VectorXd& src, const Eigen::VectorXd& dst) const;
 
   /// Use the provided parameters to update 'status' by:
   /// - Updating the kicker position
   /// - Updating reward according to time spent moving toward the ball
   /// - Updating all non-kickers position
   ///   (they move during the time require for the kicker to reach its position)
-  void approximateKickerApproach(const Eigen::Vector2d & ball_real_pos,
-                                 const Eigen::VectorXd & action,
-                                 int kicker_id,
-                                 int kick_option_id,
-                                 Problem::Result * status) const;
+  void approximateKickerApproach(const Eigen::Vector2d& ball_real_pos, const Eigen::VectorXd& action, int kicker_id,
+                                 int kick_option_id, Problem::Result* status) const;
 
   /// Move all non kickers to prepare reception of the specified shoot
   /// each robot has the same amount of time to move
-  void moveNonKickers(double allowed_time,
-                      const Eigen::Vector2d & ball_start,
-                      const Eigen::Vector2d & ball_expected_end,
-                      int kicker_id,
-                      Problem::Result * status) const;
+  void moveNonKickers(double allowed_time, const Eigen::Vector2d& ball_start, const Eigen::Vector2d& ball_expected_end,
+                      int kicker_id, Problem::Result* status) const;
 
   /// Place a single robot according to the predicted shoot, robot chooses the
   /// closest position to receive the ball
-  void moveRobot(double allowed_time,
-                 const Eigen::Vector2d & ball_start,
-                 const Eigen::Vector2d & ball_end,
-                 int robot_id,
-                 Problem::Result * status) const;
+  void moveRobot(double allowed_time, const Eigen::Vector2d& ball_start, const Eigen::Vector2d& ball_end, int robot_id,
+                 Problem::Result* status) const;
 
   /// Return the best placing target for the robot at the provided state for the
   /// predicted ball trajectory
-  Eigen::Vector3d getBestTarget(const Eigen::Vector2d & ball_start,
-                                const Eigen::Vector2d & ball_end,
-                                const Eigen::Vector3d & robot_state) const;
+  Eigen::Vector3d getBestTarget(const Eigen::Vector2d& ball_start, const Eigen::Vector2d& ball_end,
+                                const Eigen::Vector3d& robot_state) const;
 
   /// Return a list of potential placing for the predicted ball trajectory
-  std::vector<Eigen::Vector3d> getTargets(const Eigen::Vector2d & ball_start,
-                                          const Eigen::Vector2d & ball_end) const;
-
+  std::vector<Eigen::Vector3d> getTargets(const Eigen::Vector2d& ball_start, const Eigen::Vector2d& ball_end) const;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
   size_t getNbPlayers() const;
 
   /// Import kicker_id and kick_id from action_id
-  void analyzeActionId(int action_id, int * kicker_id, int * kick_id) const;
+  void analyzeActionId(int action_id, int* kicker_id, int* kick_id) const;
 
   /// Get kick direction [rad] (in field basis)
-  double getKickDir(const Eigen::VectorXd & state,
-                    const Eigen::VectorXd & action) const;
+  double getKickDir(const Eigen::VectorXd& state, const Eigen::VectorXd& action) const;
 
   /// Return the names of kicks allowed for the given kick_option
-  const std::vector<std::string> & getAllowedKicks(int kicker_id,
-                                                   int kick_option);
+  const std::vector<std::string>& getAllowedKicks(int kicker_id, int kick_option);
 
 private:
   /// Return the limits for the field (row1: field_x, row2: field_y)
-  Eigen::Matrix<double,2,2> getFieldLimits() const;
+  Eigen::Matrix<double, 2, 2> getFieldLimits() const;
   /// Return the limits for the field (row1: field_x, row2: field_y, row3: orientation)
-  Eigen::Matrix<double,3,2> getPlayerLimits() const;
+  Eigen::Matrix<double, 3, 2> getPlayerLimits() const;
 
   /// Update state limits and names
   void updateStateLimits();
@@ -205,9 +183,8 @@ private:
   void updateActionsLimits();
 
   /// Add a ball
-  void initialBallNoise(double ball_x, double ball_y,
-                        double * ball_real_x, double * ball_real_y,
-                        std::default_random_engine * engine) const;
+  void initialBallNoise(double ball_x, double ball_y, double* ball_real_x, double* ball_real_y,
+                        std::default_random_engine* engine) const;
 
   /// Examine the result of moving the ball from 'src' to 'dst'
   /// If one of these 3 events happen:
@@ -218,49 +195,36 @@ private:
   /// - dst is updated
   /// - terminal value is set to true
   /// - reward is updated (a reward is accorded according to the event)
-  void moveBall(double src_x, double src_y,
-                double * dst_x, double * dst_y,
-                bool * terminal, double * reward) const;
+  void moveBall(double src_x, double src_y, double* dst_x, double* dst_y, bool* terminal, double* reward) const;
 
   /// Is the given kick colliding the goalie ?
   /// if colliding: return true and modifies dst_x and dst_y
-  bool isCollidingGoalie(double src_x, double src_y,
-                         double * dst_x, double * dst_y) const;
+  bool isCollidingGoalie(double src_x, double src_y, double* dst_x, double* dst_y) const;
 
   /// Is the given kick resulting with a goal?
   /// If goal: return true and modifies dst_x and dst_y
-  bool isGoal(double src_x, double src_y,
-              double * dst_x, double * dst_y) const;
-
+  bool isGoal(double src_x, double src_y, double* dst_x, double* dst_y) const;
 
   /// Is the ball outside of the field after the given kick
   /// If ball is outside: return true and modifies dst_x and dst_y
   /// src is expected to be inside the field
-  bool isOut(double src_x, double src_y,
-             double * dst_x, double * dst_y) const;
+  bool isOut(double src_x, double src_y, double* dst_x, double* dst_y) const;
 
   /// Is the player inside of the goal area
   bool isGoalArea(double player_x, double player_y) const;
 
-  Eigen::Vector3d getPlayerState(const Eigen::VectorXd & state,
-                                 int player_id) const;
+  Eigen::Vector3d getPlayerState(const Eigen::VectorXd& state, int player_id) const;
 
-  Eigen::Vector3d getTarget(const Eigen::VectorXd & state,
-                            const Eigen::VectorXd & action,
-                            int player_id,
-                            int kicker_id,
+  Eigen::Vector3d getTarget(const Eigen::VectorXd& state, const Eigen::VectorXd& action, int player_id, int kicker_id,
                             int kick_option) const;
 
   /// Extract a BallApproach state from the given player state and the given target
   /// Current speeds of the robots are set to [0,0,0]
-  Eigen::VectorXd toBallApproachState(const Eigen::Vector3d & player_state,
-                                      const Eigen::Vector3d & target) const;
+  Eigen::VectorXd toBallApproachState(const Eigen::Vector3d& player_state, const Eigen::Vector3d& target) const;
 
   /// Return an updated version
-  Eigen::VectorXd toKickControlerState(const Eigen::VectorXd & ba_state,
-                                       const Eigen::VectorXd & prev_kc_state,
-                                       int player_id,
-                                       const Eigen::Vector3d & target) const;
+  Eigen::VectorXd toKickControlerState(const Eigen::VectorXd& ba_state, const Eigen::VectorXd& prev_kc_state,
+                                       int player_id, const Eigen::Vector3d& target) const;
 
   /// #INITIAL STATE
   /// Maximal distance allowed from robots to ball in initial position
@@ -288,7 +252,7 @@ private:
   /// Approximation of cartesian speed [m/s] for the robot when
   /// 'simulate_approaches' is false
   double cartesian_speed;
-  
+
   /// Approximation of angular speed [rad/s] for the robot when
   /// 'simulate_approaches' is false
   double angular_speed;
@@ -318,7 +282,7 @@ private:
 
   /// #GOALKEEPER PROPERTIES
   /// Is goalie collision activated ?
-  bool use_goalie;  
+  bool use_goalie;
   /// Goal area: size along x-axis [m]
   double goal_area_size_x;
   /// Goal area: size along y-axis [m]
@@ -353,4 +317,4 @@ private:
   bool use_opposite_placing;
 };
 
-}
+}  // namespace csa_mdp

@@ -4,7 +4,6 @@
 
 namespace csa_mdp
 {
-
 /// States are:
 /// 0 - cart_pos
 /// 1 - cart_vel
@@ -22,12 +21,19 @@ namespace csa_mdp
 class SimulatedCartPole : public BlackBoxProblem
 {
 public:
-
   enum class RewardType
-  { Binary, Continuous, Pilco };
+  {
+    Binary,
+    Continuous,
+    Pilco
+  };
 
   enum class LearningSpace
-  { Angular, Cartesian, Full };
+  {
+    Angular,
+    Cartesian,
+    Full
+  };
 
   /// Default configuration is the pilco configuration
   SimulatedCartPole();
@@ -36,48 +42,42 @@ public:
 
   void updateLimits();
 
-  bool isTerminal(const Eigen::VectorXd & state) const;
+  bool isTerminal(const Eigen::VectorXd& state) const;
 
-  double getReward(const Eigen::VectorXd & state,
-                   const Eigen::VectorXd & dst) const;
+  double getReward(const Eigen::VectorXd& state, const Eigen::VectorXd& dst) const;
 
-  Result getSuccessor(const Eigen::VectorXd & state,
-                      const Eigen::VectorXd & action,
-                      std::default_random_engine * engine) const override;
+  Result getSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                      std::default_random_engine* engine) const override;
 
-  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
+  Eigen::VectorXd getStartingState(std::default_random_engine* engine) const override;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
 protected:
   // Entry is dimension 6, output is dimension 6
-  Eigen::VectorXd getFullSuccessor(const Eigen::VectorXd & state,
-                                   const Eigen::VectorXd & action,
-                                   std::default_random_engine * engine) const;
+  Eigen::VectorXd getFullSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                                   std::default_random_engine* engine) const;
 
   // Entry is dimension 4, output is dimension 4
-  Eigen::VectorXd getAngularSuccessor(const Eigen::VectorXd & state,
-                                      const Eigen::VectorXd & action,
-                                      std::default_random_engine * engine) const;
+  Eigen::VectorXd getAngularSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                                      std::default_random_engine* engine) const;
 
   // Entry is dimension 5, output is dimension 5
-  Eigen::VectorXd getCartesianSuccessor(const Eigen::VectorXd & state,
-                                        const Eigen::VectorXd & action,
-                                        std::default_random_engine * engine) const;
+  Eigen::VectorXd getCartesianSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                                        std::default_random_engine* engine) const;
 
   /// Detect the learning space or throw an exception
-  LearningSpace detectSpace(const Eigen::VectorXd & state) const;
+  LearningSpace detectSpace(const Eigen::VectorXd& state) const;
 
   /// Detect the learning space and convert
-  Eigen::VectorXd whateverToFull(const Eigen::VectorXd & state) const;
+  Eigen::VectorXd whateverToFull(const Eigen::VectorXd& state) const;
 
   /// Convert a state in angular space to a state in full space
-  Eigen::VectorXd angularToFull(const Eigen::VectorXd & state) const;
+  Eigen::VectorXd angularToFull(const Eigen::VectorXd& state) const;
   /// Convert a state in cartesian space to a state in full space
-  Eigen::VectorXd cartesianToFull(const Eigen::VectorXd & state) const;
-
+  Eigen::VectorXd cartesianToFull(const Eigen::VectorXd& state) const;
 
 private:
   /// maximal distance from center to cart [m]
@@ -102,7 +102,7 @@ private:
 
   /// Duration of an integration step [s]
   double integration_step;
-  /// Duration of a simulation step [s] (1 / controlFrequency) 
+  /// Duration of a simulation step [s] (1 / controlFrequency)
   double simulation_step;
 
   /// Standard deviation of the noise applied on the torque [N]
@@ -113,12 +113,11 @@ private:
   /// Which type of learning space is used
   LearningSpace learning_space;
 
-
-  SimulatedCartPole::RewardType loadRewardType(const std::string &type);
-  SimulatedCartPole::LearningSpace loadLearningSpace(const std::string & str);
+  SimulatedCartPole::RewardType loadRewardType(const std::string& type);
+  SimulatedCartPole::LearningSpace loadLearningSpace(const std::string& str);
 };
 
 std::string to_string(SimulatedCartPole::RewardType type);
 std::string to_string(SimulatedCartPole::LearningSpace learning_space);
 
-}
+}  // namespace csa_mdp

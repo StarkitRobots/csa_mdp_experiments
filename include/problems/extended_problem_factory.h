@@ -6,17 +6,16 @@
 
 namespace csa_mdp
 {
-
 class ExtendedProblemFactory : public csa_mdp::ProblemFactory
 {
 public:
   ExtendedProblemFactory();
 
   /// Throws an exception if it fails to create a problem
-  std::unique_ptr<BlackBoxProblem> buildBlackBox(const std::string &name);
+  std::unique_ptr<BlackBoxProblem> buildBlackBox(const std::string& name);
 
   /// Needs to be called to allow using additionnal Problems
   static void registerExtraProblems();
 };
 
-}
+}  // namespace csa_mdp

@@ -5,8 +5,8 @@
 #include "odometry/odometry_displacement_model.h"
 #include "odometry/odometry_noise_model.h"
 
-namespace csa_mdp {
-
+namespace csa_mdp
+{
 /// Odometry
 ///
 /// Utilities for differentiate and integrate the robot displacement.
@@ -14,18 +14,15 @@ namespace csa_mdp {
 class Odometry : public rhoban_utils::JsonSerializable
 {
 public:
-
   Odometry();
   /// Initialization with displacement and noise model types
-  Odometry(
-    OdometryDisplacementModel::Type typeDisplacement,
-    OdometryNoiseModel::Type typeNoise 
-    = OdometryNoiseModel::NoiseDisable);
+  Odometry(OdometryDisplacementModel::Type typeDisplacement,
+           OdometryNoiseModel::Type typeNoise = OdometryNoiseModel::NoiseDisable);
 
   /// Return displacement and noise model internal types.
   OdometryDisplacementModel::Type getDisplacementType() const;
   OdometryNoiseModel::Type getNoiseType() const;
-        
+
   /// Return current or default parameters for displacement and noise models.
   Eigen::VectorXd getParameters() const;
 
@@ -51,27 +48,23 @@ public:
 
   /// Update pose state by integrating given relative displacement between two
   /// support foot transition (dX, dY, dTheta) (meter, radian).
-  void updateFullStep(const Eigen::Vector3d& deltaPose,
-                      std::default_random_engine* engine);
+  void updateFullStep(const Eigen::Vector3d& deltaPose, std::default_random_engine* engine);
 
   /// Sample the difference of position in the robot referential
-  Eigen::Vector3d getDiffFullStep(const Eigen::Vector3d& deltaPose,
-                                  std::default_random_engine* engine) const;
+  Eigen::Vector3d getDiffFullStep(const Eigen::Vector3d& deltaPose, std::default_random_engine* engine) const;
 
   /// Return current corrected odometry state [x,y,theta]
   const Eigen::Vector3d& state() const;
-        
+
   /// Compute odometry displacement vector from state1 to state2
-  Eigen::Vector3d odometryDiff(
-    const Eigen::Vector3d& state1, 
-    const Eigen::Vector3d& state2) const;
+  Eigen::Vector3d odometryDiff(const Eigen::Vector3d& state1, const Eigen::Vector3d& state2) const;
 
   /// Integrate given odometry diff vector to given state and update it
   void odometryInt(const Eigen::Vector3d& diff, Eigen::Vector3d& state) const;
 
   virtual std::string getClassName() const override;
   virtual Json::Value toJson() const override;
-  virtual void fromJson(const Json::Value & v, const std::string & dir_name);
+  virtual void fromJson(const Json::Value& v, const std::string& dir_name);
 
 private:
   OdometryDisplacementModel _modelDisplacement;
@@ -96,4 +89,4 @@ private:
   Eigen::Vector3d _lastDiff;
 };
 
-}
+}  // namespace csa_mdp

@@ -5,18 +5,18 @@
 #include <vector>
 #include <Eigen/Core>
 
-namespace csa_mdp {
-
+namespace csa_mdp
+{
 /// OdometryDisplacementModel
 ///
 /// Implement several odometry models for pose displacement correction.
 class OdometryDisplacementModel : public rhoban_utils::JsonSerializable
 {
 public:
-
   /// Different displacement
   /// correction models types.
-  enum Type {
+  enum Type
+  {
     DisplacementIdentity = 1,
     DisplacementProportionalXY = 2,
     DisplacementProportionalXYA = 3,
@@ -52,18 +52,16 @@ public:
 
   /// Correct and return given relative displacement [dX,dY,dTheta] using
   /// current model parameters.
-  Eigen::Vector3d displacementCorrection(
-    const Eigen::Vector3d& diff) const;
+  Eigen::Vector3d displacementCorrection(const Eigen::Vector3d& diff) const;
 
   /// Print current parameters on standard output
   void printParameters() const;
 
   virtual std::string getClassName() const override;
   virtual Json::Value toJson() const override;
-  virtual void fromJson(const Json::Value & v, const std::string & dir_name);
+  virtual void fromJson(const Json::Value& v, const std::string& dir_name);
 
 private:
-
   /// Current model type
   Type _type;
 
@@ -75,4 +73,4 @@ private:
   Eigen::VectorXd _maxBounds;
 };
 
-}
+}  // namespace csa_mdp

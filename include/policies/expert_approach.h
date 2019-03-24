@@ -4,14 +4,20 @@
 
 namespace csa_mdp
 {
-
 class ExpertApproach : public csa_mdp::Policy
 {
 public:
   enum class State
-  { far, rotate, near };
+  {
+    far,
+    rotate,
+    near
+  };
   enum class Type
-  { cartesian, polar };
+  {
+    cartesian,
+    polar
+  };
 
   ExpertApproach();
 
@@ -21,17 +27,16 @@ public:
   void setConfig(Type newType, const Eigen::VectorXd& params);
 
   /// Get raw action and update memory_state
-  Eigen::VectorXd getRawAction(const Eigen::VectorXd &state) override;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd& state) override;
   /// Get raw action but do not update memory_state, state after action is
   /// written in 'final_state' (if it is not nullptr)
-  Eigen::VectorXd getRawAction(const Eigen::VectorXd &state,
-                               State * final_state) const;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd& state, State* final_state) const;
   /// Get raw action but do not update memory_state
-  Eigen::VectorXd getRawAction(const Eigen::VectorXd &state,
-                               std::default_random_engine * external_engine) const override;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd& state,
+                               std::default_random_engine* external_engine) const override;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
   // WARNING: Does not work in cartesian mode approach
@@ -50,10 +55,9 @@ public:
   std::unique_ptr<rhoban_fa::FATree> extractOpportunistFATree() const;
 
   // Read type from the given string
-  Type loadType(const std::string & type_str);
+  Type loadType(const std::string& type_str);
 
 private:
-
   /// Is input polar or cartesian?
   Type type;
 
@@ -99,7 +103,7 @@ private:
   // Near
   double near_theta_p;
   double near_lateral_p;
-  double stop_y_near;// Above this y, the robot has no forward / backward move
+  double stop_y_near;  // Above this y, the robot has no forward / backward move
   double max_y_near;
   // Target
   double wished_x;
@@ -113,4 +117,4 @@ private:
 std::string to_string(ExpertApproach::State state);
 std::string to_string(ExpertApproach::Type state);
 
-}
+}  // namespace csa_mdp

@@ -2,17 +2,18 @@
 
 namespace csa_mdp
 {
+KickDecisionModel::KickDecisionModel()
+{
+}
 
-KickDecisionModel::KickDecisionModel() {}
-
-const Eigen::MatrixXd & KickDecisionModel::getActionsLimits() const
+const Eigen::MatrixXd& KickDecisionModel::getActionsLimits() const
 {
   return action_limits;
 }
 
-const std::vector<std::string> & KickDecisionModel::getActionsNames() const
+const std::vector<std::string>& KickDecisionModel::getActionsNames() const
 {
   return action_names;
 }
 
-}
+}  // namespace csa_mdp

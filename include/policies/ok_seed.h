@@ -8,9 +8,9 @@ class OKSeed : public csa_mdp::Policy
 public:
   OKSeed();
 
-  Eigen::VectorXd getRawAction(const Eigen::VectorXd & state) override;
-  Eigen::VectorXd getRawAction(const Eigen::VectorXd & state,
-                               std::default_random_engine * external_engine) const override;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd& state) override;
+  Eigen::VectorXd getRawAction(const Eigen::VectorXd& state,
+                               std::default_random_engine* external_engine) const override;
 
   /// This approach is built to be an fa_tree, therefore, there is no loss in conversion
   virtual std::unique_ptr<rhoban_fa::FATree> extractFATree() const override;
@@ -25,7 +25,7 @@ public:
   Eigen::VectorXd finishKick(int side) const;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
   /// If X < back_limit:
@@ -39,5 +39,5 @@ public:
   // id of the autoAimKick
   int autoAimId;
   // id of the smallKick
-  int smallKickId;  
+  int smallKickId;
 };

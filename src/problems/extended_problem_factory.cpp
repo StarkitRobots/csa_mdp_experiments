@@ -10,7 +10,6 @@
 
 namespace csa_mdp
 {
-
 ExtendedProblemFactory::ExtendedProblemFactory()
 {
 }
@@ -19,35 +18,29 @@ void ExtendedProblemFactory::registerExtraProblems()
 {
   // Allowing multiple calls without issues
   static bool performed = false;
-  if (performed) return;
+  if (performed)
+    return;
   performed = true;
   // Registering extra builders
-  registerExtraBuilder("BallApproach",
-                       [](){return std::unique_ptr<Problem>(new BallApproach);});
-  registerExtraBuilder("CartPoleStabilization",
-                       [](){return std::unique_ptr<Problem>(new CartPoleStabilization);});
-  registerExtraBuilder("DoubleIntegrator",
-                       [](){return std::unique_ptr<Problem>(new DoubleIntegrator);});
-  registerExtraBuilder("KickControler",
-                       [](){return std::unique_ptr<Problem>(new KickControler);});
-  registerExtraBuilder("SimulatedCartPole",
-                       [](){return std::unique_ptr<Problem>(new SimulatedCartPole);});
-  registerExtraBuilder("SSLBallApproach",
-                       [](){return std::unique_ptr<Problem>(new SSLBallApproach);});
-  registerExtraBuilder("SSLDynamicBallApproach",
-                       [](){return std::unique_ptr<Problem>(new SSLDynamicBallApproach);});
+  registerExtraBuilder("BallApproach", []() { return std::unique_ptr<Problem>(new BallApproach); });
+  registerExtraBuilder("CartPoleStabilization", []() { return std::unique_ptr<Problem>(new CartPoleStabilization); });
+  registerExtraBuilder("DoubleIntegrator", []() { return std::unique_ptr<Problem>(new DoubleIntegrator); });
+  registerExtraBuilder("KickControler", []() { return std::unique_ptr<Problem>(new KickControler); });
+  registerExtraBuilder("SimulatedCartPole", []() { return std::unique_ptr<Problem>(new SimulatedCartPole); });
+  registerExtraBuilder("SSLBallApproach", []() { return std::unique_ptr<Problem>(new SSLBallApproach); });
+  registerExtraBuilder("SSLDynamicBallApproach", []() { return std::unique_ptr<Problem>(new SSLDynamicBallApproach); });
 }
 
-std::unique_ptr<BlackBoxProblem> ExtendedProblemFactory::buildBlackBox(const std::string &name)
+std::unique_ptr<BlackBoxProblem> ExtendedProblemFactory::buildBlackBox(const std::string& name)
 {
-  Problem * p = build(name).release();
-  BlackBoxProblem * result = dynamic_cast<BlackBoxProblem *>(p);
+  Problem* p = build(name).release();
+  BlackBoxProblem* result = dynamic_cast<BlackBoxProblem*>(p);
   if (result == nullptr)
   {
-    delete(result);
+    delete (result);
     throw std::runtime_error("Problem '" + name + "' is not a BlackBoxProblem");
   }
   return std::unique_ptr<BlackBoxProblem>(result);
 }
 
-}
+}  // namespace csa_mdp

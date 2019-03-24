@@ -13,23 +13,20 @@
 
 using namespace csa_mdp;
 
-
-int main(int argc, char ** argv) {
+int main(int argc, char** argv)
+{
   std::string learner_path("black_box_learner.json");
-  if (argc >= 2) {
+  if (argc >= 2)
+  {
     learner_path = argv[1];
   }
 
   // Abort if error are found
-  feenableexcept(FE_DIVBYZERO| FE_INVALID | FE_OVERFLOW);
+  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 
-
-  PolicyFactory::registerExtraBuilder("ExpertApproach",
-                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
-  PolicyFactory::registerExtraBuilder("OKSeed",
-                                      []() {return std::unique_ptr<Policy>(new OKSeed);});
-  PolicyFactory::registerExtraBuilder("MixedApproach",
-                                      []() {return std::unique_ptr<Policy>(new MixedApproach);});
+  PolicyFactory::registerExtraBuilder("ExpertApproach", []() { return std::unique_ptr<Policy>(new ExpertApproach); });
+  PolicyFactory::registerExtraBuilder("OKSeed", []() { return std::unique_ptr<Policy>(new OKSeed); });
+  PolicyFactory::registerExtraBuilder("MixedApproach", []() { return std::unique_ptr<Policy>(new MixedApproach); });
 
   ExtendedProblemFactory::registerExtraProblems();
 

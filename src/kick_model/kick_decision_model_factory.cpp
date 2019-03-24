@@ -5,18 +5,14 @@
 #include "kick_model/final_kick.h"
 //#include "kick_model/full_power_kick.h"
 
-
 namespace csa_mdp
 {
-
 KickDecisionModelFactory::KickDecisionModelFactory()
 {
-//  registerBuilder("CustomPowerKick",[](){return std::unique_ptr<KickDecisionModel>(new CustomPowerKick);});
-  registerBuilder("DirectedKick",
-                  [](){return std::unique_ptr<KickDecisionModel>(new DirectedKick);});
-  registerBuilder("FinalKick",
-                  [](){return std::unique_ptr<KickDecisionModel>(new FinalKick);});
-//  registerBuilder("FullPowerKick",[](){return std::unique_ptr<KickDecisionModel>(new FullPowerKick);});
+  //  registerBuilder("CustomPowerKick",[](){return std::unique_ptr<KickDecisionModel>(new CustomPowerKick);});
+  registerBuilder("DirectedKick", []() { return std::unique_ptr<KickDecisionModel>(new DirectedKick); });
+  registerBuilder("FinalKick", []() { return std::unique_ptr<KickDecisionModel>(new FinalKick); });
+  //  registerBuilder("FullPowerKick",[](){return std::unique_ptr<KickDecisionModel>(new FullPowerKick);});
 }
 
-}
+}  // namespace csa_mdp

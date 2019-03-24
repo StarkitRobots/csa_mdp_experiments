@@ -10,7 +10,6 @@
 
 namespace csa_mdp
 {
-
 /// This problem consists of approaching a ball with an omni-directional wheeled
 /// robot. The robot moves in a 2 dimensional map and every dimension is
 /// expressed in the robot referential. Since the robot needs to shoot toward a
@@ -31,35 +30,33 @@ namespace csa_mdp
 /// - acc_x
 /// - acc_y
 /// - acc_theta
-class SSLBallApproach : public BlackBoxProblem {
+class SSLBallApproach : public BlackBoxProblem
+{
 public:
   SSLBallApproach();
 
-  bool isTerminal(const Eigen::VectorXd & state) const;
+  bool isTerminal(const Eigen::VectorXd& state) const;
 
-  double getReward(const Eigen::VectorXd & state,
-                   const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) const;
+  double getReward(const Eigen::VectorXd& state, const Eigen::VectorXd& action, const Eigen::VectorXd& dst) const;
 
-  Problem::Result getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action,
-                               std::default_random_engine * engine) const override;
+  Problem::Result getSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                               std::default_random_engine* engine) const override;
 
-  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
+  Eigen::VectorXd getStartingState(std::default_random_engine* engine) const override;
 
   /// Is the ball kickable
-  bool isKickable(const Eigen::VectorXd & state) const;
+  bool isKickable(const Eigen::VectorXd& state) const;
   /// Is the robot colliding with the ball
-  bool isColliding(const Eigen::VectorXd & state) const;
+  bool isColliding(const Eigen::VectorXd& state) const;
   /// Is the ball outside of the given limits
-  bool isOutOfSpace(const Eigen::VectorXd & state) const;
+  bool isOutOfSpace(const Eigen::VectorXd& state) const;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
-  static double getBallX(const Eigen::VectorXd & state);
-  static double getBallY(const Eigen::VectorXd & state);
+  static double getBallX(const Eigen::VectorXd& state);
+  static double getBallY(const Eigen::VectorXd& state);
 
   /// Ensure that limits are consistent with the parameters
   void updateLimits();
@@ -126,4 +123,4 @@ protected:
   double angular_stddev;
 };
 
-}
+}  // namespace csa_mdp

@@ -2,13 +2,11 @@
 
 #include "kick_model/classic_kick.h"
 
-
 namespace csa_mdp
 {
-
 KickModelFactory::KickModelFactory()
 {
-  registerBuilder("ClassicKick",[](){return std::unique_ptr<KickModel>(new ClassicKick);});
+  registerBuilder("ClassicKick", []() { return std::unique_ptr<KickModel>(new ClassicKick); });
 }
 
-}
+}  // namespace csa_mdp

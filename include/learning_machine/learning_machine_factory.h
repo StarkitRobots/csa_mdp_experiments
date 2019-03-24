@@ -6,11 +6,10 @@
 
 namespace csa_mdp
 {
-
 class LearningMachineFactory : public rhoban_utils::Factory<LearningMachine>
 {
 public:
   LearningMachineFactory();
 };
 
-}
+}  // namespace csa_mdp

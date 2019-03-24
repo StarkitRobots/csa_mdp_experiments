@@ -12,7 +12,6 @@
 
 namespace csa_mdp
 {
-
 /// This problem consists of approaching a moving ball with an omni-directional
 /// wheeled robot.
 ///
@@ -20,7 +19,7 @@ namespace csa_mdp
 /// - state[0:1] -> position of the ball (x,y)
 /// - state[2:3] -> position of the target (x,y)
 /// - state[4:6] -> speed of the robot (x,y,theta)
-/// - state[7:8] -> speed of the ball (x,y)  
+/// - state[7:8] -> speed of the ball (x,y)
 /// - state[9]   -> Kicking tolerance (do not change at each step)
 ///
 /// There are two different setups for the problem: see Mode
@@ -29,38 +28,40 @@ namespace csa_mdp
 /// - Finish: The robot start with the ball in front of him, roughly aligned
 ///           toward the goal target, robot is moving at a speed similar to
 ///           the ball speed
-class SSLDynamicBallApproach : public BlackBoxProblem {
+class SSLDynamicBallApproach : public BlackBoxProblem
+{
 public:
-  enum Mode {Wide, Finish};
+  enum Mode
+  {
+    Wide,
+    Finish
+  };
 
   SSLDynamicBallApproach();
 
-  bool isTerminal(const Eigen::VectorXd & state) const;
+  bool isTerminal(const Eigen::VectorXd& state) const;
 
-  double getReward(const Eigen::VectorXd & state,
-                   const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) const;
+  double getReward(const Eigen::VectorXd& state, const Eigen::VectorXd& action, const Eigen::VectorXd& dst) const;
 
-  Problem::Result getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action,
-                               std::default_random_engine * engine) const override;
+  Problem::Result getSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                               std::default_random_engine* engine) const override;
 
-  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
+  Eigen::VectorXd getStartingState(std::default_random_engine* engine) const override;
 
-  Eigen::VectorXd getWideStartingState(std::default_random_engine * engine) const;
-  Eigen::VectorXd getFinishStartingState(std::default_random_engine * engine) const;
+  Eigen::VectorXd getWideStartingState(std::default_random_engine* engine) const;
+  Eigen::VectorXd getFinishStartingState(std::default_random_engine* engine) const;
 
-  /// Is current state inside 
-  bool isFinishState(const Eigen::VectorXd & state) const;
+  /// Is current state inside
+  bool isFinishState(const Eigen::VectorXd& state) const;
   /// Is the ball kickable in given state ?
-  bool isKickable(const Eigen::VectorXd & state) const;
+  bool isKickable(const Eigen::VectorXd& state) const;
   /// Is the robot colliding with the ball
-  bool isColliding(const Eigen::VectorXd & state) const;
+  bool isColliding(const Eigen::VectorXd& state) const;
   /// Is the ball outside of the given limits
-  bool isOutOfSpace(const Eigen::VectorXd & state) const;
+  bool isOutOfSpace(const Eigen::VectorXd& state) const;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
   /// Ensure that limits are consistent with the parameters
@@ -155,7 +156,7 @@ protected:
   Eigen::Vector2d ball_x_init;
 
   /// Position of the ball along y_axis during initialization [m] (Finish mode)
-  double ball_y_init; 
+  double ball_y_init;
 
   // Simple noise model (not even linear)
   // TODO: Ideally, noise model should be based on speed and acceleration (not supported by data)
@@ -170,4 +171,4 @@ protected:
   RollingBallModel rolling_ball_model;
 };
 
-}
+}  // namespace csa_mdp

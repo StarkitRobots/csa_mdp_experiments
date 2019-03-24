@@ -4,7 +4,6 @@
 
 namespace csa_mdp
 {
-
 /// Default kick has the following properties:
 /// - Average results
 ///   - Distance traveled
@@ -15,27 +14,25 @@ namespace csa_mdp
 ///
 /// Parameters:
 /// - Kick theta tol [rad]
-class ClassicKick : public KickModel {
+class ClassicKick : public KickModel
+{
 public:
-
   ClassicKick();
 
   using KickModel::applyKick;
 
   /// @Inherited
-  virtual Eigen::Vector2d applyKick(const Eigen::Vector2d & ball_pos,
-                                    double kick_dir,
-                                    const Eigen::VectorXd & kick_parameters,
-                                    std::default_random_engine * engine = nullptr) const override;
+  virtual Eigen::Vector2d applyKick(const Eigen::Vector2d& ball_pos, double kick_dir,
+                                    const Eigen::VectorXd& kick_parameters,
+                                    std::default_random_engine* engine = nullptr) const override;
 
-  virtual Eigen::Vector2d getKickInSelf(const Eigen::Vector2d & ball_pos,
-                                        bool right_kick) const override;
+  virtual Eigen::Vector2d getKickInSelf(const Eigen::Vector2d& ball_pos, bool right_kick) const override;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
-  virtual KickModel * clone() const override;
+  virtual KickModel* clone() const override;
 
 private:
   /// The average distance of the shoot [m]
@@ -51,7 +48,6 @@ private:
 
   /// Standard deviation for the direction of the kick [rad]
   double dir_stddev;
-
 };
 
-}
+}  // namespace csa_mdp

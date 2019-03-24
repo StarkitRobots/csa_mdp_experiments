@@ -5,32 +5,34 @@
 
 using namespace rhoban_fa;
 
-OKSeed::OKSeed()
-  : back_limit(1), goal_width(2.6), finish_limit(2.5),
-    autoAimId(0), smallKickId(1)
-{}
+OKSeed::OKSeed() : back_limit(1), goal_width(2.6), finish_limit(2.5), autoAimId(0), smallKickId(1)
+{
+}
 
-Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd & state)
+Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd& state)
 {
   return getRawAction(state, NULL);
 }
 
-Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd & state,
-                                     std::default_random_engine * external_engine) const {
-  (void) external_engine;
+Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd& state, std::default_random_engine* external_engine) const
+{
+  (void)external_engine;
   // Extracting ball position
   double ball_x = state(0);
   double ball_y = state(1);
   // Backlane situation
-  if (ball_x < back_limit) {
+  if (ball_x < back_limit)
+  {
     return backlaneKick();
   }
   // Center situation
-  if (std::fabs(ball_y) > goal_width/2) {
+  if (std::fabs(ball_y) > goal_width / 2)
+  {
     return centerKick(ball_y > 0 ? -1 : 1);
   }
   // Place situation (try to get the ball closer slowly)
-  if (ball_x < finish_limit) {
+  if (ball_x < finish_limit)
+  {
     return placeKick();
   }
   // Finish goal!
@@ -49,32 +51,32 @@ std::unique_ptr<rhoban_fa::FATree> OKSeed::extractFATree() const
   // Build splits
   std::unique_ptr<Split> back_split(new OrthogonalSplit(0, back_limit));
   std::unique_ptr<Split> finish_split(new OrthogonalSplit(0, finish_limit));
-  std::unique_ptr<Split> left_post_split(new OrthogonalSplit(1,goal_width/2));
-  std::unique_ptr<Split> right_post_split(new OrthogonalSplit(1,-goal_width/2));
-  std::unique_ptr<Split> central_split(new OrthogonalSplit(1,0));
+  std::unique_ptr<Split> left_post_split(new OrthogonalSplit(1, goal_width / 2));
+  std::unique_ptr<Split> right_post_split(new OrthogonalSplit(1, -goal_width / 2));
+  std::unique_ptr<Split> central_split(new OrthogonalSplit(1, 0));
   // Build tree
   std::vector<std::unique_ptr<FunctionApproximator>> approximators;
   std::unique_ptr<FATree> tmp;
   // 1. In finish zone, avoid goalie
   approximators.push_back(std::move(finish_right_node));
-  approximators.push_back(std::move(finish_left_node)); 
-  tmp.reset(new FATree(std::move(central_split),approximators));
+  approximators.push_back(std::move(finish_left_node));
+  tmp.reset(new FATree(std::move(central_split), approximators));
   // 2. Separate finish zone from place zone
   approximators.push_back(std::move(place_node));
-  approximators.push_back(std::move(tmp)); 
-  tmp.reset(new FATree(std::move(finish_split),approximators));
+  approximators.push_back(std::move(tmp));
+  tmp.reset(new FATree(std::move(finish_split), approximators));
   // 3. Centering
   // 3a:
   approximators.push_back(std::move(center_left_node));
-  approximators.push_back(std::move(tmp)); 
+  approximators.push_back(std::move(tmp));
   tmp.reset(new FATree(std::move(right_post_split), approximators));
   // 3b:
-  approximators.push_back(std::move(tmp)); 
+  approximators.push_back(std::move(tmp));
   approximators.push_back(std::move(center_right_node));
   tmp.reset(new FATree(std::move(left_post_split), approximators));
   // 4. Backlane
   approximators.push_back(std::move(backlane_node));
-  approximators.push_back(std::move(tmp)); 
+  approximators.push_back(std::move(tmp));
   tmp.reset(new FATree(std::move(back_split), approximators));
   // Tree has been created
   return std::move(tmp);
@@ -85,7 +87,7 @@ Eigen::VectorXd OKSeed::backlaneKick() const
   return Eigen::Vector2d(autoAimId, 0);
 }
 Eigen::VectorXd OKSeed::centerKick(int side) const
-{ 
+{
   return Eigen::Vector2d(smallKickId, 120 * side * M_PI / 180);
 }
 Eigen::VectorXd OKSeed::placeKick() const
@@ -95,25 +97,25 @@ Eigen::VectorXd OKSeed::placeKick() const
 
 Eigen::VectorXd OKSeed::finishKick(int side) const
 {
-  return Eigen::Vector2d(autoAimId, goal_width/4 * side);
+  return Eigen::Vector2d(autoAimId, goal_width / 4 * side);
 }
 
 Json::Value OKSeed::toJson() const
 {
   Json::Value v;
-  //TODO: write Ids
-  v["back_limit"  ] =  back_limit  ;
-  v["goal_width"  ] =  goal_width  ;
-  v["finish_limit"] =  finish_limit;
+  // TODO: write Ids
+  v["back_limit"] = back_limit;
+  v["goal_width"] = goal_width;
+  v["finish_limit"] = finish_limit;
   return v;
 }
 
-void OKSeed::fromJson(const Json::Value & v, const std::string & dir_name)
+void OKSeed::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
-  //TODO: read Ids
-  rhoban_utils::tryRead(v, "back_limit"  , &back_limit  );
-  rhoban_utils::tryRead(v, "goal_width"  , &goal_width  );
+  // TODO: read Ids
+  rhoban_utils::tryRead(v, "back_limit", &back_limit);
+  rhoban_utils::tryRead(v, "goal_width", &goal_width);
   rhoban_utils::tryRead(v, "finish_limit", &finish_limit);
 }
 
@@ -121,5 +123,3 @@ std::string OKSeed::getClassName() const
 {
   return "OKSeed";
 }
-
-

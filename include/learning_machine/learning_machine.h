@@ -10,17 +10,19 @@
 
 namespace csa_mdp
 {
-
 /// Base class for running experiments
 class LearningMachine : public rhoban_utils::JsonSerializable
 {
 public:
-  //TODO replace update rule by two int runs_by_policy and runs_by_policy_growth
+  // TODO replace update rule by two int runs_by_policy and runs_by_policy_growth
   /// What is the frequency of update?
   /// - each  : Update after every run
-  /// - square: The number of run before each update is the number of update 
+  /// - square: The number of run before each update is the number of update
   enum class UpdateRule
-  { each, square };
+  {
+    each,
+    square
+  };
 
   LearningMachine();
   virtual ~LearningMachine();
@@ -30,13 +32,13 @@ public:
   /// Also propagate
   void setLearner(std::unique_ptr<csa_mdp::Learner> learner);
   /// Also propagate
-  void setLearningDimensions(const std::vector<int> & learning_dimensions);
+  void setLearningDimensions(const std::vector<int>& learning_dimensions);
   // Also propagate
   void setDiscount(double new_discount);
   /// Inform the learner of current limits and discount
   void propagate();
 
-  /// If these function return false, the process ends as quickly as possible 
+  /// If these function return false, the process ends as quickly as possible
   virtual bool alive();
 
   /// Run the whole process
@@ -44,7 +46,7 @@ public:
 
   /// Perform a single run
   void doRun();
-  
+
   /// Perform a single step
   void doStep();
 
@@ -59,7 +61,7 @@ public:
 
   /// Apply the provided action and update current state and last reward
   /// This method should include a sleep if required
-  virtual void applyAction(const Eigen::VectorXd &action) = 0;
+  virtual void applyAction(const Eigen::VectorXd& action) = 0;
 
   /// Open the streams with respect to the configuration
   virtual void openStreams();
@@ -67,29 +69,25 @@ public:
   /// Close all the opened streams
   virtual void closeActiveStreams();
 
+  void writeRunLogHeader(std::ostream& out);
 
-  void writeRunLogHeader(std::ostream &out);
+  void writeTimeLog(const std::string& type, double time);
 
-  void writeTimeLog(const std::string &type, double time);
-
-  void writeRunLog(std::ostream &out,
-                   int run, int step,
-                   const Eigen::VectorXd &state,
-                   const Eigen::VectorXd &action,
+  void writeRunLog(std::ostream& out, int run, int step, const Eigen::VectorXd& state, const Eigen::VectorXd& action,
                    double reward);
 
   /// Check if detail folder exists and if not, then create it
   void createDetailFolder() const;
 
   /// Get the learning space from the given full space
-  Eigen::MatrixXd getLearningSpace(const Eigen::MatrixXd & space);
+  Eigen::MatrixXd getLearningSpace(const Eigen::MatrixXd& space);
 
   /// Get the learning state from the given full state
-  Eigen::VectorXd getLearningState(const Eigen::VectorXd & state);
+  Eigen::VectorXd getLearningState(const Eigen::VectorXd& state);
 
   virtual std::string getClassName() const override;
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
 
 protected:
   /// The online explorator
@@ -147,15 +145,15 @@ protected:
   std::vector<int> learning_dimensions;
 
   /// When using exploration mode, a 'seed' can be provided which is a file containing
-  /// one or several runs which can be used to learn a first policy 
+  /// one or several runs which can be used to learn a first policy
   std::string seed_path;
 
   /// Path at which details are saved
   static std::string details_path;
-  
-  LearningMachine::UpdateRule loadUpdateRule(const std::string &rule);
+
+  LearningMachine::UpdateRule loadUpdateRule(const std::string& rule);
 };
 
 std::string to_string(LearningMachine::UpdateRule rule);
 
-}
+}  // namespace csa_mdp

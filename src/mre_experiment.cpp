@@ -20,15 +20,14 @@ void usage()
   exit(EXIT_FAILURE);
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
   if (argc < 2)
   {
     usage();
   }
 
-  PolicyFactory::registerExtraBuilder("expert_approach",
-                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
+  PolicyFactory::registerExtraBuilder("expert_approach", []() { return std::unique_ptr<Policy>(new ExpertApproach); });
   ExtendedProblemFactory::registerExtraProblems();
 
   std::string config_path(argv[1]);

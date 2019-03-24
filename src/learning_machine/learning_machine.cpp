@@ -20,16 +20,23 @@ using csa_mdp::Policy;
 
 namespace csa_mdp
 {
-
 std::string LearningMachine::details_path("details");
 
 LearningMachine::LearningMachine()
-  : run(1), step(0), discount(0.98), nb_threads(1),
-    policy_id(1), policy_runs_required(1), policy_runs_performed(0), policy_total_reward(0),
-    best_policy_score(std::numeric_limits<double>::lowest()),
-    update_rule(UpdateRule::square),
-    time_budget(std::numeric_limits<double>::max()),
-    save_details(false), save_run_logs(true), save_best_policy(true)
+  : run(1)
+  , step(0)
+  , discount(0.98)
+  , nb_threads(1)
+  , policy_id(1)
+  , policy_runs_required(1)
+  , policy_runs_performed(0)
+  , policy_total_reward(0)
+  , best_policy_score(std::numeric_limits<double>::lowest())
+  , update_rule(UpdateRule::square)
+  , time_budget(std::numeric_limits<double>::max())
+  , save_details(false)
+  , save_run_logs(true)
+  , save_best_policy(true)
 {
 }
 
@@ -51,7 +58,7 @@ void LearningMachine::setLearner(std::unique_ptr<csa_mdp::Learner> new_learner)
   propagate();
 }
 
-void LearningMachine::setLearningDimensions(const std::vector<int> & new_learning_dimensions)
+void LearningMachine::setLearningDimensions(const std::vector<int>& new_learning_dimensions)
 {
   learning_dimensions = new_learning_dimensions;
   propagate();
@@ -78,7 +85,7 @@ void LearningMachine::propagate()
 void LearningMachine::execute()
 {
   init();
-  while(alive() && run <= nb_runs)
+  while (alive() && run <= nb_runs)
   {
     doRun();
     run++;
@@ -105,13 +112,11 @@ void LearningMachine::doStep()
   Eigen::VectorXd cmd = learner->getAction(getLearningState(status.successor));
   Eigen::VectorXd last_state = status.successor;
   applyAction(cmd);
-  if (save_run_logs) {
+  if (save_run_logs)
+  {
     writeRunLog(run_logs, run, step, last_state, cmd, status.reward);
   }
-  csa_mdp::Sample new_sample(getLearningState(last_state),
-                             cmd,
-                             getLearningState(status.successor),
-                             status.reward);
+  csa_mdp::Sample new_sample(getLearningState(last_state), cmd, getLearningState(status.successor), status.reward);
   // Add new sample
   learner->feed(new_sample);
   trajectory_reward += status.reward;
@@ -126,26 +131,27 @@ void LearningMachine::init()
   closeActiveStreams();
   openStreams();
   // Write Headers
-  if (save_run_logs) { writeRunLogHeader(run_logs); }
+  if (save_run_logs)
+  {
+    writeRunLogHeader(run_logs);
+  }
   time_logs << "policy,run,type,time" << std::endl;
   reward_logs << "run,policy,reward,disc_reward,elapsed_time" << std::endl;
   // Preload some experiment
   if (seed_path != "")
   {
-    if (problem->getNbActions() != 1) {
+    if (problem->getNbActions() != 1)
+    {
       throw std::logic_error("LearningMachine::init: seeds not handled for multi-actions problems");
     }
 
     std::cout << "Loading experiments from the seed at '" << seed_path << "'" << std::endl;
-    std::vector<History> histories = History::readCSV(seed_path,
-                                                      problem->getStateLimits().rows(),
-                                                      problem->getActionLimits(0).rows());
+    std::vector<History> histories =
+        History::readCSV(seed_path, problem->getStateLimits().rows(), problem->getActionLimits(0).rows());
     std::vector<csa_mdp::Sample> samples = History::getBatch(histories);
-    for (const csa_mdp::Sample & s : samples)
+    for (const csa_mdp::Sample& s : samples)
     {
-      const csa_mdp::Sample learning_sample(getLearningState(s.state),
-                                            s.action,
-                                            getLearningState(s.next_state),
+      const csa_mdp::Sample learning_sample(getLearningState(s.state), s.action, getLearningState(s.next_state),
                                             s.reward);
       learner->feed(learning_sample);
     }
@@ -154,7 +160,10 @@ void LearningMachine::init()
     std::cout << "\tPreliminary update done" << std::endl;
   }
   // If saving details, then create folder
-  if (save_details) { createDetailFolder(); }
+  if (save_details)
+  {
+    createDetailFolder();
+  }
 }
 
 bool LearningMachine::alive()
@@ -176,31 +185,28 @@ void LearningMachine::endRun()
   policy_runs_performed++;
   policy_total_reward += trajectory_disc_reward;
   // If the maximal step has not been reached, it mean we reached a final state
-  if (save_run_logs) {
+  if (save_run_logs)
+  {
     Eigen::VectorXd fake_action;
     writeRunLog(run_logs, run, step, status.successor, fake_action, 0);
   }
-  reward_logs << run << ","
-              << policy_id << ","
-              << trajectory_reward << ","
-              << trajectory_disc_reward << ","
+  reward_logs << run << "," << policy_id << "," << trajectory_reward << "," << trajectory_disc_reward << ","
               << learner->getLearningTime() << std::endl;
   // If it is the last run of the policy, perform some operations
   if (policy_runs_performed >= policy_runs_required)
   {
     // If current policy is better than the other, then save it
     double policy_score = policy_total_reward / policy_runs_performed;
-    if (save_best_policy  &&
-        learner->hasAvailablePolicy() &&
-        policy_score > best_policy_score) {
+    if (save_best_policy && learner->hasAvailablePolicy() && policy_score > best_policy_score)
+    {
       createDetailFolder();
       std::ostringstream oss;
       oss << details_path << "/best_";
       std::string prefix = oss.str();
       learner->saveStatus(prefix);
       best_policy_score = policy_score;
-      std::cout << "Found a new 'best policy' at policy_id: " << policy_id
-                << " with a score of: " << policy_score << std::endl;
+      std::cout << "Found a new 'best policy' at policy_id: " << policy_id << " with a score of: " << policy_score
+                << std::endl;
     }
     // Save the current status
     if (save_details)
@@ -211,10 +217,11 @@ void LearningMachine::endRun()
       learner->saveStatus(prefix);
     }
     // Update internal structure only if there is still some runs to go
-    if (run < nb_runs) {
+    if (run < nb_runs)
+    {
       learner->internalUpdate();
       // Write time entries
-      for (const auto & entry : learner->getTimeRepartition())
+      for (const auto& entry : learner->getTimeRepartition())
       {
         writeTimeLog(entry.first, entry.second);
       }
@@ -222,7 +229,7 @@ void LearningMachine::endRun()
       policy_id++;
       policy_total_reward = 0;
       policy_runs_performed = 0;
-      switch(update_rule)
+      switch (update_rule)
       {
         case UpdateRule::each:
           policy_runs_required = 1;
@@ -238,23 +245,35 @@ void LearningMachine::endRun()
 
 void LearningMachine::closeActiveStreams()
 {
-  if (run_logs.is_open()   ) { run_logs.close();    }
-  if (time_logs.is_open()  ) { time_logs.close();   }
-  if (reward_logs.is_open()) { reward_logs.close(); }
+  if (run_logs.is_open())
+  {
+    run_logs.close();
+  }
+  if (time_logs.is_open())
+  {
+    time_logs.close();
+  }
+  if (reward_logs.is_open())
+  {
+    reward_logs.close();
+  }
 }
 
 void LearningMachine::openStreams()
 {
-  if (save_run_logs) { run_logs.open("run_logs.csv"); }
+  if (save_run_logs)
+  {
+    run_logs.open("run_logs.csv");
+  }
   time_logs.open("time_logs.csv");
   reward_logs.open("reward_logs.csv");
 }
 
-void LearningMachine::writeRunLogHeader(std::ostream &out)
+void LearningMachine::writeRunLogHeader(std::ostream& out)
 {
   out << "run,step,";
   // State information
-  for (const std::string & name : problem->getStateNames())
+  for (const std::string& name : problem->getStateNames())
   {
     out << name << ",";
   }
@@ -262,7 +281,7 @@ void LearningMachine::writeRunLogHeader(std::ostream &out)
   out << "action_id,";
   for (int action_id = 0; action_id < problem->getNbActions(); action_id++)
   {
-    for (const std::string & name : problem->getActionNames(action_id))
+    for (const std::string& name : problem->getActionNames(action_id))
     {
       out << "a" << action_id << "_" << name << ",";
     }
@@ -270,15 +289,13 @@ void LearningMachine::writeRunLogHeader(std::ostream &out)
   out << "reward" << std::endl;
 }
 
-void LearningMachine::writeTimeLog(const std::string &type, double time)
+void LearningMachine::writeTimeLog(const std::string& type, double time)
 {
   time_logs << policy_id << "," << run << "," << type << "," << time << std::endl;
 }
 
-void LearningMachine::writeRunLog(std::ostream &out, int run, int step,
-                                  const Eigen::VectorXd &state,
-                                  const Eigen::VectorXd &action,
-                                  double reward)
+void LearningMachine::writeRunLog(std::ostream& out, int run, int step, const Eigen::VectorXd& state,
+                                  const Eigen::VectorXd& action, double reward)
 {
   out << run << "," << step << ",";
 
@@ -287,18 +304,23 @@ void LearningMachine::writeRunLog(std::ostream &out, int run, int step,
     out << state(i) << ",";
   }
   int curr_action_id = -1;
-  if (action.rows() > 0) curr_action_id = action(0);
+  if (action.rows() > 0)
+    curr_action_id = action(0);
   out << curr_action_id << ",";
   // Currently jumping first element of action (only used for multiple action spaces problems)
-  for (int action_id = 0; action_id < problem->getNbActions(); action_id++) {
-    if (curr_action_id == action_id) {
+  for (int action_id = 0; action_id < problem->getNbActions(); action_id++)
+  {
+    if (curr_action_id == action_id)
+    {
       for (int i = 1; i < action.rows(); i++)
       {
         out << action(i) << ",";
       }
     }
-    else {
-      for (int i = 0; i < problem->actionDims(action_id); i++) {
+    else
+    {
+      for (int i = 0; i < problem->actionDims(action_id); i++)
+      {
         out << "NA,";
       }
     }
@@ -321,7 +343,7 @@ void LearningMachine::createDetailFolder() const
   }
 }
 
-Eigen::MatrixXd LearningMachine::getLearningSpace(const Eigen::MatrixXd & space)
+Eigen::MatrixXd LearningMachine::getLearningSpace(const Eigen::MatrixXd& space)
 {
   Eigen::MatrixXd learning_space(learning_dimensions.size(), 2);
   for (size_t dim = 0; dim < learning_dimensions.size(); dim++)
@@ -331,7 +353,7 @@ Eigen::MatrixXd LearningMachine::getLearningSpace(const Eigen::MatrixXd & space)
   return learning_space;
 }
 
-Eigen::VectorXd LearningMachine::getLearningState(const Eigen::VectorXd & state)
+Eigen::VectorXd LearningMachine::getLearningState(const Eigen::VectorXd& state)
 {
   Eigen::VectorXd learning_state(learning_dimensions.size());
   for (size_t dim = 0; dim < learning_dimensions.size(); dim++)
@@ -349,44 +371,51 @@ std::string LearningMachine::getClassName() const
 Json::Value LearningMachine::toJson() const
 {
   Json::Value v;
-  if (learner) {
+  if (learner)
+  {
     v["learner"] = learner->toFactoryJson();
   }
-  if (problem) {
+  if (problem)
+  {
     v["problem"] = problem->toFactoryJson();
   }
-  v["update_rule"     ] =  to_string(update_rule);
-  v["nb_runs"         ] =  nb_runs;
-  v["nb_steps"        ] =  nb_steps;
-  v["nb_threads"      ] =  nb_threads;
-  v["discount"        ] =  discount;
-  v["time_budget"     ] =  time_budget;
-  v["save_details"    ] =  save_details;
-  v["save_run_logs"   ] =  save_run_logs;
-  v["save_best_policy"] =  save_best_policy;
+  v["update_rule"] = to_string(update_rule);
+  v["nb_runs"] = nb_runs;
+  v["nb_steps"] = nb_steps;
+  v["nb_threads"] = nb_threads;
+  v["discount"] = discount;
+  v["time_budget"] = time_budget;
+  v["save_details"] = save_details;
+  v["save_run_logs"] = save_run_logs;
+  v["save_best_policy"] = save_best_policy;
   v["learning_dimensions"] = rhoban_utils::vector2Json(learning_dimensions);
   return v;
 }
 
-void LearningMachine::fromJson(const Json::Value & v, const std::string & dir_name)
+void LearningMachine::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   // First: read problem
   std::unique_ptr<Problem> tmp_problem;
   std::string problem_path;
   rhoban_utils::tryRead(v, "problem_path", &problem_path);
-  if (problem_path != "") {
+  if (problem_path != "")
+  {
     tmp_problem = ProblemFactory().buildFromJsonFile(dir_name + problem_path);
-  } else {
+  }
+  else
+  {
     tmp_problem = ProblemFactory().read(v, "problem", dir_name);
   }
-  if(!tmp_problem) {
+  if (!tmp_problem)
+  {
     throw rhoban_utils::JsonParsingError("LearningMachine::fromJson: No problem found");
   }
   setProblem(std::move(tmp_problem));
   // Override learning dimensions if custom config is provided
   std::vector<int> new_learning_dims;
   rhoban_utils::tryReadVector(v, "learning_dimensions", &new_learning_dims);
-  if (new_learning_dims.size() > 0) setLearningDimensions(new_learning_dims);
+  if (new_learning_dims.size() > 0)
+    setLearningDimensions(new_learning_dims);
   // Then: read learner
   setLearner(LearnerFactory().read(v, "learner", dir_name));
   // Then... read everything else
@@ -396,15 +425,15 @@ void LearningMachine::fromJson(const Json::Value & v, const std::string & dir_na
   {
     update_rule = loadUpdateRule(update_rule_str);
   }
-  nb_runs  = rhoban_utils::read<int>(v, "nb_runs");
+  nb_runs = rhoban_utils::read<int>(v, "nb_runs");
   nb_steps = rhoban_utils::read<int>(v, "nb_steps");
-  rhoban_utils::tryRead(v, "nb_threads"      , &nb_threads      );
-  rhoban_utils::tryRead(v, "discount"        , &discount        );
-  rhoban_utils::tryRead(v, "time_budget"     , &time_budget     );
-  rhoban_utils::tryRead(v, "save_details"    , &save_details    );
-  rhoban_utils::tryRead(v, "save_run_logs"   , &save_run_logs   );
+  rhoban_utils::tryRead(v, "nb_threads", &nb_threads);
+  rhoban_utils::tryRead(v, "discount", &discount);
+  rhoban_utils::tryRead(v, "time_budget", &time_budget);
+  rhoban_utils::tryRead(v, "save_details", &save_details);
+  rhoban_utils::tryRead(v, "save_run_logs", &save_run_logs);
   rhoban_utils::tryRead(v, "save_best_policy", &save_best_policy);
-  rhoban_utils::tryRead(v, "seed_path"       , &seed_path       );
+  rhoban_utils::tryRead(v, "seed_path", &seed_path);
   setDiscount(discount);
 }
 
@@ -412,13 +441,15 @@ std::string to_string(LearningMachine::UpdateRule rule)
 {
   switch (rule)
   {
-    case LearningMachine::UpdateRule::each:   return "each";
-    case LearningMachine::UpdateRule::square: return "square";
+    case LearningMachine::UpdateRule::each:
+      return "each";
+    case LearningMachine::UpdateRule::square:
+      return "square";
   }
   throw std::runtime_error("Unknown LearningMachine::UpdateRule type in to_string(Type)");
 }
 
-LearningMachine::UpdateRule LearningMachine::loadUpdateRule(const std::string &rule)
+LearningMachine::UpdateRule LearningMachine::loadUpdateRule(const std::string& rule)
 {
   if (rule == "each")
   {
@@ -431,4 +462,4 @@ LearningMachine::UpdateRule LearningMachine::loadUpdateRule(const std::string &r
   throw std::runtime_error("Unknown LearningMachine::UpdateRule: '" + rule + "'");
 }
 
-}
+}  // namespace csa_mdp

@@ -6,12 +6,10 @@
 
 namespace csa_mdp
 {
-
-DoubleIntegrator::DoubleIntegrator(Version version_)
-  : version(version_), random_start(false)
+DoubleIntegrator::DoubleIntegrator(Version version_) : version(version_), random_start(false)
 {
-  Eigen::MatrixXd state_limits(2,2), action_limits(1,2);
-  switch(version)
+  Eigen::MatrixXd state_limits(2, 2), action_limits(1, 2);
+  switch (version)
   {
     case SantaMaria1998:
       state_limits << -1, 1, -1, 1;
@@ -24,25 +22,26 @@ DoubleIntegrator::DoubleIntegrator(Version version_)
       break;
   }
   setStateLimits(state_limits);
-  setActionLimits({action_limits});
+  setActionLimits({ action_limits });
 }
 
-bool DoubleIntegrator::isTerminal(const Eigen::VectorXd & state) const
+bool DoubleIntegrator::isTerminal(const Eigen::VectorXd& state) const
 {
-  if (version == Weinstein2012) return false;// No terminal state
+  if (version == Weinstein2012)
+    return false;  // No terminal state
   for (int i = 0; i < 2; i++)
   {
-    if (state(i) < getStateLimits()(i,0) || state(i) > getStateLimits()(i,1))
+    if (state(i) < getStateLimits()(i, 0) || state(i) > getStateLimits()(i, 1))
       return true;
   }
   return false;
 }
 
-double DoubleIntegrator::getReward(const Eigen::VectorXd & state,
-                                   const Eigen::VectorXd & action,
-                                   const Eigen::VectorXd & dst) const
+double DoubleIntegrator::getReward(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                                   const Eigen::VectorXd& dst) const
 {
-  if (isTerminal(dst)) {
+  if (isTerminal(dst))
+  {
     return -50;
   }
   double posCost = state(0) * state(0);
@@ -50,11 +49,11 @@ double DoubleIntegrator::getReward(const Eigen::VectorXd & state,
   return -(posCost + accCost);
 }
 
-Problem::Result DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
-                                               const Eigen::VectorXd & action,
-                                               std::default_random_engine * engine) const
+Problem::Result DoubleIntegrator::getSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                                               std::default_random_engine* engine) const
 {
-  if (action.rows() != 2) {
+  if (action.rows() != 2)
+  {
     std::ostringstream oss;
     oss << "DoubleIntegrator::getSuccessor: "
         << "Invalid dimensions for action, expecting 2, got " << action.rows();
@@ -64,7 +63,7 @@ Problem::Result DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
   std::uniform_real_distribution<double> noise_distribution;
   if (version == Weinstein2012)
   {
-      noise_distribution = std::uniform_real_distribution<double>(-0.1, 0.1);
+    noise_distribution = std::uniform_real_distribution<double>(-0.1, 0.1);
   }
   double integrationStep = 0.05;
   double simulationStep = 0.5;
@@ -92,10 +91,11 @@ Problem::Result DoubleIntegrator::getSuccessor(const Eigen::VectorXd & state,
   return result;
 }
 
-Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine * engine) const
+Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine* engine) const
 {
-  (void) engine;
-  if (random_start) {
+  (void)engine;
+  if (random_start)
+  {
     return rhoban_random::getUniformSamplesMatrix(getStateLimits(), 1, engine);
   }
   Eigen::VectorXd state(2);
@@ -103,13 +103,15 @@ Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine * 
   return state;
 }
 
-Json::Value DoubleIntegrator::toJson() const {
+Json::Value DoubleIntegrator::toJson() const
+{
   Json::Value v;
-  v["random_start"] =  random_start;
+  v["random_start"] = random_start;
   return v;
 }
 
-void DoubleIntegrator::fromJson(const Json::Value & v, const std::string & dir_name) {
+void DoubleIntegrator::fromJson(const Json::Value& v, const std::string& dir_name)
+{
   (void)dir_name;
   rhoban_utils::tryRead(v, "random_start", &random_start);
 }
@@ -119,4 +121,4 @@ std::string DoubleIntegrator::getClassName() const
   return "DoubleIntegrator";
 }
 
-}
+}  // namespace csa_mdp

@@ -6,10 +6,10 @@
 
 namespace csa_mdp
 {
-
-class KickDecisionModelFactory : public rhoban_utils::Factory<KickDecisionModel> {
+class KickDecisionModelFactory : public rhoban_utils::Factory<KickDecisionModel>
+{
 public:
   KickDecisionModelFactory();
 };
 
-}
+}  // namespace csa_mdp

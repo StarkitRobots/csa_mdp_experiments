@@ -14,7 +14,6 @@
 
 namespace csa_mdp
 {
-
 /// This problem consists of approaching a ball with a humanoid robot. The robot
 /// in a 2 dimensional map and every dimension is expressed in the robot
 /// referential. Since the robot needs to shoot toward a given target, it needs
@@ -30,48 +29,46 @@ namespace csa_mdp
 /// - last_step_x
 /// - last_step_y
 /// - last_step_theta
-class BallApproach : public BlackBoxProblem {
+class BallApproach : public BlackBoxProblem
+{
 public:
   BallApproach();
 
   void clearKickZones();
-  void addKickZone(const KickZone & kz);
+  void addKickZone(const KickZone& kz);
 
-  bool isTerminal(const Eigen::VectorXd & state) const;
+  bool isTerminal(const Eigen::VectorXd& state) const;
 
-  double getReward(const Eigen::VectorXd & state,
-                   const Eigen::VectorXd & action,
-                   const Eigen::VectorXd & dst) const;
+  double getReward(const Eigen::VectorXd& state, const Eigen::VectorXd& action, const Eigen::VectorXd& dst) const;
 
-  Problem::Result getSuccessor(const Eigen::VectorXd & state,
-                               const Eigen::VectorXd & action,
-                               std::default_random_engine * engine) const override;
+  Problem::Result getSuccessor(const Eigen::VectorXd& state, const Eigen::VectorXd& action,
+                               std::default_random_engine* engine) const override;
 
-  Eigen::VectorXd getStartingState(std::default_random_engine * engine) const override;
+  Eigen::VectorXd getStartingState(std::default_random_engine* engine) const override;
 
   /// Is the ball kickable
-  bool isKickable(const Eigen::VectorXd & state) const;
+  bool isKickable(const Eigen::VectorXd& state) const;
   /// Is the robot colliding with the ball
-  bool isColliding(const Eigen::VectorXd & state) const;
+  bool isColliding(const Eigen::VectorXd& state) const;
   /// Is the ball outside of the given limits
-  bool isOutOfSpace(const Eigen::VectorXd & state) const;
+  bool isOutOfSpace(const Eigen::VectorXd& state) const;
   /// Can the robot see the ball?
-  bool seeBall(const Eigen::VectorXd & state) const;
+  bool seeBall(const Eigen::VectorXd& state) const;
 
   Json::Value toJson() const override;
-  void fromJson(const Json::Value & v, const std::string & dir_name) override;
+  void fromJson(const Json::Value& v, const std::string& dir_name) override;
   std::string getClassName() const override;
 
-  static double getBallX(const Eigen::VectorXd & state);
-  static double getBallY(const Eigen::VectorXd & state);
+  static double getBallX(const Eigen::VectorXd& state);
+  static double getBallY(const Eigen::VectorXd& state);
 
   /// Ensure that limits are consistent with the parameters
   void updateLimits();
   /// Update maximal distance at which the ball is accepted
   void setMaxDist(double dist);
 
-  const Odometry & getOdometry() const;
-  void setOdometry(const Odometry & odometry);
+  const Odometry& getOdometry() const;
+  void setOdometry(const Odometry& odometry);
 
 protected:
   /// The displacement and noise model
@@ -139,4 +136,4 @@ protected:
   double init_max_dist;
 };
 
-}
+}  // namespace csa_mdp

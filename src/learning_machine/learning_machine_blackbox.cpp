@@ -4,21 +4,21 @@
 
 namespace csa_mdp
 {
-
-LearningMachineBlackBox::LearningMachineBlackBox()
-  : LearningMachine()
+LearningMachineBlackBox::LearningMachineBlackBox() : LearningMachine()
 {
   engine = rhoban_random::getRandomEngine();
 }
 
 LearningMachineBlackBox::~LearningMachineBlackBox()
-{}
+{
+}
 
 void LearningMachineBlackBox::prepareRun()
 {
   LearningMachine::prepareRun();
-  BlackBoxProblem * casted = dynamic_cast<BlackBoxProblem *>(problem.get());
-  if (casted == nullptr) {
+  BlackBoxProblem* casted = dynamic_cast<BlackBoxProblem*>(problem.get());
+  if (casted == nullptr)
+  {
     throw std::logic_error("Trying to run a LearningMachineBlackBox on a NOT blackbox problem");
   }
   status.successor = casted->getStartingState(&engine);
@@ -26,7 +26,7 @@ void LearningMachineBlackBox::prepareRun()
   status.terminal = false;
 }
 
-void LearningMachineBlackBox::applyAction(const Eigen::VectorXd &action)
+void LearningMachineBlackBox::applyAction(const Eigen::VectorXd& action)
 {
   status = problem->getSuccessor(status.successor, action, &engine);
 }
@@ -37,7 +37,8 @@ void LearningMachineBlackBox::setProblem(std::unique_ptr<csa_mdp::Problem> new_p
   LearningMachine::setProblem(std::move(new_problem));
   // Custom task
   bb_problem = std::dynamic_pointer_cast<BlackBoxProblem>(problem);
-  if (!bb_problem) {
+  if (!bb_problem)
+  {
     throw std::logic_error("Trying to run a LearningMachineBlackBox on a NOT blackbox problem");
   }
 }
@@ -47,4 +48,4 @@ std::string LearningMachineBlackBox::getClassName() const
   return "LearningMachineBlackBox";
 }
 
-}
+}  // namespace csa_mdp

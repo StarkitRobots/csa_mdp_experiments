@@ -11,14 +11,13 @@ using namespace csa_mdp;
 
 using rhoban_fa::FATree;
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
-  PolicyFactory::registerExtraBuilder("expert_approach",
-                                      []() {return std::unique_ptr<Policy>(new ExpertApproach);});
-  PolicyFactory::registerExtraBuilder("OKSeed",
-                                      []() {return std::unique_ptr<Policy>(new OKSeed);});
+  PolicyFactory::registerExtraBuilder("expert_approach", []() { return std::unique_ptr<Policy>(new ExpertApproach); });
+  PolicyFactory::registerExtraBuilder("OKSeed", []() { return std::unique_ptr<Policy>(new OKSeed); });
 
-  if (argc < 3) {
+  if (argc < 3)
+  {
     std::cerr << "Usage: " << argv[0] << " <input_xml> <output_binary>" << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -31,6 +30,4 @@ int main(int argc, char ** argv)
   std::unique_ptr<FATree> tree = p->extractFATree();
 
   tree->save(output_path);
-
-
 }
