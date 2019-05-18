@@ -1,6 +1,6 @@
 #include "kick_model/custom_power_kick.h"
 
-#include "rhoban_utils/xml_tools.h"
+#include "starkit_utils/xml_tools.h"
 
 namespace csa_mdp
 {
@@ -57,8 +57,8 @@ Json::Value CustomPowerKick::toJson() const
 void CustomPowerKick::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   KickModel::fromJson(node);
-  min_kick_power = rhoban_utils::read<double>(v, "min_kick_power");
-  max_kick_power = rhoban_utils::read<double>(v, "max_kick_power");
+  min_kick_power = starkit_utils::read<double>(v, "min_kick_power");
+  max_kick_power = starkit_utils::read<double>(v, "max_kick_power");
 }
 
 std::string CustomPowerKick::getClassName() const

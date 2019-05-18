@@ -1,6 +1,6 @@
 #include "problems/cart_pole_stabilization.h"
 
-#include "rhoban_random/tools.h"
+#include "starkit_random/tools.h"
 
 #include <iostream>
 
@@ -222,7 +222,7 @@ void CartPoleStabilization::fromJson(const Json::Value& v, const std::string& di
 {
   (void)dir_name;
   std::string learning_space_str;
-  rhoban_utils::tryRead(v, "learning_space", &learning_space_str);
+  starkit_utils::tryRead(v, "learning_space", &learning_space_str);
   if (learning_space_str != "")
   {
     learning_space = loadLearningSpace(learning_space_str);

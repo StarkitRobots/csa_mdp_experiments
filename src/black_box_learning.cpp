@@ -1,13 +1,13 @@
-#include "rhoban_csa_mdp/solvers/black_box_learner_factory.h"
+#include "starkit_csa_mdp/solvers/black_box_learner_factory.h"
 
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
 #include "policies/ok_seed.h"
 #include "problems/extended_problem_factory.h"
 
-#include "rhoban_csa_mdp/core/policy_factory.h"
+#include "starkit_csa_mdp/core/policy_factory.h"
 
-#include "rhoban_random/tools.h"
+#include "starkit_random/tools.h"
 
 #include <fenv.h>
 
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
   std::shared_ptr<BlackBoxLearner> bbl;
   bbl = BlackBoxLearnerFactory().buildFromJsonFile(learner_path);
 
-  std::default_random_engine engine = rhoban_random::getRandomEngine();
+  std::default_random_engine engine = starkit_random::getRandomEngine();
 
   bbl->run(&engine);
 }

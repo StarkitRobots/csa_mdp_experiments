@@ -4,11 +4,11 @@
 #include "kick_model/kick_model_collection.h"
 #include "kick_model/kick_model_factory.h"
 
-#include "rhoban_csa_mdp/core/policy_factory.h"
-#include "rhoban_fa/function_approximator_factory.h"
-#include "rhoban_random/tools.h"
+#include "starkit_csa_mdp/core/policy_factory.h"
+#include "starkit_fa/function_approximator_factory.h"
+#include "starkit_random/tools.h"
 
-using namespace rhoban_utils;
+using namespace starkit_utils;
 
 // Normalize angle in [-pi,pi]
 static double normalizeAngle(double angle)
@@ -30,7 +30,7 @@ void KickControler::KickOption::fromJson(const Json::Value& v, const std::string
   // Replace approach_policy if found
   PolicyFactory().tryRead(v, "policy", dir_name, &approach_policy);
   // Reading kick_model from name if found
-  kick_model_names = rhoban_utils::readVector<std::string>(v, "kick_model_names");
+  kick_model_names = starkit_utils::readVector<std::string>(v, "kick_model_names");
 }
 
 std::string KickControler::KickOption::getClassName() const
@@ -54,17 +54,17 @@ Json::Value KickControler::Player::toJson() const
 
 void KickControler::Player::fromJson(const Json::Value& v, const std::string& dir_name)
 {
-  name = rhoban_utils::read<std::string>(v, "name");
+  name = starkit_utils::read<std::string>(v, "name");
   navigation_approach.tryRead(v, "approach_model", dir_name);
   // Replace approach_policy if found
   PolicyFactory().tryRead(v, "policy", dir_name, &approach_policy);
   // Reading kick options
   kick_options.clear();
-  rhoban_utils::checkMember(v, "kick_options");
+  starkit_utils::checkMember(v, "kick_options");
   const Json::Value& ko_value = v["kick_options"];
   if (!ko_value.isArray())
   {
-    throw rhoban_utils::JsonParsingError("KickControler::Player: expecting an array for kick_options");
+    throw starkit_utils::JsonParsingError("KickControler::Player: expecting an array for kick_options");
   }
   for (Json::ArrayIndex idx = 0; idx < ko_value.size(); idx++)
   {
@@ -277,7 +277,7 @@ Eigen::VectorXd KickControler::getStartingState(std::default_random_engine* engi
 {
   Eigen::VectorXd state(2 + 3 * players.size());
   // Getting ball position
-  Eigen::VectorXd ball_pos = rhoban_random::getUniformSample(getFieldLimits(), engine);
+  Eigen::VectorXd ball_pos = starkit_random::getUniformSample(getFieldLimits(), engine);
   state.segment(0, 2) = ball_pos;
   // Sampling player position
   for (size_t player = 0; player < players.size(); player++)
@@ -287,7 +287,7 @@ Eigen::VectorXd KickControler::getStartingState(std::default_random_engine* engi
     bool valid = false;
     while (!valid)
     {
-      state.segment(start_idx, 3) = rhoban_random::getUniformSample(getPlayerLimits(), engine);
+      state.segment(start_idx, 3) = starkit_random::getUniformSample(getPlayerLimits(), engine);
       valid = (state.segment(start_idx, 2) - ball_pos).norm() < max_initial_dist;
     }
   }
@@ -672,32 +672,32 @@ Json::Value KickControler::toJson() const
 
 void KickControler::fromJson(const Json::Value& v, const std::string& dir_name)
 {
-  rhoban_utils::tryRead(v, "simulate_approaches", &simulate_approaches);
-  rhoban_utils::tryRead(v, "max_initial_dist", &max_initial_dist);
-  rhoban_utils::tryRead(v, "cartesian_speed", &cartesian_speed);
-  rhoban_utils::tryRead(v, "angular_speed", &angular_speed);
-  rhoban_utils::tryRead(v, "step_initial_stddev", &step_initial_stddev);
-  rhoban_utils::tryRead(v, "goal_reward", &goal_reward);
-  rhoban_utils::tryRead(v, "goal_collision_reward", &goal_collision_reward);
-  rhoban_utils::tryRead(v, "walk_frequency", &walk_frequency);
-  rhoban_utils::tryRead(v, "failure_reward", &failure_reward);
-  rhoban_utils::tryRead(v, "field_width", &field_width);
-  rhoban_utils::tryRead(v, "field_length", &field_length);
-  rhoban_utils::tryRead(v, "goal_width", &goal_width);
-  rhoban_utils::tryRead(v, "use_goalie", &use_goalie);
-  rhoban_utils::tryRead(v, "goalie_x", &goalie_x);
-  rhoban_utils::tryRead(v, "goalie_y", &goalie_y);
-  rhoban_utils::tryRead(v, "goalie_thickness", &goalie_thickness);
-  rhoban_utils::tryRead(v, "goalie_width", &goalie_width);
-  rhoban_utils::tryRead(v, "goal_area_size_x", &goal_area_size_x);
-  rhoban_utils::tryRead(v, "goal_area_size_y", &goal_area_size_y);
-  rhoban_utils::tryRead(v, "goalkeeper_success_rate", &goalkeeper_success_rate);
-  rhoban_utils::tryRead(v, "kick_dist_ratio", &kick_dist_ratio);
-  rhoban_utils::tryRead(v, "intercept_dist", &intercept_dist);
-  rhoban_utils::tryRead(v, "use_opposite_placing", &use_opposite_placing);
+  starkit_utils::tryRead(v, "simulate_approaches", &simulate_approaches);
+  starkit_utils::tryRead(v, "max_initial_dist", &max_initial_dist);
+  starkit_utils::tryRead(v, "cartesian_speed", &cartesian_speed);
+  starkit_utils::tryRead(v, "angular_speed", &angular_speed);
+  starkit_utils::tryRead(v, "step_initial_stddev", &step_initial_stddev);
+  starkit_utils::tryRead(v, "goal_reward", &goal_reward);
+  starkit_utils::tryRead(v, "goal_collision_reward", &goal_collision_reward);
+  starkit_utils::tryRead(v, "walk_frequency", &walk_frequency);
+  starkit_utils::tryRead(v, "failure_reward", &failure_reward);
+  starkit_utils::tryRead(v, "field_width", &field_width);
+  starkit_utils::tryRead(v, "field_length", &field_length);
+  starkit_utils::tryRead(v, "goal_width", &goal_width);
+  starkit_utils::tryRead(v, "use_goalie", &use_goalie);
+  starkit_utils::tryRead(v, "goalie_x", &goalie_x);
+  starkit_utils::tryRead(v, "goalie_y", &goalie_y);
+  starkit_utils::tryRead(v, "goalie_thickness", &goalie_thickness);
+  starkit_utils::tryRead(v, "goalie_width", &goalie_width);
+  starkit_utils::tryRead(v, "goal_area_size_x", &goal_area_size_x);
+  starkit_utils::tryRead(v, "goal_area_size_y", &goal_area_size_y);
+  starkit_utils::tryRead(v, "goalkeeper_success_rate", &goalkeeper_success_rate);
+  starkit_utils::tryRead(v, "kick_dist_ratio", &kick_dist_ratio);
+  starkit_utils::tryRead(v, "intercept_dist", &intercept_dist);
+  starkit_utils::tryRead(v, "use_opposite_placing", &use_opposite_placing);
 
   /// Reading optional path
-  std::string kmc_path = rhoban_utils::read<std::string>(v, "kmc_path");
+  std::string kmc_path = starkit_utils::read<std::string>(v, "kmc_path");
   kmc.loadFile(kmc_path);
 
   // TODO: improve format, currently very verbose and redundant
@@ -706,7 +706,7 @@ void KickControler::fromJson(const Json::Value& v, const std::string& dir_name)
   players.clear();
   if (!players_json.isArray())
   {
-    throw rhoban_utils::JsonParsingError("KickControler::fromJson: players should be an array");
+    throw starkit_utils::JsonParsingError("KickControler::fromJson: players should be an array");
   }
   for (Json::ArrayIndex idx = 0; idx < players_json.size(); idx++)
   {
@@ -726,7 +726,7 @@ void KickControler::fromJson(const Json::Value& v, const std::string& dir_name)
     Json::Value kick_options_json = v["kick_options"];
     if (!kick_options_json.isArray())
     {
-      throw rhoban_utils::JsonParsingError("KickControler::fromJson: kick_options should be an array");
+      throw starkit_utils::JsonParsingError("KickControler::fromJson: kick_options should be an array");
     }
     for (Json::ArrayIndex idx = 0; idx < players_json.size(); idx++)
     {
@@ -740,10 +740,10 @@ void KickControler::fromJson(const Json::Value& v, const std::string& dir_name)
   // Loading the function approximator for number of steps (optional)
   // Function approximator are always stored at a given location
   std::string approach_approximator_path;
-  rhoban_utils::tryRead(v, "approach_approximator_path", &approach_approximator_path);
+  starkit_utils::tryRead(v, "approach_approximator_path", &approach_approximator_path);
   if (approach_approximator_path != "")
   {
-    rhoban_fa::FunctionApproximatorFactory().loadFromFile(approach_approximator_path, approach_steps_approximator);
+    starkit_fa::FunctionApproximatorFactory().loadFromFile(approach_approximator_path, approach_steps_approximator);
   }
 
   // Consistency check

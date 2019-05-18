@@ -41,9 +41,9 @@ Json::Value GrassModel::toJson() const
 void GrassModel::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
-  rhoban_utils::tryRead(v, "ratio", &ratio);
-  rhoban_utils::tryRead(v, "coneWidth", &coneWidth);
-  rhoban_utils::tryRead(v, "coneOffset", &coneOffset);
+  starkit_utils::tryRead(v, "ratio", &ratio);
+  starkit_utils::tryRead(v, "coneWidth", &coneWidth);
+  starkit_utils::tryRead(v, "coneOffset", &coneOffset);
 }
 
 std::string GrassModel::getClassName() const

@@ -283,15 +283,15 @@ Json::Value OdometryNoiseModel::toJson() const
 {
   Json::Value v;
   v["type"] = _type;
-  v["params"] = rhoban_utils::vector2Json(_params);
+  v["params"] = starkit_utils::vector2Json(_params);
   return v;
 }
 
 void OdometryNoiseModel::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
-  setType((Type)rhoban_utils::read<int>(v, "type"));
-  Eigen::VectorXd params = rhoban_utils::readEigen<-1, 1>(v, "params");
+  setType((Type)starkit_utils::read<int>(v, "type"));
+  Eigen::VectorXd params = starkit_utils::readEigen<-1, 1>(v, "params");
 
   double isError = setParameters(params);
   if (isError > 0.0)

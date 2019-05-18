@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_csa_mdp/core/black_box_problem.h"
+#include "starkit_csa_mdp/core/black_box_problem.h"
 
 #include <Eigen/Core>
 

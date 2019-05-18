@@ -1,12 +1,12 @@
 #include "learning_machine/learning_machine_blackbox.h"
 
-#include "rhoban_random/tools.h"
+#include "starkit_random/tools.h"
 
 namespace csa_mdp
 {
 LearningMachineBlackBox::LearningMachineBlackBox() : LearningMachine()
 {
-  engine = rhoban_random::getRandomEngine();
+  engine = starkit_random::getRandomEngine();
 }
 
 LearningMachineBlackBox::~LearningMachineBlackBox()

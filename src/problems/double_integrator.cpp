@@ -1,6 +1,6 @@
 #include "problems/double_integrator.h"
 
-#include "rhoban_random/tools.h"
+#include "starkit_random/tools.h"
 
 #include <iostream>
 
@@ -96,7 +96,7 @@ Eigen::VectorXd DoubleIntegrator::getStartingState(std::default_random_engine* e
   (void)engine;
   if (random_start)
   {
-    return rhoban_random::getUniformSamplesMatrix(getStateLimits(), 1, engine);
+    return starkit_random::getUniformSamplesMatrix(getStateLimits(), 1, engine);
   }
   Eigen::VectorXd state(2);
   state << 1, 0;
@@ -113,7 +113,7 @@ Json::Value DoubleIntegrator::toJson() const
 void DoubleIntegrator::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
-  rhoban_utils::tryRead(v, "random_start", &random_start);
+  starkit_utils::tryRead(v, "random_start", &random_start);
 }
 
 std::string DoubleIntegrator::getClassName() const

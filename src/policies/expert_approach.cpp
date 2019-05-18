@@ -1,9 +1,9 @@
 #include "policies/expert_approach.h"
 
-#include "rhoban_fa/linear_approximator.h"
-#include "rhoban_fa/orthogonal_split.h"
+#include "starkit_fa/linear_approximator.h"
+#include "starkit_fa/orthogonal_split.h"
 
-using namespace rhoban_fa;
+using namespace starkit_fa;
 
 static double deg2rad(double deg)
 {
@@ -214,7 +214,7 @@ Json::Value ExpertApproach::toJson() const
   v["foot_y_offset"] = foot_y_offset;
   v["target_theta_tol"] = target_theta_tol;
   v["ball_theta_tol"] = ball_theta_tol;
-  v["params"] = rhoban_utils::vector2Json(getConfig());
+  v["params"] = starkit_utils::vector2Json(getConfig());
   return v;
 }
 
@@ -222,18 +222,18 @@ void ExpertApproach::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
   std::string type_str;
-  rhoban_utils::tryRead(v, "type", &type_str);
-  rhoban_utils::tryRead(v, "step_p", &step_p);
-  rhoban_utils::tryRead(v, "far_theta_p", &far_theta_p);
-  rhoban_utils::tryRead(v, "rotate_theta_p", &rotate_theta_p);
-  rhoban_utils::tryRead(v, "rotate_lateral_p", &rotate_lateral_p);
-  rhoban_utils::tryRead(v, "near_lateral_p", &near_lateral_p);
-  rhoban_utils::tryRead(v, "near_theta_p", &near_theta_p);
-  rhoban_utils::tryRead(v, "foot_y_offset", &foot_y_offset);
-  rhoban_utils::tryRead(v, "wished_x", &wished_x);
-  rhoban_utils::tryRead(v, "target_theta_tol", &target_theta_tol);
-  rhoban_utils::tryRead(v, "ball_theta_tol", &ball_theta_tol);
-  rhoban_utils::tryRead(v, "approach_type", &approach_type);
+  starkit_utils::tryRead(v, "type", &type_str);
+  starkit_utils::tryRead(v, "step_p", &step_p);
+  starkit_utils::tryRead(v, "far_theta_p", &far_theta_p);
+  starkit_utils::tryRead(v, "rotate_theta_p", &rotate_theta_p);
+  starkit_utils::tryRead(v, "rotate_lateral_p", &rotate_lateral_p);
+  starkit_utils::tryRead(v, "near_lateral_p", &near_lateral_p);
+  starkit_utils::tryRead(v, "near_theta_p", &near_theta_p);
+  starkit_utils::tryRead(v, "foot_y_offset", &foot_y_offset);
+  starkit_utils::tryRead(v, "wished_x", &wished_x);
+  starkit_utils::tryRead(v, "target_theta_tol", &target_theta_tol);
+  starkit_utils::tryRead(v, "ball_theta_tol", &ball_theta_tol);
+  starkit_utils::tryRead(v, "approach_type", &approach_type);
   if (type_str != "")
   {
     type = loadType(type_str);
@@ -257,18 +257,18 @@ void ExpertApproach::fromJson(const Json::Value& v, const std::string& dir_name)
   }
   // Read right_foot_kick_dir (from deg to rad)
   double right_foot_kick_dir_deg = rad2deg(right_foot_kick_dir);
-  rhoban_utils::tryRead(v, "right_foot_kick_dir", &right_foot_kick_dir_deg);
+  starkit_utils::tryRead(v, "right_foot_kick_dir", &right_foot_kick_dir_deg);
   right_foot_kick_dir = deg2rad(right_foot_kick_dir_deg);
   // Read lateral threshold (from deg to rad)
   if (approach_type == "opportunist")
   {
     double lateral_threshold_deg = rad2deg(lateral_threshold);
-    rhoban_utils::tryRead(v, "lateral_threshold", &lateral_threshold_deg);
+    starkit_utils::tryRead(v, "lateral_threshold", &lateral_threshold_deg);
     lateral_threshold = deg2rad(lateral_threshold_deg);
   }
   // Reading vector list of parameters
   Eigen::VectorXd new_params;
-  rhoban_utils::tryReadEigen(v, "params", &new_params);
+  starkit_utils::tryReadEigen(v, "params", &new_params);
   // If number of coefficients is appropriate, update config
   if (new_params.rows() == nb_parameters)
   {

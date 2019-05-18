@@ -1,20 +1,20 @@
-#include "rhoban_csa_mdp/solvers/black_box_learner_factory.h"
+#include "starkit_csa_mdp/solvers/black_box_learner_factory.h"
 
 #include "policies/expert_approach.h"
 #include "policies/mixed_approach.h"
 #include "policies/ok_seed.h"
 #include "problems/extended_problem_factory.h"
 
-#include "rhoban_csa_mdp/core/policy_factory.h"
-#include "rhoban_fa/trainer_factory.h"
-#include "rhoban_random/tools.h"
-#include "rhoban_utils/threading/multi_core.h"
+#include "starkit_csa_mdp/core/policy_factory.h"
+#include "starkit_fa/trainer_factory.h"
+#include "starkit_random/tools.h"
+#include "starkit_utils/threading/multi_core.h"
 
 #include <fenv.h>
 
 namespace csa_mdp
 {
-class BlackboxValueEstimator : public rhoban_utils::JsonSerializable
+class BlackboxValueEstimator : public starkit_utils::JsonSerializable
 {
 public:
   /// Dummy constructor
@@ -30,9 +30,9 @@ public:
     inputs = Eigen::MatrixXd::Zero(input_dims, nb_samples);
     observations = Eigen::MatrixXd::Zero(nb_samples, 1);
     std::vector<std::default_random_engine> engines =
-        rhoban_random::getRandomEngines(std::min(nb_threads, nb_samples), engine);
+        starkit_random::getRandomEngines(std::min(nb_threads, nb_samples), engine);
     // The task which has to be performed :
-    rhoban_utils::MultiCore::StochasticTask task = [this, &inputs, &observations,
+    starkit_utils::MultiCore::StochasticTask task = [this, &inputs, &observations,
                                                     input_dims](int start_idx, int end_idx,
                                                                 std::default_random_engine* thread_engine) {
       // Access to some variables
@@ -40,7 +40,7 @@ public:
       const Eigen::MatrixXd& limits = problem->getStateLimits();
       // Sampling initial states
       inputs.block(0, start_idx, input_dims, thread_samples) =
-          rhoban_random::getUniformSamplesMatrix(limits, thread_samples, thread_engine);
+          starkit_random::getUniformSamplesMatrix(limits, thread_samples, thread_engine);
       for (int idx = start_idx; idx < end_idx; idx++)
       {
         const Eigen::VectorXd& state = inputs.col(idx);
@@ -54,10 +54,10 @@ public:
       }
     };
     // Running computation
-    rhoban_utils::MultiCore::runParallelStochasticTask(task, nb_samples, &engines);
+    starkit_utils::MultiCore::runParallelStochasticTask(task, nb_samples, &engines);
   }
 
-  std::unique_ptr<rhoban_fa::FunctionApproximator> trainApproximator(std::default_random_engine* engine) const
+  std::unique_ptr<starkit_fa::FunctionApproximator> trainApproximator(std::default_random_engine* engine) const
   {
     Eigen::MatrixXd inputs, observations;
     generateSamples(inputs, observations, engine);
@@ -72,15 +72,15 @@ public:
   void fromJson(const Json::Value& v, const std::string& dir_name) override
   {
     // Reading basic properties
-    rhoban_utils::tryRead(v, "nb_samples", &nb_samples);
-    rhoban_utils::tryRead(v, "evals_per_sample", &evals_per_sample);
-    rhoban_utils::tryRead(v, "nb_threads", &nb_threads);
-    rhoban_utils::tryRead(v, "horizon", &horizon);
-    rhoban_utils::tryRead(v, "discount", &discount);
+    starkit_utils::tryRead(v, "nb_samples", &nb_samples);
+    starkit_utils::tryRead(v, "evals_per_sample", &evals_per_sample);
+    starkit_utils::tryRead(v, "nb_threads", &nb_threads);
+    starkit_utils::tryRead(v, "horizon", &horizon);
+    starkit_utils::tryRead(v, "discount", &discount);
     // Getting problem (mandatory)
     std::shared_ptr<const Problem> tmp_problem;
     std::string problem_path;
-    rhoban_utils::tryRead(v, "problem_path", &problem_path);
+    starkit_utils::tryRead(v, "problem_path", &problem_path);
     if (problem_path != "")
     {
       tmp_problem = ProblemFactory().buildFromJsonFile(dir_name + problem_path);
@@ -95,7 +95,7 @@ public:
       throw std::runtime_error("BlackBoxLearner::fromJson: problem is not a BlackBoxProblem");
     }
     // Reading approximator (mandatory)
-    approximator = rhoban_fa::TrainerFactory().read(v, "approximator", dir_name);
+    approximator = starkit_fa::TrainerFactory().read(v, "approximator", dir_name);
     // Reading policy (mandatory)
     policy = PolicyFactory().read(v, "policy", dir_name);
     // Updating the number of threads to use to build the approximator
@@ -114,7 +114,7 @@ private:
   std::shared_ptr<const BlackBoxProblem> problem;
 
   /// Approximator used to train function approximator
-  std::unique_ptr<rhoban_fa::Trainer> approximator;
+  std::unique_ptr<starkit_fa::Trainer> approximator;
 
   /// The policy used to navigate
   std::unique_ptr<Policy> policy;
@@ -157,9 +157,9 @@ int main()
 
   estimator.loadFile();
 
-  std::default_random_engine engine = rhoban_random::getRandomEngine();
+  std::default_random_engine engine = starkit_random::getRandomEngine();
 
-  std::unique_ptr<rhoban_fa::FunctionApproximator> approximator;
+  std::unique_ptr<starkit_fa::FunctionApproximator> approximator;
   approximator = estimator.trainApproximator(&engine);
 
   approximator->save("approximated_value.bin");

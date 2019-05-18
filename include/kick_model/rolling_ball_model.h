@@ -1,12 +1,12 @@
 #pragma once
 
-#include "rhoban_utils/serialization/json_serializable.h"
+#include "starkit_utils/serialization/json_serializable.h"
 
 namespace csa_mdp
 {
 /// Simple model which ought to be updated properly
 /// Ball state: [x,y,vx,vy]
-class RollingBallModel : public rhoban_utils::JsonSerializable
+class RollingBallModel : public starkit_utils::JsonSerializable
 {
 public:
   RollingBallModel();

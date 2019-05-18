@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_utils/serialization/json_serializable.h"
+#include "starkit_utils/serialization/json_serializable.h"
 
 #include <Eigen/Core>
 
@@ -12,7 +12,7 @@ namespace csa_mdp
 /// 0: ball_x   [m]
 /// 1: ball_y   [m]
 /// 2: kick_wished_dir [rad]
-class KickZone : public rhoban_utils::JsonSerializable
+class KickZone : public starkit_utils::JsonSerializable
 {
 public:
   KickZone();

@@ -1,6 +1,6 @@
 #include "kick_model/full_power_kick.h"
 
-#include "rhoban_utils/xml_tools.h"
+#include "starkit_utils/xml_tools.h"
 
 namespace csa_mdp
 {
@@ -47,7 +47,7 @@ Json::Value FullPowerKick::toJson() const
 void FullPowerKick::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   KickModel::fromJson(node);
-  kick_power = rhoban_utils::read<double>(v, "kick_power");
+  kick_power = starkit_utils::read<double>(v, "kick_power");
 }
 
 std::string FullPowerKick::getClassName() const

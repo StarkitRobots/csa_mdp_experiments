@@ -1,9 +1,9 @@
 #include "policies/ok_seed.h"
 
-#include "rhoban_fa/constant_approximator.h"
-#include "rhoban_fa/orthogonal_split.h"
+#include "starkit_fa/constant_approximator.h"
+#include "starkit_fa/orthogonal_split.h"
 
-using namespace rhoban_fa;
+using namespace starkit_fa;
 
 OKSeed::OKSeed() : back_limit(1), goal_width(2.6), finish_limit(2.5), autoAimId(0), smallKickId(1)
 {
@@ -39,7 +39,7 @@ Eigen::VectorXd OKSeed::getRawAction(const Eigen::VectorXd& state, std::default_
   return finishKick(ball_y > 0 ? 1 : -1);
 }
 
-std::unique_ptr<rhoban_fa::FATree> OKSeed::extractFATree() const
+std::unique_ptr<starkit_fa::FATree> OKSeed::extractFATree() const
 {
   // Build approximators
   std::unique_ptr<FunctionApproximator> backlane_node(new ConstantApproximator(backlaneKick()));
@@ -114,9 +114,9 @@ void OKSeed::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
   // TODO: read Ids
-  rhoban_utils::tryRead(v, "back_limit", &back_limit);
-  rhoban_utils::tryRead(v, "goal_width", &goal_width);
-  rhoban_utils::tryRead(v, "finish_limit", &finish_limit);
+  starkit_utils::tryRead(v, "back_limit", &back_limit);
+  starkit_utils::tryRead(v, "goal_width", &goal_width);
+  starkit_utils::tryRead(v, "finish_limit", &finish_limit);
 }
 
 std::string OKSeed::getClassName() const

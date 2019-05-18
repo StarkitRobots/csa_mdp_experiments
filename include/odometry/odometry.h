@@ -11,7 +11,7 @@ namespace csa_mdp
 ///
 /// Utilities for differentiate and integrate the robot displacement.
 /// Manage both displacement and noise models.
-class Odometry : public rhoban_utils::JsonSerializable
+class Odometry : public starkit_utils::JsonSerializable
 {
 public:
   Odometry();

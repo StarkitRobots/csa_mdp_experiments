@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_csa_mdp/core/black_box_problem.h"
+#include "starkit_csa_mdp/core/black_box_problem.h"
 
 #include "kick_model/rolling_ball_model.h"
 

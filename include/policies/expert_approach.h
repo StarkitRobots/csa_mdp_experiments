@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_csa_mdp/core/policy.h"
+#include "starkit_csa_mdp/core/policy.h"
 
 namespace csa_mdp
 {
@@ -48,11 +48,11 @@ public:
   // - Use of ball_y in near is not available anymore
   //   - Since we use ball_theta instead of ball_y, ball_theta_tol has to be pretty large
   // - Step is always step_max in far
-  virtual std::unique_ptr<rhoban_fa::FATree> extractFATree() const override;
+  virtual std::unique_ptr<starkit_fa::FATree> extractFATree() const override;
 
-  std::unique_ptr<rhoban_fa::FATree> extractClassicFATree() const;
-  std::unique_ptr<rhoban_fa::FATree> extractLateralFATree() const;
-  std::unique_ptr<rhoban_fa::FATree> extractOpportunistFATree() const;
+  std::unique_ptr<starkit_fa::FATree> extractClassicFATree() const;
+  std::unique_ptr<starkit_fa::FATree> extractLateralFATree() const;
+  std::unique_ptr<starkit_fa::FATree> extractOpportunistFATree() const;
 
   // Read type from the given string
   Type loadType(const std::string& type_str);

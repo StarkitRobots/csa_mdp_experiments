@@ -4,9 +4,9 @@
 #include "kick_model/kick_decision_model.h"
 #include "kick_model/kick_model_collection.h"
 
-#include "rhoban_csa_mdp/core/black_box_problem.h"
-#include "rhoban_csa_mdp/core/policy.h"
-#include "rhoban_fa/function_approximator.h"
+#include "starkit_csa_mdp/core/black_box_problem.h"
+#include "starkit_csa_mdp/core/policy.h"
+#include "starkit_fa/function_approximator.h"
 
 #include <memory>
 
@@ -60,7 +60,7 @@ public:
   /// - Kick model         : To determine the eventual results
   /// - Approach model     : To determine in which states it is allowable to kick
   /// - Approach policy    : To choose the orders sent to the walk when simulating the approach
-  class KickOption : rhoban_utils::JsonSerializable
+  class KickOption : starkit_utils::JsonSerializable
   {
   public:
     std::unique_ptr<KickDecisionModel> kick_decision_model;
@@ -79,7 +79,7 @@ public:
   };
 
   /// Each player has its own custom configuration
-  class Player : rhoban_utils::JsonSerializable
+  class Player : starkit_utils::JsonSerializable
   {
   public:
     /// Allows to identify player more easily
@@ -247,7 +247,7 @@ private:
   ///       be done is to have an approximator for each option (i.e couple
   ///       kick_name and kick_foot). Then this approximator could also be used
   ///       to choose which type of kick and which foot is used to kick.
-  std::unique_ptr<rhoban_fa::FunctionApproximator> approach_steps_approximator;
+  std::unique_ptr<starkit_fa::FunctionApproximator> approach_steps_approximator;
 
   /// Approximation of cartesian speed [m/s] for the robot when
   /// 'simulate_approaches' is false

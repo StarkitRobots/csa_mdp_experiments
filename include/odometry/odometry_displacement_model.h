@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_utils/serialization/json_serializable.h"
+#include "starkit_utils/serialization/json_serializable.h"
 
 #include <vector>
 #include <Eigen/Core>
@@ -10,7 +10,7 @@ namespace csa_mdp
 /// OdometryDisplacementModel
 ///
 /// Implement several odometry models for pose displacement correction.
-class OdometryDisplacementModel : public rhoban_utils::JsonSerializable
+class OdometryDisplacementModel : public starkit_utils::JsonSerializable
 {
 public:
   /// Different displacement

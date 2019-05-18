@@ -1,6 +1,6 @@
-#include "rhoban_csa_mdp/core/policy_factory.h"
+#include "starkit_csa_mdp/core/policy_factory.h"
 
-#include "rhoban_fa/fa_tree.h"
+#include "starkit_fa/fa_tree.h"
 
 #include "policies/expert_approach.h"
 #include "policies/ok_seed.h"
@@ -9,7 +9,7 @@
 
 using namespace csa_mdp;
 
-using rhoban_fa::FATree;
+using starkit_fa::FATree;
 
 int main(int argc, char** argv)
 {

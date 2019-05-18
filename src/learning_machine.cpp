@@ -4,7 +4,7 @@
 #include "policies/mixed_approach.h"
 #include "policies/ok_seed.h"
 
-#include "rhoban_csa_mdp/core/policy_factory.h"
+#include "starkit_csa_mdp/core/policy_factory.h"
 
 using namespace csa_mdp;
 

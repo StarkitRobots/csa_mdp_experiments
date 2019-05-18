@@ -293,20 +293,20 @@ void SimulatedCartPole::fromJson(const Json::Value& v, const std::string& dir_na
   (void)dir_name;
   std::string reward_type_str;
   std::string learning_space_str;
-  rhoban_utils::tryRead(v, "max_pos", &max_pos);
-  rhoban_utils::tryRead(v, "max_vel", &max_vel);
-  rhoban_utils::tryRead(v, "max_torque", &max_torque);
-  rhoban_utils::tryRead(v, "max_axis_vel", &max_axis_vel);
-  rhoban_utils::tryRead(v, "pole_length", &pole_length);
-  rhoban_utils::tryRead(v, "cart_mass", &cart_mass);
-  rhoban_utils::tryRead(v, "pendulum_mass", &pendulum_mass);
-  rhoban_utils::tryRead(v, "friction", &friction);
-  rhoban_utils::tryRead(v, "gravity", &gravity);
-  rhoban_utils::tryRead(v, "integration_step", &integration_step);
-  rhoban_utils::tryRead(v, "simulation_step", &simulation_step);
-  rhoban_utils::tryRead(v, "torque_stddev", &torque_stddev);
-  rhoban_utils::tryRead(v, "reward_type", &reward_type_str);
-  rhoban_utils::tryRead(v, "learning_space", &learning_space_str);
+  starkit_utils::tryRead(v, "max_pos", &max_pos);
+  starkit_utils::tryRead(v, "max_vel", &max_vel);
+  starkit_utils::tryRead(v, "max_torque", &max_torque);
+  starkit_utils::tryRead(v, "max_axis_vel", &max_axis_vel);
+  starkit_utils::tryRead(v, "pole_length", &pole_length);
+  starkit_utils::tryRead(v, "cart_mass", &cart_mass);
+  starkit_utils::tryRead(v, "pendulum_mass", &pendulum_mass);
+  starkit_utils::tryRead(v, "friction", &friction);
+  starkit_utils::tryRead(v, "gravity", &gravity);
+  starkit_utils::tryRead(v, "integration_step", &integration_step);
+  starkit_utils::tryRead(v, "simulation_step", &simulation_step);
+  starkit_utils::tryRead(v, "torque_stddev", &torque_stddev);
+  starkit_utils::tryRead(v, "reward_type", &reward_type_str);
+  starkit_utils::tryRead(v, "learning_space", &learning_space_str);
   if (reward_type_str != "")
   {
     reward_type = loadRewardType(reward_type_str);

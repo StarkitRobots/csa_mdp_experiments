@@ -3,8 +3,8 @@
 
 #include "problems/kick_controler.h"
 
-#include "rhoban_csa_mdp/core/policy_factory.h"
-#include "rhoban_random/tools.h"
+#include "starkit_csa_mdp/core/policy_factory.h"
+#include "starkit_random/tools.h"
 
 #include <fenv.h>
 
@@ -59,7 +59,7 @@ int main()
   init_state_2p.segment(0, 2) = ball_pos;
   init_state_2p.segment(5, 3) = p1_pos;
 
-  std::default_random_engine engine = rhoban_random::getRandomEngine();
+  std::default_random_engine engine = starkit_random::getRandomEngine();
 
   double reward_1p = 0;
   for (int i = 0; i < nb_evaluations; i++)

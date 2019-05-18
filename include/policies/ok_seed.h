@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_csa_mdp/core/policy.h"
+#include "starkit_csa_mdp/core/policy.h"
 
 /// Custom approach build for Kick Controler problems with a single player
 class OKSeed : public csa_mdp::Policy
@@ -13,7 +13,7 @@ public:
                                std::default_random_engine* external_engine) const override;
 
   /// This approach is built to be an fa_tree, therefore, there is no loss in conversion
-  virtual std::unique_ptr<rhoban_fa::FATree> extractFATree() const override;
+  virtual std::unique_ptr<starkit_fa::FATree> extractFATree() const override;
 
   /// Powerful kick toward opponent goal
   Eigen::VectorXd backlaneKick() const;

@@ -1,7 +1,7 @@
 #include "problems/extended_problem_factory.h"
 
-#include "rhoban_csa_mdp/core/history.h"
-#include "rhoban_csa_mdp/solvers/fpf.h"
+#include "starkit_csa_mdp/core/history.h"
+#include "starkit_csa_mdp/solvers/fpf.h"
 
 #include <fstream>
 
@@ -9,7 +9,7 @@
 
 using namespace csa_mdp;
 
-class Config : public rhoban_utils::JsonSerializable
+class Config : public starkit_utils::JsonSerializable
 {
 public:
   Config()

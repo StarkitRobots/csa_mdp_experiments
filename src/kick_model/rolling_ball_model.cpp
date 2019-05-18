@@ -29,7 +29,7 @@ Json::Value RollingBallModel::toJson() const
 void RollingBallModel::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
-  rhoban_utils::tryRead(v, "decay_rate", &decay_rate);
+  starkit_utils::tryRead(v, "decay_rate", &decay_rate);
 }
 
 std::string RollingBallModel::getClassName() const

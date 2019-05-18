@@ -2,7 +2,7 @@
 
 #include "kick_model/kick_model_collection.h"
 
-#include "rhoban_utils/angle.h"
+#include "starkit_utils/angle.h"
 
 #include <cmath>
 
@@ -264,7 +264,7 @@ Json::Value BallApproach::toJson() const
 void BallApproach::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   std::string odometry_path;
-  rhoban_utils::tryRead(v, "odometry_path", &odometry_path);
+  starkit_utils::tryRead(v, "odometry_path", &odometry_path);
 
   // If coefficients have been properly read, use them
   if (odometry_path != "")
@@ -277,37 +277,37 @@ void BallApproach::fromJson(const Json::Value& v, const std::string& dir_name)
     kz.fromJson(v, dir_name);
     return kz;
   };
-  rhoban_utils::tryReadVector<KickZone>(v, "kick_zones", dir_name, kick_zone_builder, &kick_zones);
+  starkit_utils::tryReadVector<KickZone>(v, "kick_zones", dir_name, kick_zone_builder, &kick_zones);
   // Read internal properties
-  double max_step_theta_deg(rhoban_utils::rad2deg(max_step_theta));
-  double max_step_theta_diff_deg(rhoban_utils::rad2deg(max_step_theta_diff));
-  rhoban_utils::tryRead(v, "max_dist", &max_dist);
-  rhoban_utils::tryRead(v, "min_step_x", &min_step_x);
-  rhoban_utils::tryRead(v, "max_step_x", &max_step_x);
-  rhoban_utils::tryRead(v, "max_step_y", &max_step_y);
-  rhoban_utils::tryRead(v, "max_step_theta", &max_step_theta_deg);
-  rhoban_utils::tryRead(v, "max_step_x_diff", &max_step_x_diff);
-  rhoban_utils::tryRead(v, "max_step_y_diff", &max_step_y_diff);
-  rhoban_utils::tryRead(v, "max_step_theta_diff", &max_step_theta_diff_deg);
-  rhoban_utils::tryRead(v, "kick_reward", &kick_reward);
-  rhoban_utils::tryRead(v, "kick_terminal_speed_factor", &kick_terminal_speed_factor);
-  rhoban_utils::tryRead(v, "viewing_angle", &viewing_angle);
-  rhoban_utils::tryRead(v, "no_view_reward", &no_view_reward);
-  rhoban_utils::tryRead(v, "collision_x_front", &collision_x_front);
-  rhoban_utils::tryRead(v, "collision_x_back", &collision_x_back);
-  rhoban_utils::tryRead(v, "collision_y", &collision_y);
-  rhoban_utils::tryRead(v, "collision_reward", &collision_reward);
-  rhoban_utils::tryRead(v, "terminal_collisions", &terminal_collisions);
-  rhoban_utils::tryRead(v, "out_of_space_reward", &out_of_space_reward);
-  rhoban_utils::tryRead(v, "walk_frequency", &walk_frequency);
-  rhoban_utils::tryRead(v, "init_min_dist", &init_min_dist);
-  rhoban_utils::tryRead(v, "init_max_dist", &init_max_dist);
+  double max_step_theta_deg(starkit_utils::rad2deg(max_step_theta));
+  double max_step_theta_diff_deg(starkit_utils::rad2deg(max_step_theta_diff));
+  starkit_utils::tryRead(v, "max_dist", &max_dist);
+  starkit_utils::tryRead(v, "min_step_x", &min_step_x);
+  starkit_utils::tryRead(v, "max_step_x", &max_step_x);
+  starkit_utils::tryRead(v, "max_step_y", &max_step_y);
+  starkit_utils::tryRead(v, "max_step_theta", &max_step_theta_deg);
+  starkit_utils::tryRead(v, "max_step_x_diff", &max_step_x_diff);
+  starkit_utils::tryRead(v, "max_step_y_diff", &max_step_y_diff);
+  starkit_utils::tryRead(v, "max_step_theta_diff", &max_step_theta_diff_deg);
+  starkit_utils::tryRead(v, "kick_reward", &kick_reward);
+  starkit_utils::tryRead(v, "kick_terminal_speed_factor", &kick_terminal_speed_factor);
+  starkit_utils::tryRead(v, "viewing_angle", &viewing_angle);
+  starkit_utils::tryRead(v, "no_view_reward", &no_view_reward);
+  starkit_utils::tryRead(v, "collision_x_front", &collision_x_front);
+  starkit_utils::tryRead(v, "collision_x_back", &collision_x_back);
+  starkit_utils::tryRead(v, "collision_y", &collision_y);
+  starkit_utils::tryRead(v, "collision_reward", &collision_reward);
+  starkit_utils::tryRead(v, "terminal_collisions", &terminal_collisions);
+  starkit_utils::tryRead(v, "out_of_space_reward", &out_of_space_reward);
+  starkit_utils::tryRead(v, "walk_frequency", &walk_frequency);
+  starkit_utils::tryRead(v, "init_min_dist", &init_min_dist);
+  starkit_utils::tryRead(v, "init_max_dist", &init_max_dist);
   // Applying values which have been read in Deg:
-  max_step_theta = rhoban_utils::deg2rad(max_step_theta_deg);
-  max_step_theta_diff = rhoban_utils::deg2rad(max_step_theta_diff_deg);
+  max_step_theta = starkit_utils::deg2rad(max_step_theta_deg);
+  max_step_theta_diff = starkit_utils::deg2rad(max_step_theta_diff_deg);
 
   std::vector<std::string> kick_zone_names;
-  rhoban_utils::tryReadVector(v, "kick_zone_names", &kick_zone_names);
+  starkit_utils::tryReadVector(v, "kick_zone_names", &kick_zone_names);
 
   if (kick_zone_names.size() > 0)
   {

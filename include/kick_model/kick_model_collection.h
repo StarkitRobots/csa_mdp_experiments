@@ -7,7 +7,7 @@
 
 namespace csa_mdp
 {
-class KickModelCollection : public rhoban_utils::JsonSerializable
+class KickModelCollection : public starkit_utils::JsonSerializable
 {
 public:
   KickModelCollection();

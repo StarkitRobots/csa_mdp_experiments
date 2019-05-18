@@ -2,11 +2,11 @@
 
 #include "learning_machine/learning_machine.h"
 
-#include "rhoban_utils/serialization/factory.h"
+#include "starkit_utils/serialization/factory.h"
 
 namespace csa_mdp
 {
-class LearningMachineFactory : public rhoban_utils::Factory<LearningMachine>
+class LearningMachineFactory : public starkit_utils::Factory<LearningMachine>
 {
 public:
   LearningMachineFactory();

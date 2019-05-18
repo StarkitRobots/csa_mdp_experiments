@@ -1,6 +1,6 @@
 #include "problems/ssl_dynamic_ball_approach.h"
 
-#include "rhoban_utils/angle.h"
+#include "starkit_utils/angle.h"
 
 #include <cmath>
 #include <iostream>
@@ -61,8 +61,8 @@ SSLDynamicBallApproach::SSLDynamicBallApproach()
   ,  // Working well: 1.5 [rad/s]
   max_ball_speed(0.4)
   ,  // Theory: 8 [m/s]
-  min_kick_dir_tol(rhoban_utils::deg2rad(5))
-  , max_kick_dir_tol(rhoban_utils::deg2rad(20))
+  min_kick_dir_tol(starkit_utils::deg2rad(5))
+  , max_kick_dir_tol(starkit_utils::deg2rad(20))
   ,
   // Acceleration limits (Much higher could be possible)
   max_acc(max_robot_speed / 2)
@@ -76,7 +76,7 @@ SSLDynamicBallApproach::SSLDynamicBallApproach()
   ,  // No real idea
   finish_diff_speed_y_max(0.1)
   ,  // Ideally less
-  finish_speed_theta_max(rhoban_utils::deg2rad(20))
+  finish_speed_theta_max(starkit_utils::deg2rad(20))
   ,
   // Kick
   kick_x_limits(0.09, 0.12)
@@ -86,7 +86,7 @@ SSLDynamicBallApproach::SSLDynamicBallApproach()
   ,  // No real idea
   kick_diff_speed_y_max(0.025)
   ,  // Ideally less
-  kick_speed_theta_max(rhoban_utils::deg2rad(5))
+  kick_speed_theta_max(starkit_utils::deg2rad(5))
   ,
   // Collision
   collision_radius(0.12)
@@ -106,7 +106,7 @@ SSLDynamicBallApproach::SSLDynamicBallApproach()
   ,
   // Noise model
   cart_stddev(0.02)
-  , angular_stddev(rhoban_utils::deg2rad(2))
+  , angular_stddev(starkit_utils::deg2rad(2))
 {
   updateLimits();
 }
@@ -390,55 +390,55 @@ void SSLDynamicBallApproach::fromJson(const Json::Value& v, const std::string& d
   (void)dir_name;
   // Read current mode
   std::string mode_str;
-  rhoban_utils::tryRead(v, "mode", &mode_str);
+  starkit_utils::tryRead(v, "mode", &mode_str);
   if (mode_str != "")
     mode = str2Mode(mode_str);
   // Read internal properties
-  double max_robot_speed_theta_deg(rhoban_utils::rad2deg(max_robot_speed_theta));
-  double max_acc_theta_deg(rhoban_utils::rad2deg(max_acc_theta));
-  double finish_speed_theta_max_deg(rhoban_utils::rad2deg(finish_speed_theta_max));
-  double kick_speed_theta_max_deg(rhoban_utils::rad2deg(kick_speed_theta_max));
-  double angular_stddev_deg(rhoban_utils::rad2deg(angular_stddev));
-  double min_kick_dir_tol_deg(rhoban_utils::rad2deg(min_kick_dir_tol));
-  double max_kick_dir_tol_deg(rhoban_utils::rad2deg(max_kick_dir_tol));
-  rhoban_utils::tryRead(v, "ball_max_dist", &ball_max_dist);
-  rhoban_utils::tryRead(v, "target_max_dist", &target_max_dist);
-  rhoban_utils::tryRead(v, "max_robot_speed", &max_robot_speed);
-  rhoban_utils::tryRead(v, "max_robot_speed_theta", &max_robot_speed_theta_deg);
-  rhoban_utils::tryRead(v, "max_ball_speed", &max_ball_speed);
-  rhoban_utils::tryRead(v, "min_kick_dir_tol", &min_kick_dir_tol_deg);
-  rhoban_utils::tryRead(v, "max_kick_dir_tol", &max_kick_dir_tol_deg);
-  rhoban_utils::tryRead(v, "max_acc", &max_acc);
-  rhoban_utils::tryRead(v, "max_acc_theta", &max_acc_theta_deg);
-  rhoban_utils::tryRead(v, "finish_y_tol", &finish_y_tol);
-  rhoban_utils::tryRead(v, "finish_diff_speed_y_max", &finish_diff_speed_y_max);
-  rhoban_utils::tryRead(v, "finish_speed_theta_max", &finish_speed_theta_max_deg);
-  rhoban_utils::tryRead(v, "kick_y_tol", &kick_y_tol);
-  rhoban_utils::tryRead(v, "kick_diff_speed_y_max", &kick_diff_speed_y_max);
-  rhoban_utils::tryRead(v, "kick_speed_theta_max", &kick_speed_theta_max_deg);
-  rhoban_utils::tryRead(v, "collision_radius", &collision_radius);
-  rhoban_utils::tryRead(v, "collision_forward", &collision_forward);
-  rhoban_utils::tryRead(v, "collision_reward", &collision_reward);
-  rhoban_utils::tryRead(v, "out_of_space_reward", &out_of_space_reward);
-  rhoban_utils::tryRead(v, "dt", &dt);
-  rhoban_utils::tryRead(v, "ball_init_min_dist", &ball_init_min_dist);
-  rhoban_utils::tryRead(v, "ball_init_max_dist", &ball_init_max_dist);
-  rhoban_utils::tryRead(v, "target_init_max_dist", &target_init_max_dist);
-  rhoban_utils::tryRead(v, "cart_stddev", &cart_stddev);
-  rhoban_utils::tryRead(v, "angular_stddev", &angular_stddev_deg);
-  rhoban_utils::tryReadEigen(v, "finish_x_limits", &finish_x_limits);
-  rhoban_utils::tryReadEigen(v, "finish_diff_speed_x_limits", &finish_diff_speed_x_limits);
-  rhoban_utils::tryReadEigen(v, "kick_x_limits", &kick_x_limits);
-  rhoban_utils::tryReadEigen(v, "kick_diff_speed_x_limits", &kick_diff_speed_x_limits);
+  double max_robot_speed_theta_deg(starkit_utils::rad2deg(max_robot_speed_theta));
+  double max_acc_theta_deg(starkit_utils::rad2deg(max_acc_theta));
+  double finish_speed_theta_max_deg(starkit_utils::rad2deg(finish_speed_theta_max));
+  double kick_speed_theta_max_deg(starkit_utils::rad2deg(kick_speed_theta_max));
+  double angular_stddev_deg(starkit_utils::rad2deg(angular_stddev));
+  double min_kick_dir_tol_deg(starkit_utils::rad2deg(min_kick_dir_tol));
+  double max_kick_dir_tol_deg(starkit_utils::rad2deg(max_kick_dir_tol));
+  starkit_utils::tryRead(v, "ball_max_dist", &ball_max_dist);
+  starkit_utils::tryRead(v, "target_max_dist", &target_max_dist);
+  starkit_utils::tryRead(v, "max_robot_speed", &max_robot_speed);
+  starkit_utils::tryRead(v, "max_robot_speed_theta", &max_robot_speed_theta_deg);
+  starkit_utils::tryRead(v, "max_ball_speed", &max_ball_speed);
+  starkit_utils::tryRead(v, "min_kick_dir_tol", &min_kick_dir_tol_deg);
+  starkit_utils::tryRead(v, "max_kick_dir_tol", &max_kick_dir_tol_deg);
+  starkit_utils::tryRead(v, "max_acc", &max_acc);
+  starkit_utils::tryRead(v, "max_acc_theta", &max_acc_theta_deg);
+  starkit_utils::tryRead(v, "finish_y_tol", &finish_y_tol);
+  starkit_utils::tryRead(v, "finish_diff_speed_y_max", &finish_diff_speed_y_max);
+  starkit_utils::tryRead(v, "finish_speed_theta_max", &finish_speed_theta_max_deg);
+  starkit_utils::tryRead(v, "kick_y_tol", &kick_y_tol);
+  starkit_utils::tryRead(v, "kick_diff_speed_y_max", &kick_diff_speed_y_max);
+  starkit_utils::tryRead(v, "kick_speed_theta_max", &kick_speed_theta_max_deg);
+  starkit_utils::tryRead(v, "collision_radius", &collision_radius);
+  starkit_utils::tryRead(v, "collision_forward", &collision_forward);
+  starkit_utils::tryRead(v, "collision_reward", &collision_reward);
+  starkit_utils::tryRead(v, "out_of_space_reward", &out_of_space_reward);
+  starkit_utils::tryRead(v, "dt", &dt);
+  starkit_utils::tryRead(v, "ball_init_min_dist", &ball_init_min_dist);
+  starkit_utils::tryRead(v, "ball_init_max_dist", &ball_init_max_dist);
+  starkit_utils::tryRead(v, "target_init_max_dist", &target_init_max_dist);
+  starkit_utils::tryRead(v, "cart_stddev", &cart_stddev);
+  starkit_utils::tryRead(v, "angular_stddev", &angular_stddev_deg);
+  starkit_utils::tryReadEigen(v, "finish_x_limits", &finish_x_limits);
+  starkit_utils::tryReadEigen(v, "finish_diff_speed_x_limits", &finish_diff_speed_x_limits);
+  starkit_utils::tryReadEigen(v, "kick_x_limits", &kick_x_limits);
+  starkit_utils::tryReadEigen(v, "kick_diff_speed_x_limits", &kick_diff_speed_x_limits);
   rolling_ball_model.tryRead(v, "ball_rolling_model", dir_name);
   // Applying values which have been read in Deg:
-  max_robot_speed_theta = rhoban_utils::deg2rad(max_robot_speed_theta_deg);
-  max_acc_theta = rhoban_utils::deg2rad(max_acc_theta_deg);
-  finish_speed_theta_max = rhoban_utils::deg2rad(finish_speed_theta_max_deg);
-  kick_speed_theta_max = rhoban_utils::deg2rad(kick_speed_theta_max_deg);
-  angular_stddev = rhoban_utils::deg2rad(angular_stddev_deg);
-  min_kick_dir_tol = rhoban_utils::deg2rad(min_kick_dir_tol_deg);
-  max_kick_dir_tol = rhoban_utils::deg2rad(max_kick_dir_tol_deg);
+  max_robot_speed_theta = starkit_utils::deg2rad(max_robot_speed_theta_deg);
+  max_acc_theta = starkit_utils::deg2rad(max_acc_theta_deg);
+  finish_speed_theta_max = starkit_utils::deg2rad(finish_speed_theta_max_deg);
+  kick_speed_theta_max = starkit_utils::deg2rad(kick_speed_theta_max_deg);
+  angular_stddev = starkit_utils::deg2rad(angular_stddev_deg);
+  min_kick_dir_tol = starkit_utils::deg2rad(min_kick_dir_tol_deg);
+  max_kick_dir_tol = starkit_utils::deg2rad(max_kick_dir_tol_deg);
 
   // Update limits according to the new parameters
   updateLimits();

@@ -38,7 +38,7 @@ Json::Value KickModelCollection::toJson() const
 void KickModelCollection::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   KickModelFactory kmf;
-  models = rhoban_utils::readMap<std::unique_ptr<KickModel>>(
+  models = starkit_utils::readMap<std::unique_ptr<KickModel>>(
       v, "map", dir_name, [&kmf](const Json::Value& v, const std::string& dir_name) { return kmf.build(v, dir_name); });
 
   grassModel.read(v, "grassModel", dir_name);

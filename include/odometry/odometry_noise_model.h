@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_utils/serialization/json_serializable.h"
+#include "starkit_utils/serialization/json_serializable.h"
 
 #include <random>
 #include <Eigen/Dense>
@@ -10,7 +10,7 @@ namespace csa_mdp
 /// OdometryNoiseModel
 ///
 /// Implement several odometry models for gaussian displacement noise.
-class OdometryNoiseModel : public rhoban_utils::JsonSerializable
+class OdometryNoiseModel : public starkit_utils::JsonSerializable
 {
 public:
   /// Different noise model types.

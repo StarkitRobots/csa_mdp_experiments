@@ -2,7 +2,7 @@
 
 #include "kick_model/kick_zone.h"
 
-#include "rhoban_utils/serialization/json_serializable.h"
+#include "starkit_utils/serialization/json_serializable.h"
 
 #include <Eigen/Core>
 
@@ -10,7 +10,7 @@
 
 namespace csa_mdp
 {
-class GrassModel : public rhoban_utils::JsonSerializable
+class GrassModel : public starkit_utils::JsonSerializable
 {
 public:
   GrassModel();

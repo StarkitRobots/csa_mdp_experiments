@@ -53,7 +53,7 @@ Json::Value KickModel::toJson() const
 void KickModel::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   kick_zone.read(v, "kick_zone", dir_name);
-  rhoban_utils::tryRead(v, "kick_reward", &kick_reward);
+  starkit_utils::tryRead(v, "kick_reward", &kick_reward);
 }
 
 }  // namespace csa_mdp

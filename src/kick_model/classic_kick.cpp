@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-using namespace rhoban_utils;
+using namespace starkit_utils;
 
 static double deg2rad(double deg)
 {
@@ -78,10 +78,10 @@ void ClassicKick::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   KickModel::fromJson(v, dir_name);
   double kick_dir_deg, dir_stddev_deg;
-  kick_power = rhoban_utils::read<double>(v, "kick_power");
-  kick_dir_deg = rhoban_utils::read<double>(v, "right_kick_dir");
-  rel_dist_stddev = rhoban_utils::read<double>(v, "rel_dist_stddev");
-  dir_stddev_deg = rhoban_utils::read<double>(v, "dir_stddev");
+  kick_power = starkit_utils::read<double>(v, "kick_power");
+  kick_dir_deg = starkit_utils::read<double>(v, "right_kick_dir");
+  rel_dist_stddev = starkit_utils::read<double>(v, "rel_dist_stddev");
+  dir_stddev_deg = starkit_utils::read<double>(v, "dir_stddev");
   // Stored informations are [rad], but xml values are [deg]
   right_kick_dir = deg2rad(kick_dir_deg);
   dir_stddev = deg2rad(dir_stddev_deg);

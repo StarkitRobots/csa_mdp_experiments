@@ -1,9 +1,9 @@
 #pragma once
 
-#include "rhoban_csa_mdp/solvers/learner.h"
+#include "starkit_csa_mdp/solvers/learner.h"
 
-#include "rhoban_csa_mdp/core/policy.h"
-#include "rhoban_csa_mdp/core/problem.h"
+#include "starkit_csa_mdp/core/policy.h"
+#include "starkit_csa_mdp/core/problem.h"
 
 #include <fstream>
 #include <memory>
@@ -11,7 +11,7 @@
 namespace csa_mdp
 {
 /// Base class for running experiments
-class LearningMachine : public rhoban_utils::JsonSerializable
+class LearningMachine : public starkit_utils::JsonSerializable
 {
 public:
   // TODO replace update rule by two int runs_by_policy and runs_by_policy_growth

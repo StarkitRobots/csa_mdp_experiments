@@ -1,14 +1,14 @@
 #include "policies/mixed_approach.h"
 
-#include "rhoban_csa_mdp/core/policy_factory.h"
+#include "starkit_csa_mdp/core/policy_factory.h"
 
-#include "rhoban_random/tools.h"
+#include "starkit_random/tools.h"
 
 namespace csa_mdp
 {
 MixedApproach::MixedApproach() : far_dist_min(1.0), far_theta_p(-0.2), far_max_speed(0.04)
 {
-  engine = rhoban_random::getRandomEngine();
+  engine = starkit_random::getRandomEngine();
 }
 
 Eigen::VectorXd MixedApproach::getRawAction(const Eigen::VectorXd& state)

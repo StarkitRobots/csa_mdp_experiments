@@ -1,7 +1,7 @@
 #pragma once
 #include "learning_machine/learning_machine.h"
 
-#include "rhoban_csa_mdp/core/black_box_problem.h"
+#include "starkit_csa_mdp/core/black_box_problem.h"
 
 #include <random>
 

@@ -1,10 +1,10 @@
 #include "learning_machine/learning_machine.h"
 
-#include "rhoban_csa_mdp/core/history.h"
-#include "rhoban_csa_mdp/core/problem_factory.h"
-#include "rhoban_csa_mdp/solvers/learner_factory.h"
+#include "starkit_csa_mdp/core/history.h"
+#include "starkit_csa_mdp/core/problem_factory.h"
+#include "starkit_csa_mdp/solvers/learner_factory.h"
 
-#include "rhoban_utils/timing/benchmark.h"
+#include "starkit_utils/timing/benchmark.h"
 
 #include <sys/stat.h>
 
@@ -14,7 +14,7 @@ using csa_mdp::LearnerFactory;
 using csa_mdp::Problem;
 using csa_mdp::ProblemFactory;
 
-using rhoban_utils::Benchmark;
+using starkit_utils::Benchmark;
 
 using csa_mdp::Policy;
 
@@ -388,7 +388,7 @@ Json::Value LearningMachine::toJson() const
   v["save_details"] = save_details;
   v["save_run_logs"] = save_run_logs;
   v["save_best_policy"] = save_best_policy;
-  v["learning_dimensions"] = rhoban_utils::vector2Json(learning_dimensions);
+  v["learning_dimensions"] = starkit_utils::vector2Json(learning_dimensions);
   return v;
 }
 
@@ -397,7 +397,7 @@ void LearningMachine::fromJson(const Json::Value& v, const std::string& dir_name
   // First: read problem
   std::unique_ptr<Problem> tmp_problem;
   std::string problem_path;
-  rhoban_utils::tryRead(v, "problem_path", &problem_path);
+  starkit_utils::tryRead(v, "problem_path", &problem_path);
   if (problem_path != "")
   {
     tmp_problem = ProblemFactory().buildFromJsonFile(dir_name + problem_path);
@@ -408,32 +408,32 @@ void LearningMachine::fromJson(const Json::Value& v, const std::string& dir_name
   }
   if (!tmp_problem)
   {
-    throw rhoban_utils::JsonParsingError("LearningMachine::fromJson: No problem found");
+    throw starkit_utils::JsonParsingError("LearningMachine::fromJson: No problem found");
   }
   setProblem(std::move(tmp_problem));
   // Override learning dimensions if custom config is provided
   std::vector<int> new_learning_dims;
-  rhoban_utils::tryReadVector(v, "learning_dimensions", &new_learning_dims);
+  starkit_utils::tryReadVector(v, "learning_dimensions", &new_learning_dims);
   if (new_learning_dims.size() > 0)
     setLearningDimensions(new_learning_dims);
   // Then: read learner
   setLearner(LearnerFactory().read(v, "learner", dir_name));
   // Then... read everything else
   std::string update_rule_str;
-  rhoban_utils::tryRead(v, "update_rule", &update_rule_str);
+  starkit_utils::tryRead(v, "update_rule", &update_rule_str);
   if (update_rule_str != "")
   {
     update_rule = loadUpdateRule(update_rule_str);
   }
-  nb_runs = rhoban_utils::read<int>(v, "nb_runs");
-  nb_steps = rhoban_utils::read<int>(v, "nb_steps");
-  rhoban_utils::tryRead(v, "nb_threads", &nb_threads);
-  rhoban_utils::tryRead(v, "discount", &discount);
-  rhoban_utils::tryRead(v, "time_budget", &time_budget);
-  rhoban_utils::tryRead(v, "save_details", &save_details);
-  rhoban_utils::tryRead(v, "save_run_logs", &save_run_logs);
-  rhoban_utils::tryRead(v, "save_best_policy", &save_best_policy);
-  rhoban_utils::tryRead(v, "seed_path", &seed_path);
+  nb_runs = starkit_utils::read<int>(v, "nb_runs");
+  nb_steps = starkit_utils::read<int>(v, "nb_steps");
+  starkit_utils::tryRead(v, "nb_threads", &nb_threads);
+  starkit_utils::tryRead(v, "discount", &discount);
+  starkit_utils::tryRead(v, "time_budget", &time_budget);
+  starkit_utils::tryRead(v, "save_details", &save_details);
+  starkit_utils::tryRead(v, "save_run_logs", &save_run_logs);
+  starkit_utils::tryRead(v, "save_best_policy", &save_best_policy);
+  starkit_utils::tryRead(v, "seed_path", &seed_path);
   setDiscount(discount);
 }
 

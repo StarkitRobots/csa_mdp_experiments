@@ -1,6 +1,6 @@
 #include "kick_model/kick_zone.h"
 
-using namespace rhoban_utils;
+using namespace starkit_utils;
 
 static double deg2rad(double deg)
 {
@@ -150,13 +150,13 @@ Json::Value KickZone::toJson() const
 void KickZone::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
-  rhoban_utils::tryRead(v, "kick_x_min", &kick_x_min);
-  rhoban_utils::tryRead(v, "kick_x_max", &kick_x_max);
-  rhoban_utils::tryRead(v, "kick_y_tol", &kick_y_tol);
-  rhoban_utils::tryRead(v, "kick_y_offset", &kick_y_offset);
+  starkit_utils::tryRead(v, "kick_x_min", &kick_x_min);
+  starkit_utils::tryRead(v, "kick_x_max", &kick_x_max);
+  starkit_utils::tryRead(v, "kick_y_tol", &kick_y_tol);
+  starkit_utils::tryRead(v, "kick_y_offset", &kick_y_offset);
   // For angles: read human values
-  double kick_theta_tol_deg = rhoban_utils::read<double>(v, "kick_theta_tol");
-  double kick_theta_offset_deg = rhoban_utils::read<double>(v, "kick_theta_offset");
+  double kick_theta_tol_deg = starkit_utils::read<double>(v, "kick_theta_tol");
+  double kick_theta_offset_deg = starkit_utils::read<double>(v, "kick_theta_offset");
   kick_theta_tol = deg2rad(kick_theta_tol_deg);
   kick_theta_offset = deg2rad(kick_theta_offset_deg);
 }

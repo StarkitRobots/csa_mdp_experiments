@@ -1,6 +1,6 @@
 #include "problems/ssl_ball_approach.h"
 
-#include "rhoban_utils/angle.h"
+#include "starkit_utils/angle.h"
 
 #include <cmath>
 #include <iostream>
@@ -66,7 +66,7 @@ SSLBallApproach::SSLBallApproach()
   max_acc_theta(max_speed_theta / 2)
   ,  // 2 s to reach full speed
   // Kick
-  kick_dir_tol(rhoban_utils::deg2rad(10))
+  kick_dir_tol(starkit_utils::deg2rad(10))
   ,  // Roughly enough to kick from 1[m] distance
   kick_x_max(0.15)
   ,  // Ideally 0.1
@@ -76,7 +76,7 @@ SSLBallApproach::SSLBallApproach()
   ,  // No real idea
   kick_speed_y_max(0.05)
   ,  // Ideally less
-  kick_speed_theta_max(rhoban_utils::deg2rad(10))
+  kick_speed_theta_max(starkit_utils::deg2rad(10))
   , kick_reward(0)
   ,
   // Collision
@@ -93,7 +93,7 @@ SSLBallApproach::SSLBallApproach()
   ,
   // Noise model
   cart_stddev(0.05)
-  , angular_stddev(rhoban_utils::deg2rad(5))
+  , angular_stddev(starkit_utils::deg2rad(5))
 {
   updateLimits();
 }
@@ -265,35 +265,35 @@ void SSLBallApproach::fromJson(const Json::Value& v, const std::string& dir_name
 {
   (void)dir_name;
   // Read internal properties
-  double max_speed_theta_deg(rhoban_utils::rad2deg(max_speed_theta));
-  double max_acc_theta_deg(rhoban_utils::rad2deg(max_acc_theta));
-  double kick_speed_theta_max_deg(rhoban_utils::rad2deg(kick_speed_theta_max));
-  double angular_stddev_deg(rhoban_utils::rad2deg(angular_stddev));
-  rhoban_utils::tryRead(v, "max_dist", &max_dist);
-  rhoban_utils::tryRead(v, "max_speed", &max_speed);
-  rhoban_utils::tryRead(v, "max_speed_theta", &max_speed_theta_deg);
-  rhoban_utils::tryRead(v, "max_acc", &max_acc);
-  rhoban_utils::tryRead(v, "max_acc_theta", &max_acc_theta_deg);
-  rhoban_utils::tryRead(v, "kick_dir_tol", &kick_dir_tol);
-  rhoban_utils::tryRead(v, "kick_x_max", &kick_x_max);
-  rhoban_utils::tryRead(v, "kick_y_tol", &kick_y_tol);
-  rhoban_utils::tryRead(v, "kick_speed_x_max", &kick_speed_x_max);
-  rhoban_utils::tryRead(v, "kick_speed_y_max", &kick_speed_y_max);
-  rhoban_utils::tryRead(v, "kick_speed_theta_max", &kick_speed_theta_max_deg);
-  rhoban_utils::tryRead(v, "kick_reward", &kick_reward);
-  rhoban_utils::tryRead(v, "collision_radius", &collision_radius);
-  rhoban_utils::tryRead(v, "collision_reward", &collision_reward);
-  rhoban_utils::tryRead(v, "out_of_space_reward", &out_of_space_reward);
-  rhoban_utils::tryRead(v, "dt", &dt);
-  rhoban_utils::tryRead(v, "init_min_dist", &init_min_dist);
-  rhoban_utils::tryRead(v, "init_max_dist", &init_max_dist);
-  rhoban_utils::tryRead(v, "cart_stddev", &cart_stddev);
-  rhoban_utils::tryRead(v, "angular_stddev", &angular_stddev_deg);
+  double max_speed_theta_deg(starkit_utils::rad2deg(max_speed_theta));
+  double max_acc_theta_deg(starkit_utils::rad2deg(max_acc_theta));
+  double kick_speed_theta_max_deg(starkit_utils::rad2deg(kick_speed_theta_max));
+  double angular_stddev_deg(starkit_utils::rad2deg(angular_stddev));
+  starkit_utils::tryRead(v, "max_dist", &max_dist);
+  starkit_utils::tryRead(v, "max_speed", &max_speed);
+  starkit_utils::tryRead(v, "max_speed_theta", &max_speed_theta_deg);
+  starkit_utils::tryRead(v, "max_acc", &max_acc);
+  starkit_utils::tryRead(v, "max_acc_theta", &max_acc_theta_deg);
+  starkit_utils::tryRead(v, "kick_dir_tol", &kick_dir_tol);
+  starkit_utils::tryRead(v, "kick_x_max", &kick_x_max);
+  starkit_utils::tryRead(v, "kick_y_tol", &kick_y_tol);
+  starkit_utils::tryRead(v, "kick_speed_x_max", &kick_speed_x_max);
+  starkit_utils::tryRead(v, "kick_speed_y_max", &kick_speed_y_max);
+  starkit_utils::tryRead(v, "kick_speed_theta_max", &kick_speed_theta_max_deg);
+  starkit_utils::tryRead(v, "kick_reward", &kick_reward);
+  starkit_utils::tryRead(v, "collision_radius", &collision_radius);
+  starkit_utils::tryRead(v, "collision_reward", &collision_reward);
+  starkit_utils::tryRead(v, "out_of_space_reward", &out_of_space_reward);
+  starkit_utils::tryRead(v, "dt", &dt);
+  starkit_utils::tryRead(v, "init_min_dist", &init_min_dist);
+  starkit_utils::tryRead(v, "init_max_dist", &init_max_dist);
+  starkit_utils::tryRead(v, "cart_stddev", &cart_stddev);
+  starkit_utils::tryRead(v, "angular_stddev", &angular_stddev_deg);
   // Applying values which have been read in Deg:
-  max_speed_theta = rhoban_utils::deg2rad(max_speed_theta_deg);
-  max_acc_theta = rhoban_utils::deg2rad(max_acc_theta_deg);
-  kick_speed_theta_max = rhoban_utils::deg2rad(kick_speed_theta_max_deg);
-  angular_stddev = rhoban_utils::deg2rad(angular_stddev_deg);
+  max_speed_theta = starkit_utils::deg2rad(max_speed_theta_deg);
+  max_acc_theta = starkit_utils::deg2rad(max_acc_theta_deg);
+  kick_speed_theta_max = starkit_utils::deg2rad(kick_speed_theta_max_deg);
+  angular_stddev = starkit_utils::deg2rad(angular_stddev_deg);
 
   // Update limits according to the new parameters
   updateLimits();

@@ -2,7 +2,7 @@
 
 #include "kick_model/kick_zone.h"
 #include "kick_model/grass_model.h"
-#include "rhoban_utils/serialization/json_serializable.h"
+#include "starkit_utils/serialization/json_serializable.h"
 
 #include <Eigen/Core>
 
@@ -17,7 +17,7 @@ namespace csa_mdp
 /// Each kick might contain/use several parameters
 ///
 /// All dimensions are in meters
-class KickModel : public rhoban_utils::JsonSerializable
+class KickModel : public starkit_utils::JsonSerializable
 {
 public:
   KickModel();

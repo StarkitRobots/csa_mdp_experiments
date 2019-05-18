@@ -53,8 +53,8 @@ Json::Value FinalKick::toJson() const
 void FinalKick::fromJson(const Json::Value& v, const std::string& dir_name)
 {
   (void)dir_name;
-  goal_x = rhoban_utils::read<double>(v, "goal_x");
-  max_y = rhoban_utils::read<double>(v, "max_y");
+  goal_x = starkit_utils::read<double>(v, "goal_x");
+  max_y = starkit_utils::read<double>(v, "max_y");
   updateActionLimits();
 }
 
