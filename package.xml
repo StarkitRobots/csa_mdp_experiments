@@ -13,7 +13,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>starkit_csa_mdp</build_depend> <!-- starkit/csa_mdp.git -->
+  <build_depend>starkit_csa_mdp</build_depend> <!-- StarkitRobots/csa_mdp.git -->
 
   <run_depend>starkit_csa_mdp</run_depend>
 
